@@ -13,7 +13,6 @@
 #include "vec3.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
-
 static void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
 {
 	if (code != cudaSuccess) {
@@ -24,6 +23,7 @@ static void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 
 namespace rays {
 
+static constexpr bool debug = false;
 static const Vec3 defaultAlbedo = Vec3(0.45098f, 0.823529f, 0.0862745f);
 static constexpr float defaultLightPosition = -0.6f;
 
@@ -47,7 +47,7 @@ PathTracer::PathTracer()
     });
 }
 
-__global__ static void renderInit(int seed, int width, int height, curandState *randState)
+__global__ static void renderInit(int width, int height, curandState *randState)
 {
     const int row = threadIdx.y + blockIdx.y * blockDim.y;
     const int col = threadIdx.x + blockIdx.x * blockDim.x;
@@ -55,6 +55,7 @@ __global__ static void renderInit(int seed, int width, int height, curandState *
     if ((row >= height) || (col >= width)) return;
     const int pixelIndex = row * width + col;
 
+    constexpr int seed = 0;
     curand_init(seed, pixelIndex, 0, &randState[pixelIndex]);
 }
 
@@ -180,6 +181,12 @@ void PathTracer::init(
         m_sceneModel->getLightPosition(),
         false
     );
+
+    checkCudaErrors(cudaGetLastError());
+
+    dim3 blocks(m_width, m_height);
+    renderInit<<<blocks, 1>>>(m_width, m_height, dev_randState);
+
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
 }
@@ -197,10 +204,11 @@ void PathTracer::render()
     const dim3 blocks(m_width / blockWidth + 1, m_height / blockHeight + 1);
     const dim3 threads(blockWidth, blockHeight);
 
-    renderInit<<<blocks, threads>>>(m_currentSamples, m_width, m_height, dev_randState);
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
 
-    checkCudaErrors(cudaGetLastError());
-    checkCudaErrors(cudaDeviceSynchronize());
+    cudaEventRecord(start);
 
     renderKernel<<<blocks, threads>>>(
         dev_map,
@@ -211,6 +219,17 @@ void PathTracer::render()
         dev_world,
         dev_randState
     );
+
+    cudaEventRecord(stop);
+
+    cudaEventSynchronize(stop);
+
+    if (debug) {
+        float milliseconds = 0;
+        cudaEventElapsedTime(&milliseconds, start, stop);
+        std::cout << "CUDA Frame: " << milliseconds << std::endl;
+    }
+
     m_currentSamples += samplesPerPass;
     m_sceneModel->updateSpp(m_currentSamples);
 
