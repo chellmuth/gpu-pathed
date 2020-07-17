@@ -34,7 +34,7 @@ PathTracer::PathTracer()
     m_sceneModel->subscribe([this]() {
         m_currentSamples = 0;
 
-        rays::createWorld<<<1, 1>>>(
+        createWorld<<<1, 1>>>(
             dev_primitives,
             dev_world,
             m_sceneModel->getColor(),
@@ -170,11 +170,11 @@ void PathTracer::init(
     const int pixelCount = m_width * m_height;
 
     checkCudaErrors(cudaMalloc((void **)&dev_randState, pixelCount * sizeof(curandState)));
-    checkCudaErrors(cudaMalloc((void **)&dev_primitives, rays::primitiveCount * sizeof(Primitive *)));
+    checkCudaErrors(cudaMalloc((void **)&dev_primitives, primitiveCount * sizeof(Primitive *)));
     checkCudaErrors(cudaMalloc((void **)&dev_world, sizeof(PrimitiveList *)));
     checkCudaErrors(cudaMalloc((void **)&dev_radiances, pixelCount * sizeof(Vec3)));
 
-    rays::createWorld<<<1, 1>>>(
+    createWorld<<<1, 1>>>(
         dev_primitives,
         dev_world,
         m_sceneModel->getColor(),
