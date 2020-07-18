@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include <cfloat>
-#include <cuda_gl_interop.h>
 
 #include "camera.h"
 #include "frame.h"

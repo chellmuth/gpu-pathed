@@ -3,7 +3,7 @@
 #include <memory>
 
 #include <curand_kernel.h>
-#include <glad.h>
+#include <cuda_gl_interop.h>
 
 #include "primitive.h"
 #include "scene_model.h"
