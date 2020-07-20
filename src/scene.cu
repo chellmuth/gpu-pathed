@@ -24,9 +24,9 @@ __global__ void createWorld(
 ) {
     if (update) {
         for (int i = 0; i < primitiveCount; i++) {
-            free(primitives[i]);
+            delete(primitives[i]);
         }
-        free(*world);
+        delete(*world);
     }
 
     if (threadIdx.x == 0 && blockIdx.x == 0) {

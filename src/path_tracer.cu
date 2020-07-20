@@ -1,8 +1,7 @@
 #include "path_tracer.h"
 
-#include <iostream>
-
 #include <cfloat>
+#include <iostream>
 
 #include "camera.h"
 #include "frame.h"
@@ -58,13 +57,13 @@ __global__ static void renderInit(int width, int height, curandState *randState)
     curand_init(seed, pixelIndex, 0, &randState[pixelIndex]);
 }
 
-__device__ static Vec3 calculateLi(const Ray& ray, PrimitiveList **world, curandState &randState)
+__device__ static Vec3 calculateLi(const Ray& ray, PrimitiveList *world, curandState &randState)
 {
     Vec3 beta = Vec3(1.f);
     Vec3 result = Vec3(0.f);
 
     HitRecord record;
-    bool hit = (*world)->hit(ray, 0.f, FLT_MAX, record);
+    bool hit = world->hit(ray, 0.f, FLT_MAX, record);
     if (hit) {
         const Vec3 emit = record.materialPtr->emit(record);
 
@@ -87,7 +86,7 @@ __device__ static Vec3 calculateLi(const Ray& ray, PrimitiveList **world, curand
         beta *= record.materialPtr->f(record.wo, wi) * intersection.cosTheta(wi) / pdf;
 
         const Ray bounceRay(record.point, bounceDirection);
-        hit = (*world)->hit(bounceRay, 1e-3, FLT_MAX, record);
+        hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
         if (hit) {
             const Vec3 emit = record.materialPtr->emit(record);
             if (!emit.isZero()) {
@@ -128,7 +127,7 @@ __global__ static void renderKernel(
 
     for (int sample = 1; sample <= spp; sample++) {
         const Ray cameraRay = camera.generateRay(row, col, localRand);
-        const Vec3 Li = calculateLi(cameraRay, world, localRand);
+        const Vec3 Li = calculateLi(cameraRay, *world, localRand);
 
         const int spp = currentSamples + sample;
 
