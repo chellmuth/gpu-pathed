@@ -4,17 +4,17 @@
 
 #include <path_tracer.h>
 
-#include "main_window.h"
+#include "gl_widget.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    std::cout << "Hello, world!" << std::endl;
     rays::PathTracer pt;
 
-    MainWindow window;
-    window.show();
+    GLWidget *glWidget = new GLWidget();
+    glWidget->setFixedSize(640, 360);
+    glWidget->show();
 
     return app.exec();
 }

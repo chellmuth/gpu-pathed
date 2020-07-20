@@ -32,7 +32,6 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 add_executable(app
   app/main.cpp
   app/gl_widget.cpp
-  app/main_window.cpp
 )
 target_include_directories(app PRIVATE app ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 target_link_libraries(app rays Qt5::Core Qt5::Widgets)
