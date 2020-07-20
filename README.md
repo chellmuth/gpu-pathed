@@ -5,8 +5,8 @@ A small program to demonstrate wrapping an interactive CUDA path tracer with a P
 
 ## Build instructions
 ```
-git clone --recursive https://github.com/chellmuth/cuda-pyqt-demo.git
-cd cuda-pyqt-demo
+git clone --recursive https://github.com/chellmuth/cuda-pyqt-path-tracer.git
+cd cuda-pyqt-path-tracer
 pip install -r requirements.txt
 mkdir build
 cd build
