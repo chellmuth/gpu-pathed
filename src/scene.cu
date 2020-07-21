@@ -17,6 +17,7 @@ __device__ static Vec3 rotateY(Vec3 vector, float theta)
 
 __global__ void createWorld(
     Primitive **primitives,
+    Material *materials,
     PrimitiveList **world,
     Vec3 color,
     float lightPosition,
@@ -30,11 +31,16 @@ __global__ void createWorld(
     }
 
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        int i = 0;
+        size_t materialIndex = 0;
+        materials[materialIndex++] = Material(color);
+        materials[materialIndex++] = Material(Vec3(1.f, 0.2f, 1.f), Vec3(14.f, 14.f, 14.f));
+        materials[materialIndex++] = Material(Vec3(1.f, 1.f, 1.f));
+
+        size_t i = 0;
         primitives[i++] = new Sphere(
             Vec3(0.f, 0.f, -1.f),
             0.8f,
-            new Material(color)
+            0
         );
 
         const float theta = lightPosition * M_PI;
@@ -42,22 +48,22 @@ __global__ void createWorld(
             rotateY(Vec3(-0.5f, 0.6f, -2.f), theta),
             rotateY(Vec3(0.3f, 0.6f, -2.f), theta),
             rotateY(Vec3(-0.5f, 1.2f, -1.8f), theta),
-            new Material(Vec3(1.f, 0.2f, 1.f), Vec3(14.f, 14.f, 14.f))
+            1
         );
         primitives[i++] = new Triangle(
             rotateY(Vec3(0.3f, 0.6f, -2.f), theta),
             rotateY(Vec3(0.3f, 1.2f, -1.8f), theta),
             rotateY(Vec3(-0.5f, 1.2f, -1.8f), theta),
-            new Material(Vec3(1.f, 0.2f, 1.f), Vec3(14.f, 14.f, 14.f))
+            1
         );
 
         primitives[i++] = new Sphere(
             Vec3(0.f, -100.8f, -1.f),
             100.f,
-            new Material(Vec3(1.f, 1.f, 1.f))
+            2
         );
 
-        *world = new PrimitiveList(primitives, i);
+        *world = new PrimitiveList(primitives, i, materials, materialIndex);
     }
 }
 

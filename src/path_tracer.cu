@@ -34,6 +34,7 @@ PathTracer::PathTracer()
 
         createWorld<<<1, 1>>>(
             dev_primitives,
+            dev_materials,
             dev_world,
             m_sceneModel->getColor(),
             m_sceneModel->getLightPosition(),
@@ -65,7 +66,8 @@ __device__ static Vec3 calculateLi(const Ray& ray, PrimitiveList *world, curandS
     HitRecord record;
     bool hit = world->hit(ray, 0.f, FLT_MAX, record);
     if (hit) {
-        const Vec3 emit = record.materialPtr->emit(record);
+        const Material &emitMaterial = world->getMaterial(record.materialIndex);
+        const Vec3 emit = emitMaterial.getEmit(record);
 
         if (!emit.isZero()) {
             result += emit * beta;
@@ -78,17 +80,19 @@ __device__ static Vec3 calculateLi(const Ray& ray, PrimitiveList *world, curandS
 
     for (int path = 2; path < 10; path++) {
         const Frame intersection(record.normal);
+        const Material &material = world->getMaterial(record.materialIndex);
         float pdf;
 
-        const Vec3 wi = record.materialPtr->sample(record, &pdf, randState);
+        const Vec3 wi = material.sample(record, &pdf, randState);
         const Vec3 bounceDirection = intersection.toWorld(wi);
 
-        beta *= record.materialPtr->f(record.wo, wi) * intersection.cosTheta(wi) / pdf;
+        beta *= material.f(record.wo, wi) * intersection.cosTheta(wi) / pdf;
 
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
         if (hit) {
-            const Vec3 emit = record.materialPtr->emit(record);
+            const Material &emitMaterial = world->getMaterial(record.materialIndex);
+            const Vec3 emit = emitMaterial.getEmit(record);
             if (!emit.isZero()) {
                 result += emit * beta;
             }
@@ -169,11 +173,13 @@ void PathTracer::init(
 
     checkCudaErrors(cudaMalloc((void **)&dev_randState, pixelCount * sizeof(curandState)));
     checkCudaErrors(cudaMalloc((void **)&dev_primitives, primitiveCount * sizeof(Primitive *)));
+    checkCudaErrors(cudaMalloc((void **)&dev_materials, materialCount * sizeof(Material)));
     checkCudaErrors(cudaMalloc((void **)&dev_world, sizeof(PrimitiveList *)));
     checkCudaErrors(cudaMalloc((void **)&dev_radiances, pixelCount * sizeof(Vec3)));
 
     createWorld<<<1, 1>>>(
         dev_primitives,
+        dev_materials,
         dev_world,
         m_sceneModel->getColor(),
         m_sceneModel->getLightPosition(),

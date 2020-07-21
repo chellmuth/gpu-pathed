@@ -3,7 +3,7 @@
 #include <curand_kernel.h>
 
 #include "frame.h"
-#include "primitive.h"
+#include "hit_record.h"
 #include "vec3.h"
 
 namespace rays {
@@ -18,9 +18,9 @@ public:
         : m_albedo(albedo), m_emit(emit)
     {}
 
-    __device__ Vec3 sample(HitRecord &record, float *pdf, curandState &randState);
-    __device__ Vec3 f(const Vec3 &wo, const Vec3 &wi);
-    __device__ Vec3 emit(const HitRecord &hit);
+    __device__ Vec3 sample(HitRecord &record, float *pdf, curandState &randState) const;
+    __device__ Vec3 f(const Vec3 &wo, const Vec3 &wi) const;
+    __device__ Vec3 getEmit(const HitRecord &hit) const;
 
 private:
     Vec3 m_albedo;
