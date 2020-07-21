@@ -34,7 +34,7 @@ public:
     __device__ PrimitiveList(Primitive **list, int size)
         : m_list(list), m_size(size) {}
 
-    __device__ virtual bool hit(
+    __device__ bool hit(
         const Ray& ray,
         float tMin,
         float tMax,
