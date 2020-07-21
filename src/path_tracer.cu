@@ -32,7 +32,7 @@ PathTracer::PathTracer()
     m_sceneModel->subscribe([this]() {
         m_currentSamples = 0;
 
-        m_scene->setColor(m_sceneModel->getColor());
+        m_scene->setColor(m_sceneModel->getMaterialIndex(), m_sceneModel->getColor());
 
         checkCudaErrors(cudaMemcpy(
             dev_materials,
@@ -45,7 +45,6 @@ PathTracer::PathTracer()
             dev_primitives,
             dev_materials,
             dev_world,
-            m_sceneModel->getColor(),
             m_sceneModel->getLightPosition(),
             true
         );
@@ -198,7 +197,6 @@ void PathTracer::init(
         dev_primitives,
         dev_materials,
         dev_world,
-        m_sceneModel->getColor(),
         m_sceneModel->getLightPosition(),
         false
     );
@@ -264,3 +262,5 @@ SceneModel& PathTracer::getSceneModel()
 }
 
 }
+
+#undef checkCudaErrors

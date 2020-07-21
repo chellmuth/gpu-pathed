@@ -20,6 +20,7 @@ PYBIND11_MODULE(path_tracer, m) {
         .def(py::init<>())
         .def("init", &PathTracer::init, "Initialize CUDA resources")
         .def("render", &PathTracer::render, "Render and update buffer")
+        .def("test", &PathTracer::test, "TEMP TEMP TEMP")
         .def(
             "getSceneModel",
             &PathTracer::getSceneModel,

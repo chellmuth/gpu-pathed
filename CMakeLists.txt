@@ -10,6 +10,7 @@ set(PYBIND11_LTO_CXX_FLAGS "")
 
 add_library(rays STATIC
   src/camera.cu
+  src/hit_test.cu
   src/material.cu
   src/path_tracer.cu
   src/primitive.cu

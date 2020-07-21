@@ -33,7 +33,6 @@ __global__ void createWorld(
     Primitive **primitives,
     Material *materials,
     PrimitiveList **world,
-    Vec3 color,
     float lightPosition,
     bool update
 ) {

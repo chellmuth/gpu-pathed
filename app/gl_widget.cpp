@@ -4,6 +4,8 @@
 
 #include <QOpenGLFunctions_4_5_Compatibility>
 
+#include "hit_test.h"
+
 GLuint pbo;
 
 void GLWidget::initializeGL()
@@ -26,6 +28,8 @@ void GLWidget::initializeGL()
 
     m_pathTracer = new rays::PathTracer();
     m_pathTracer->init(pbo, width, height);
+
+    m_pathTracer->test(100, 100);
 }
 
 void GLWidget::resizeGL(int w, int h)

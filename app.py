@@ -22,7 +22,7 @@ class App(QWidget):
 
         layout = QHBoxLayout()
 
-        self.gl = RenderWidget(self.pt, self)
+        self.gl = RenderWidget(self.pt, self.handleColorChange, self)
         layout.addWidget(self.gl)
 
         self.sidebar = Sidebar(self.model, self)
@@ -30,17 +30,25 @@ class App(QWidget):
 
         self.setLayout(layout)
 
+    def handleColorChange(self):
+        self.sidebar.update()
+
     def update(self):
         self.gl.update()
         self.sidebar.update()
 
 
 class RenderWidget(QOpenGLWidget):
-    def __init__(self, pt, parent=None):
+    def __init__(self, pt, handleColorChange, parent=None):
         super().__init__(parent)
 
         self.pt = pt
+        self.handleColorChange = handleColorChange
         self.setFixedSize(640, 360)
+
+    def mousePressEvent(self, event):
+        self.pt.test(event.x(), self.height() - event.y() - 1)
+        self.handleColorChange
 
     def initializeGL(self):
         super().initializeGL()
@@ -111,6 +119,7 @@ class Sidebar(QWidget):
         self.setLayout(layout)
 
     def update(self):
+        self.albedoButton.update()
         self.spp.update()
 
 class LightSlider(QWidget):
@@ -160,6 +169,9 @@ class AlbedoButton(QWidget):
 
         self.button.clicked.connect(self.handlePush)
 
+    def update(self):
+        self.setColor(unwrapQcolor(self.model.getColor()))
+
     def setColor(self, color):
         palette = self.button.palette()
         palette.setColor(QPalette.Button, color)
@@ -170,7 +182,7 @@ class AlbedoButton(QWidget):
         color = QColorDialog.getColor(parent=self)
 
         self.model.setColor(color.red() / 255., color.green() / 255., color.blue() / 255.)
-        self.setColor(unwrapQcolor(self.model.getColor()))
+        self.update()
 
 class SppLabel(QWidget):
     def __init__(self, model, parent=None):

@@ -17,7 +17,6 @@ __global__ void createWorld(
     Primitive **primitives,
     Material *materials,
     PrimitiveList **world,
-    Vec3 color,
     float lightPosition,
     bool update
 );
@@ -30,11 +29,13 @@ public:
     void update();
 
     const Material *getMaterialsData() const { return m_materials.data(); }
+    const Material &getMaterial(int materialIndex) const { return m_materials[materialIndex]; }
     size_t getMaterialsSize() const { return m_materials.size() * sizeof(Material); }
 
-    void setColor(Vec3 color) {
-        m_color = color;
-        update();
+    void setColor(int materialIndex, Vec3 color) {
+        m_materials[materialIndex] = color;
+        /* m_color = color; */
+        /* update(); */
     }
 
 private:

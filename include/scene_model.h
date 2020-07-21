@@ -3,6 +3,7 @@
 #include <functional>
 #include <iostream>
 
+#include "material.h"
 #include "vec3.h"
 
 namespace rays {
@@ -14,7 +15,8 @@ public:
           m_g(color.g()),
           m_b(color.b()),
           m_lightPosition(lightPosition),
-          m_spp(0)
+          m_spp(0),
+          m_materialIndex(-1)
     {}
 
     SceneModel(const SceneModel &other) = delete;
@@ -33,6 +35,18 @@ public:
     }
     Vec3 getColor() { return Vec3(m_r, m_g, m_b); }
 
+    int getMaterialIndex() const {
+        return m_materialIndex;
+    }
+
+    void setMaterialIndex(int materialIndex, const Vec3 &albedo) {
+        m_materialIndex = materialIndex;
+
+        m_r = albedo.r();
+        m_g = albedo.g();
+        m_b = albedo.b();
+    }
+
     void setLightPosition(float lightPosition) {
         m_lightPosition = lightPosition;
         m_callback();
@@ -43,6 +57,8 @@ public:
     int getSpp() { return m_spp; }
 
 private:
+    int m_materialIndex;
+
     int m_spp;
     float m_r, m_g, m_b;
     float m_lightPosition;

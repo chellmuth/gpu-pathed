@@ -5,6 +5,7 @@
 #include <curand_kernel.h>
 #include <cuda_gl_interop.h>
 
+#include "hit_test.h"
 #include "primitive.h"
 #include "scene_model.h"
 #include "scene.h"
@@ -23,6 +24,10 @@ public:
     void render();
 
     SceneModel& getSceneModel();
+
+    void test(int x, int y) {
+        hitTest(*m_scene, *m_sceneModel, x, y);
+    }
 
 private:
     std::unique_ptr<Scene> m_scene;
