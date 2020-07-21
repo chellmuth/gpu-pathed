@@ -6,6 +6,20 @@
 
 namespace rays {
 
+void Scene::init()
+{
+    update();
+}
+
+void Scene::update()
+{
+    m_materials.clear();
+
+    m_materials.push_back(Material(m_color));
+    m_materials.push_back(Material(Vec3(1.f, 0.2f, 1.f), Vec3(14.f, 14.f, 14.f)));
+    m_materials.push_back(Material(Vec3(1.f, 1.f, 1.f)));
+}
+
 __device__ static Vec3 rotateY(Vec3 vector, float theta)
 {
     return Vec3(
@@ -31,11 +45,6 @@ __global__ void createWorld(
     }
 
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        size_t materialIndex = 0;
-        materials[materialIndex++] = Material(color);
-        materials[materialIndex++] = Material(Vec3(1.f, 0.2f, 1.f), Vec3(14.f, 14.f, 14.f));
-        materials[materialIndex++] = Material(Vec3(1.f, 1.f, 1.f));
-
         size_t i = 0;
         primitives[i++] = new Sphere(
             Vec3(0.f, 0.f, -1.f),
@@ -63,7 +72,7 @@ __global__ void createWorld(
             2
         );
 
-        *world = new PrimitiveList(primitives, i, materials, materialIndex);
+        *world = new PrimitiveList(primitives, i, materials, materialCount);
     }
 }
 

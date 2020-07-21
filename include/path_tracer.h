@@ -7,6 +7,7 @@
 
 #include "primitive.h"
 #include "scene_model.h"
+#include "scene.h"
 #include "vec3.h"
 
 namespace rays {
@@ -24,6 +25,7 @@ public:
     SceneModel& getSceneModel();
 
 private:
+    std::unique_ptr<Scene> m_scene;
     std::unique_ptr<SceneModel> m_sceneModel;
 
     int m_width, m_height;

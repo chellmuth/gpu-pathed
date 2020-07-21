@@ -21,16 +21,25 @@ static void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 
 namespace rays {
 
+const Vec3 defaultAlbedo = Vec3(0.45098f, 0.823529f, 0.0862745f);
 static constexpr bool debug = false;
-static const Vec3 defaultAlbedo = Vec3(0.45098f, 0.823529f, 0.0862745f);
-static constexpr float defaultLightPosition = -0.6f;
 
 PathTracer::PathTracer()
     : m_currentSamples(0)
 {
+    m_scene = std::make_unique<Scene>(defaultAlbedo);
     m_sceneModel = std::make_unique<SceneModel>(defaultAlbedo, defaultLightPosition);
     m_sceneModel->subscribe([this]() {
         m_currentSamples = 0;
+
+        m_scene->setColor(m_sceneModel->getColor());
+
+        checkCudaErrors(cudaMemcpy(
+            dev_materials,
+            m_scene->getMaterialsData(),
+            m_scene->getMaterialsSize(),
+            cudaMemcpyHostToDevice
+        ));
 
         createWorld<<<1, 1>>>(
             dev_primitives,
@@ -176,6 +185,14 @@ void PathTracer::init(
     checkCudaErrors(cudaMalloc((void **)&dev_materials, materialCount * sizeof(Material)));
     checkCudaErrors(cudaMalloc((void **)&dev_world, sizeof(PrimitiveList *)));
     checkCudaErrors(cudaMalloc((void **)&dev_radiances, pixelCount * sizeof(Vec3)));
+
+    m_scene->init();
+    checkCudaErrors(cudaMemcpy(
+        dev_materials,
+        m_scene->getMaterialsData(),
+        m_scene->getMaterialsSize(),
+        cudaMemcpyHostToDevice
+    ));
 
     createWorld<<<1, 1>>>(
         dev_primitives,

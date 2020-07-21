@@ -8,13 +8,13 @@
 
 namespace rays {
 
-class Material  {
+struct Material  {
 public:
-    __device__ Material(const Vec3 &albedo)
+    __host__ __device__ Material(const Vec3 &albedo)
         : m_albedo(albedo), m_emit(Vec3(0.f, 0.f, 0.f))
     {}
 
-    __device__ Material(const Vec3 &albedo, const Vec3 &emit)
+    __host__ __device__ Material(const Vec3 &albedo, const Vec3 &emit)
         : m_albedo(albedo), m_emit(emit)
     {}
 
