@@ -1,6 +1,9 @@
 #include "render_session.h"
 
+#include <fstream>
+
 #include "camera.h"
+#include "parsers/obj_parser.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
 static void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
@@ -18,6 +21,9 @@ RenderSession::RenderSession()
     m_pathTracer = std::make_unique<PathTracer>();
 
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
+
+    std::ifstream sceneFile("../scenes/cornell-box/CornellBox-Original.obj");
+    ObjParser objParser(sceneFile);
     m_scene = std::make_unique<Scene>();
     m_sceneModel = std::make_unique<SceneModel>(
         m_pathTracer.get(),

@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "material.h"
+#include "scene_data.h"
 #include "sphere.h"
 #include "triangle.h"
 
@@ -24,20 +25,9 @@ void Scene::init()
 
 void Scene::update()
 {
-    m_materials.clear();
+    SceneData sceneData = SceneAdapter::createSceneData(defaultLightPosition);
 
-    m_materials.push_back(Material(Vec3(0.45098f, 0.823529f, 0.0862745f)));
-    m_materials.push_back(Material(Vec3(1.f, 0.2f, 1.f), Vec3(14.f, 14.f, 14.f)));
-    m_materials.push_back(Material(Vec3(1.f, 1.f, 1.f)));
-}
-
-static Vec3 rotateY(Vec3 vector, float theta)
-{
-    return Vec3(
-        cos(theta) * vector.x() - sin(theta) * vector.z(),
-        vector.y(),
-        sin(theta) * vector.x() + cos(theta) * vector.z()
-    );
+    m_materials = sceneData.materials;
 }
 
 void copyGeometry(
@@ -47,45 +37,18 @@ void copyGeometry(
     PrimitiveList *d_world,
     float lightPosition
 ) {
-    Sphere localSpheres[sphereCount] = {
-        Sphere(
-            Vec3(0.f, 0.f, -1.f),
-            0.8f,
-            0
-        ),
-        Sphere(
-            Vec3(0.f, -100.8f, -1.f),
-            100.f,
-            2
-        )
-    };
-
-    const float theta = lightPosition * M_PI;
-    Triangle localTriangles[triangleCount] = {
-        Triangle(
-            rotateY(Vec3(-0.5f, 0.6f, -2.f), theta),
-            rotateY(Vec3(0.3f, 0.6f, -2.f), theta),
-            rotateY(Vec3(-0.5f, 1.2f, -1.8f), theta),
-            1
-        ),
-        Triangle(
-            rotateY(Vec3(0.3f, 0.6f, -2.f), theta),
-            rotateY(Vec3(0.3f, 1.2f, -1.8f), theta),
-            rotateY(Vec3(-0.5f, 1.2f, -1.8f), theta),
-            1
-        )
-    };
+    SceneData sceneData = SceneAdapter::createSceneData(lightPosition);
 
     checkCudaErrors(cudaMemcpy(
         d_triangles,
-        &localTriangles,
+        sceneData.triangles.data(),
         triangleCount * sizeof(Triangle),
         cudaMemcpyHostToDevice
     ));
 
     checkCudaErrors(cudaMemcpy(
         d_spheres,
-        &localSpheres,
+        sceneData.spheres.data(),
         sphereCount * sizeof(Sphere),
         cudaMemcpyHostToDevice
     ));

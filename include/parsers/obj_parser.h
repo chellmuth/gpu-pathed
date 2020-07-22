@@ -8,18 +8,18 @@
 
 namespace rays {
 
+struct ObjResult {
+    std::vector<Vertex> vertices;
+    std::vector<Face> faces;
+};
+
 class ObjParser {
 public:
     ObjParser(std::ifstream &objFile);
 
-    void parse();
+    ObjResult parse();
 
 private:
-    std::ifstream &m_objFile;
-
-    std::vector<Vertex> m_vertices;
-    std::vector<Face> m_faces;
-
     void parseLine(std::string &line);
 
     void processVertex(std::string &vertexArgs);
@@ -38,6 +38,11 @@ private:
         int *index1,
         int *index2
     );
+
+    std::ifstream &m_objFile;
+
+    std::vector<Vertex> m_vertices;
+    std::vector<Face> m_faces;
 };
 
 }

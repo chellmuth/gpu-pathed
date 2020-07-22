@@ -17,6 +17,7 @@ add_library(rays STATIC
   src/primitive.cu
   src/render_session.cu
   src/scene.cu
+  src/scene_data.cu
   src/scene_model.cu
   src/sphere.cu
   src/triangle.cu

@@ -4,6 +4,7 @@
 
 #include "material.h"
 #include "primitive.h"
+#include "scene_data.h"
 #include "sphere.h"
 #include "triangle.h"
 #include "vec3.h"

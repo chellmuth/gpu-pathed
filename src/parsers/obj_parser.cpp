@@ -12,12 +12,15 @@ ObjParser::ObjParser(std::ifstream &objFile)
     : m_objFile(objFile)
 {}
 
-void ObjParser::parse()
+ObjResult ObjParser::parse()
 {
     string line;
     while(std::getline(m_objFile, line)) {
         parseLine(line);
     }
+
+    ObjResult result;
+    return result;
 }
 
 void ObjParser::parseLine(string &line)
