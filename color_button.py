@@ -2,10 +2,11 @@ from PyQt5.QtGui import QColor, QPalette
 from PyQt5.QtWidgets import QColorDialog, QHBoxLayout, QLabel, QPushButton, QWidget
 
 class ColorButton(QWidget):
-    def __init__(self, name, model, parent=None):
+    def __init__(self, name, getter, setter, parent=None):
         super().__init__(parent)
 
-        self.model = model
+        self.getter = getter
+        self.setter = setter
 
         layout = QHBoxLayout()
         self.text = QLabel(f"{name}:", self)
@@ -18,13 +19,12 @@ class ColorButton(QWidget):
 
         self.setLayout(layout)
 
-        color = unwrapQcolor(self.model.getColor())
-        self.setColor(color)
-
         self.button.clicked.connect(self.handlePush)
 
+        self.update()
+
     def update(self):
-        self.setColor(unwrapQcolor(self.model.getColor()))
+        self.setColor(unwrapQcolor(self.getter()))
 
     def setColor(self, color):
         palette = self.button.palette()
@@ -35,7 +35,7 @@ class ColorButton(QWidget):
     def handlePush(self):
         color = QColorDialog.getColor(parent=self)
 
-        self.model.setColor(color.red() / 255., color.green() / 255., color.blue() / 255.)
+        self.setter(color.red() / 255., color.green() / 255., color.blue() / 255.)
         self.update()
 
 def unwrapQcolor(vec3):

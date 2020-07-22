@@ -24,8 +24,10 @@ RenderSession::RenderSession()
         m_scene.get(),
         defaultLightPosition
     );
-    m_sceneModel->subscribe([this](Vec3 color) {
-        m_scene->setColor(m_sceneModel->getMaterialIndex(), color);
+    m_sceneModel->subscribe([this](Vec3 albedo, Vec3 emit) {
+        m_scene->setColor(m_sceneModel->getMaterialIndex(), albedo);
+        m_scene->setEmit(m_sceneModel->getMaterialIndex(), emit);
+
         m_pathTracer->reset();
 
         checkCudaErrors(cudaMemcpy(

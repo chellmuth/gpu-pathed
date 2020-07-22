@@ -13,8 +13,21 @@ class MaterialWidget(QGroupBox):
         self.materialIDLabel = QLabel(self._materialIDText(), self)
         layout.addWidget(self.materialIDLabel)
 
-        self.albedoButton = ColorButton("Albedo", self.model, self)
+        self.albedoButton = ColorButton(
+            "Albedo",
+            self.model.getColor,
+            self.model.setColor,
+            self
+        )
         layout.addWidget(self.albedoButton)
+
+        self.emitButton = ColorButton(
+            "Emit",
+            self.model.getEmit,
+            self.model.setEmit,
+            self
+        )
+        layout.addWidget(self.emitButton)
 
         layout.addStretch()
         self.setLayout(layout)
@@ -27,10 +40,13 @@ class MaterialWidget(QGroupBox):
     def update(self):
         self.materialIDLabel.setText(self._materialIDText())
         self.albedoButton.update()
+        self.emitButton.update()
 
         if self.model.getMaterialIndex() == -1:
-            self.albedoButton.hide()
             self.materialIDLabel.hide()
+            self.albedoButton.hide()
+            self.emitButton.hide()
         else:
-            self.albedoButton.show()
             self.materialIDLabel.show()
+            self.albedoButton.show()
+            self.emitButton.show()

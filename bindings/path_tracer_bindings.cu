@@ -42,6 +42,8 @@ PYBIND11_MODULE(path_tracer, m) {
     py::class_<SceneModel>(m, "SceneModel")
         .def("setColor", &SceneModel::setColor)
         .def("getColor", &SceneModel::getColor)
+        .def("setEmit", &SceneModel::setEmit)
+        .def("getEmit", &SceneModel::getEmit)
         .def("getMaterialIndex", &SceneModel::getMaterialIndex)
         .def("setLightPosition", &SceneModel::setLightPosition)
         .def("getLightPosition", &SceneModel::getLightPosition)

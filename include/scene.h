@@ -33,6 +33,9 @@ public:
     void setColor(int materialIndex, Vec3 color) {
         m_materials[materialIndex].setAlbedo(color);
     }
+    void setEmit(int materialIndex, Vec3 color) {
+        m_materials[materialIndex].setEmit(color);
+    }
 
 private:
     std::vector<Material> m_materials;

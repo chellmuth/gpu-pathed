@@ -23,10 +23,13 @@ public:
     SceneModel(const SceneModel &other) = delete;
     SceneModel(SceneModel&& other) = delete;
 
-    void subscribe(std::function<void(Vec3 color)> callback);
+    void subscribe(std::function<void(Vec3 albedo, Vec3 emit)> callback);
 
     void setColor(float r, float g, float b);
     Vec3 getColor() const;
+
+    void setEmit(float r, float g, float b);
+    Vec3 getEmit() const;
 
     int getMaterialIndex() const;
     void setMaterialIndex(int materialIndex);
@@ -45,7 +48,7 @@ private:
     int m_spp;
     float m_lightPosition;
 
-    std::function<void(Vec3 color)> m_callback;
+    std::function<void(Vec3 albedo, Vec3 emit)> m_callback;
 };
 
 }

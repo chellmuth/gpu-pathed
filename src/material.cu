@@ -36,4 +36,25 @@ __device__ Vec3 Material::getEmit(const HitRecord &hit) const
     return Vec3(0.f);
 }
 
+__host__ const Vec3 &Material::getEmit() const
+{
+    return m_emit;
+}
+
+__host__ void Material::setEmit(const Vec3 &emit)
+{
+    m_emit = emit;
+}
+
+__host__ const Vec3 &Material::getAlbedo() const
+{
+    return m_albedo;
+}
+
+__host__ void Material::setAlbedo(const Vec3 &albedo)
+{
+    m_albedo = albedo;
+}
+
+
 }
