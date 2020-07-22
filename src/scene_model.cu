@@ -2,14 +2,19 @@
 
 namespace rays {
 
-SceneModel::SceneModel(PathTracer *pathTracer, const Vec3 &color, float lightPosition)
-    : m_pathTracer(pathTracer),
-      m_r(color.r()),
-      m_g(color.g()),
-      m_b(color.b()),
-      m_lightPosition(lightPosition),
-      m_spp(0),
-      m_materialIndex(-1)
+SceneModel::SceneModel(
+    const PathTracer *pathTracer,
+    const Scene *scene,
+    const Vec3 &color,
+    float lightPosition
+) : m_pathTracer(pathTracer),
+    m_scene(scene),
+    m_r(color.r()),
+    m_g(color.g()),
+    m_b(color.b()),
+    m_lightPosition(lightPosition),
+    m_spp(0),
+    m_materialIndex(-1)
 {}
 
 void SceneModel::subscribe(std::function<void()> callback)

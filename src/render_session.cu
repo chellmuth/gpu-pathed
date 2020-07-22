@@ -21,7 +21,12 @@ RenderSession::RenderSession()
 
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
     m_scene = std::make_unique<Scene>(defaultAlbedo);
-    m_sceneModel = std::make_unique<SceneModel>(m_pathTracer.get(), defaultAlbedo, defaultLightPosition);
+    m_sceneModel = std::make_unique<SceneModel>(
+        m_pathTracer.get(),
+        m_scene.get(),
+        defaultAlbedo,
+        defaultLightPosition
+    );
     m_sceneModel->subscribe([this]() {
         m_pathTracer->reset();
         m_scene->setColor(m_sceneModel->getMaterialIndex(), m_sceneModel->getColor());

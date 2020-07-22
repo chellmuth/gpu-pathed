@@ -5,6 +5,7 @@
 
 #include "material.h"
 #include "path_tracer.h"
+#include "scene.h"
 #include "vec3.h"
 
 namespace rays {
@@ -13,7 +14,12 @@ class PathTracer;
 
 class SceneModel {
 public:
-    SceneModel(PathTracer *pathTracer, const Vec3 &color, float lightPosition);
+    SceneModel(
+        const PathTracer *pathTracer,
+        const Scene *scene,
+        const Vec3 &color,
+        float lightPosition
+    );
 
     SceneModel(const SceneModel &other) = delete;
     SceneModel(SceneModel&& other) = delete;
@@ -32,7 +38,8 @@ public:
     int getSpp() const;
 
 private:
-    PathTracer *m_pathTracer;
+    const PathTracer *m_pathTracer;
+    const Scene *m_scene;
 
     int m_materialIndex;
 
