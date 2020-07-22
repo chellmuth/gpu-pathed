@@ -4,9 +4,10 @@
 #include "hit_test.h"
 #include "material.h"
 #include "path_tracer.h"
-#include "primitive.h"
 #include "scene.h"
 #include "scene_model.h"
+#include "sphere.h"
+#include "triangle.h"
 
 namespace rays {
 
@@ -35,7 +36,8 @@ private:
     std::unique_ptr<Scene> m_scene;
     std::unique_ptr<SceneModel> m_sceneModel;
 
-    Primitive **dev_primitives;
+    Triangle **dev_triangles;
+    Sphere **dev_spheres;
     Material *dev_materials;
 };
 

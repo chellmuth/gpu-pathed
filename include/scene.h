@@ -4,17 +4,21 @@
 
 #include "material.h"
 #include "primitive.h"
+#include "sphere.h"
+#include "triangle.h"
 #include "vec3.h"
 
 namespace rays {
 
 constexpr float defaultLightPosition = -0.6f;
 
-constexpr int primitiveCount = 4;
+constexpr int triangleCount = 2;
+constexpr int sphereCount = 2;
 constexpr int materialCount = 3;
 
 __global__ void createWorld(
-    Primitive **primitives,
+    Triangle **triangles,
+    Sphere **spheres,
     Material *materials,
     PrimitiveList *world,
     float lightPosition,

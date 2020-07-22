@@ -30,48 +30,61 @@ __device__ static Vec3 rotateY(Vec3 vector, float theta)
 }
 
 __global__ void createWorld(
-    Primitive **primitives,
+    Triangle **triangles,
+    Sphere **spheres,
     Material *materials,
     PrimitiveList *world,
     float lightPosition,
     bool update
 ) {
     if (update) {
-        for (int i = 0; i < primitiveCount; i++) {
-            delete(primitives[i]);
+        for (int i = 0; i < triangleCount; i++) {
+            delete(triangles[i]);
+        }
+        for (int i = 0; i < sphereCount; i++) {
+            delete(spheres[i]);
         }
         delete(world);
     }
 
     if (threadIdx.x == 0 && blockIdx.x == 0) {
-        size_t i = 0;
-        primitives[i++] = new Sphere(
+        size_t sphereSize = 0;
+        size_t triangleSize = 0;
+
+        spheres[sphereSize++] = new Sphere(
             Vec3(0.f, 0.f, -1.f),
             0.8f,
             0
         );
 
         const float theta = lightPosition * M_PI;
-        primitives[i++] = new Triangle(
+        triangles[triangleSize++] = new Triangle(
             rotateY(Vec3(-0.5f, 0.6f, -2.f), theta),
             rotateY(Vec3(0.3f, 0.6f, -2.f), theta),
             rotateY(Vec3(-0.5f, 1.2f, -1.8f), theta),
             1
         );
-        primitives[i++] = new Triangle(
+        triangles[triangleSize++] = new Triangle(
             rotateY(Vec3(0.3f, 0.6f, -2.f), theta),
             rotateY(Vec3(0.3f, 1.2f, -1.8f), theta),
             rotateY(Vec3(-0.5f, 1.2f, -1.8f), theta),
             1
         );
 
-        primitives[i++] = new Sphere(
+        spheres[sphereSize++] = new Sphere(
             Vec3(0.f, -100.8f, -1.f),
             100.f,
             2
         );
 
-        *world = PrimitiveList(primitives, i, materials, materialCount);
+        *world = PrimitiveList(
+            triangles,
+            triangleSize,
+            spheres,
+            sphereSize,
+            materials,
+            materialCount
+        );
     }
 }
 

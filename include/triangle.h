@@ -1,12 +1,12 @@
 #pragma once
 
-#include "primitive.h"
 #include "material.h"
+#include "ray.h"
 #include "vec3.h"
 
 namespace rays {
 
-class Triangle: public Primitive  {
+class Triangle  {
 public:
     __device__ Triangle(
         const Vec3 &p0,
@@ -19,7 +19,7 @@ public:
         m_materialIndex(materialIndex)
     {}
 
-    __device__ virtual bool hit(
+    __device__ bool hit(
         const Ray& ray,
         float tMin,
         float tMax,

@@ -38,7 +38,8 @@ RenderSession::RenderSession()
         ));
 
         createWorld<<<1, 1>>>(
-            dev_primitives,
+            dev_triangles,
+            dev_spheres,
             dev_materials,
             m_cudaGlobals->d_world,
             m_sceneModel->getLightPosition(),
@@ -65,7 +66,8 @@ void RenderSession::init(
     );
     m_cudaGlobals->copyCamera(camera);
 
-    checkCudaErrors(cudaMalloc((void **)&dev_primitives, primitiveCount * sizeof(Primitive *)));
+    checkCudaErrors(cudaMalloc((void **)&dev_triangles, triangleCount * sizeof(Triangle *)));
+    checkCudaErrors(cudaMalloc((void **)&dev_spheres, sphereCount * sizeof(Sphere *)));
     checkCudaErrors(cudaMalloc((void **)&dev_materials, materialCount * sizeof(Material)));
     m_cudaGlobals->mallocWorld();
 
@@ -78,7 +80,8 @@ void RenderSession::init(
     ));
 
     createWorld<<<1, 1>>>(
-        dev_primitives,
+        dev_triangles,
+        dev_spheres,
         dev_materials,
         m_cudaGlobals->d_world,
         m_sceneModel->getLightPosition(),
