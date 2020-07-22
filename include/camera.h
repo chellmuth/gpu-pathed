@@ -19,7 +19,10 @@ public:
         float verticalFOV,
         const Resolution &resolution
     );
+
     __device__ Ray generateRay(int row, int col, curandState &randState) const;
+    __device__ Ray generateRay(int row, int col) const;
+    __device__ Ray generateRay(int row, int col, float2 samples) const;
 
 private:
     Vec3 m_origin;
