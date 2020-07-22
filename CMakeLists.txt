@@ -20,6 +20,9 @@ add_library(rays STATIC
   src/scene_model.cu
   src/sphere.cu
   src/triangle.cu
+
+  src/parsers/obj_parser.cpp
+  src/parsers/string_util.cpp
 )
 target_include_directories(rays PUBLIC include)
 set_property(TARGET rays PROPERTY POSITION_INDEPENDENT_CODE ON)
