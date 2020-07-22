@@ -85,9 +85,9 @@ class EmitSliders(QWidget):
 
         layout = QVBoxLayout()
 
-        self.sliderR = self.buildEmitSlider()
-        self.sliderG = self.buildEmitSlider()
-        self.sliderB = self.buildEmitSlider()
+        self.sliderR = self.buildEmitSlider(self.handleRMoved)
+        self.sliderG = self.buildEmitSlider(self.handleGMoved)
+        self.sliderB = self.buildEmitSlider(self.handleBMoved)
 
         layout.addWidget(self.sliderR)
         layout.addWidget(self.sliderG)
@@ -96,23 +96,37 @@ class EmitSliders(QWidget):
 
         self.setLayout(layout)
 
-    def buildEmitSlider(self):
+    def buildEmitSlider(self, handleMoved):
         slider = QSlider(Qt.Horizontal, self)
         slider.setMinimum(0)
-        slider.setMaximum(50)
-        slider.valueChanged.connect(self.handleChanged)
+        slider.setMaximum(25)
+        slider.sliderMoved.connect(handleMoved)
         return slider
 
-    def handleChanged(self, value):
+    def handleRMoved(self, value):
         self.setter(
-            self.sliderR.value() / 2.,
-            self.sliderG.value() / 2.,
-            self.sliderB.value() / 2.
+            value,
+            self.sliderG.value(),
+            self.sliderB.value()
+        )
+
+    def handleGMoved(self, value):
+        self.setter(
+            self.sliderR.value(),
+            value,
+            self.sliderB.value()
+        )
+
+    def handleBMoved(self, value):
+        self.setter(
+            self.sliderR.value(),
+            self.sliderG.value(),
+            value,
         )
 
     def update(self):
         emit = self.getter()
 
-        self.sliderR.setValue(emit.r() * 2.)
-        self.sliderG.setValue(emit.g() * 2.)
-        self.sliderB.setValue(emit.b() * 2.)
+        self.sliderR.setValue(emit.r())
+        self.sliderG.setValue(emit.g())
+        self.sliderB.setValue(emit.b())
