@@ -21,6 +21,12 @@ static void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 
 namespace rays {
 
+
+struct HitTest {
+    int materialIndex;
+    bool isHit;
+};
+
 __global__ static void hitTestKernel(
     int width,
     int height,
@@ -28,8 +34,7 @@ __global__ static void hitTestKernel(
     int pixelY,
     PrimitiveList **world,
     Camera *camera,
-    bool *isHit,
-    int *materialIndex
+    HitTest *hitTest
 ) {
     const int row = threadIdx.y + blockIdx.y * blockDim.y;
     const int col = threadIdx.x + blockIdx.x * blockDim.x;
@@ -39,12 +44,13 @@ __global__ static void hitTestKernel(
     const Ray cameraRay = camera->generateRay(row, col);
     HitRecord record;
 
-    bool hit = (*world)->hit(cameraRay, 0.f, FLT_MAX, record);
-    if (hit) {
-        *materialIndex = record.materialIndex;
+    bool isHit = (*world)->hit(cameraRay, 0.f, FLT_MAX, record);
+    if (isHit) {
+        hitTest->isHit = true;
+        hitTest->materialIndex = record.materialIndex;
+    } else {
+        hitTest->isHit = false;
     }
-
-    *isHit = hit;
 }
 
 void hitTest(
@@ -60,14 +66,12 @@ void hitTest(
     Material *dev_materials;
     PrimitiveList **dev_world;
 
-    bool *dev_isHit;
-    int *dev_materialIndex;
+    HitTest *dev_hitTest;
 
     checkCudaErrors(cudaMalloc((void **)&dev_primitives, primitiveCount * sizeof(Primitive *)));
     checkCudaErrors(cudaMalloc((void **)&dev_materials, materialCount * sizeof(Material)));
     checkCudaErrors(cudaMalloc((void **)&dev_world, sizeof(PrimitiveList *)));
-    checkCudaErrors(cudaMalloc((void **)&dev_isHit, sizeof(bool)));
-    checkCudaErrors(cudaMalloc((void **)&dev_materialIndex, sizeof(int)));
+    checkCudaErrors(cudaMalloc((void **)&dev_hitTest, sizeof(HitTest)));
 
     createWorld<<<1, 1>>>(
         dev_primitives,
@@ -87,24 +91,23 @@ void hitTest(
         pixelY,
         dev_world,
         cudaGlobals.d_camera,
-        dev_isHit,
-        dev_materialIndex
+        dev_hitTest
     );
 
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
 
-    bool isHit;
-    int materialIndex;
-    checkCudaErrors(cudaMemcpy(&isHit, dev_isHit, sizeof(bool), cudaMemcpyDeviceToHost));
-    checkCudaErrors(cudaMemcpy(&materialIndex, dev_materialIndex, sizeof(int), cudaMemcpyDeviceToHost));
+    HitTest hitTest;
+    checkCudaErrors(cudaMemcpy(&hitTest, dev_hitTest, sizeof(HitTest), cudaMemcpyDeviceToHost));
 
-    if (isHit) {
-        const Material &material = scene.getMaterial(materialIndex);
-        sceneModel.setMaterialIndex(materialIndex, material.getAlbedo());
+    if (hitTest.isHit) {
+        const Material &material = scene.getMaterial(hitTest.materialIndex);
+        sceneModel.setMaterialIndex(hitTest.materialIndex, material.getAlbedo());
     } else {
         sceneModel.setMaterialIndex(-1, Vec3(0.f));
     }
+
+    checkCudaErrors(cudaFree(dev_hitTest));
 }
 
 }
