@@ -16,7 +16,7 @@ constexpr int materialCount = 3;
 __global__ void createWorld(
     Primitive **primitives,
     Material *materials,
-    PrimitiveList **world,
+    PrimitiveList *world,
     float lightPosition,
     bool update
 );

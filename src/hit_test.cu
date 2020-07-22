@@ -30,7 +30,7 @@ struct HitTest {
 __global__ static void hitTestKernel(
     int pixelX,
     int pixelY,
-    PrimitiveList **world,
+    PrimitiveList *world,
     Camera *camera,
     HitTest *hitTest
 ) {
@@ -42,7 +42,7 @@ __global__ static void hitTestKernel(
     const Ray cameraRay = camera->generateRay(row, col);
     HitRecord record;
 
-    bool isHit = (*world)->hit(cameraRay, 0.f, FLT_MAX, record);
+    bool isHit = world->hit(cameraRay, 0.f, FLT_MAX, record);
     if (isHit) {
         hitTest->isHit = true;
         hitTest->materialIndex = record.materialIndex;

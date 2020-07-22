@@ -27,7 +27,7 @@ void CUDAGlobals::copyCamera(const Camera &camera)
 
 void CUDAGlobals::mallocWorld()
 {
-    checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(PrimitiveList *)));
+    checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(PrimitiveList)));
 }
 
 }

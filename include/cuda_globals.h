@@ -11,7 +11,7 @@ public:
     void mallocWorld();
 
     Camera *d_camera;
-    PrimitiveList **d_world;
+    PrimitiveList *d_world;
 };
 
 }

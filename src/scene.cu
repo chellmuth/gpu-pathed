@@ -32,7 +32,7 @@ __device__ static Vec3 rotateY(Vec3 vector, float theta)
 __global__ void createWorld(
     Primitive **primitives,
     Material *materials,
-    PrimitiveList **world,
+    PrimitiveList *world,
     float lightPosition,
     bool update
 ) {
@@ -40,7 +40,7 @@ __global__ void createWorld(
         for (int i = 0; i < primitiveCount; i++) {
             delete(primitives[i]);
         }
-        delete(*world);
+        delete(world);
     }
 
     if (threadIdx.x == 0 && blockIdx.x == 0) {
@@ -71,7 +71,7 @@ __global__ void createWorld(
             2
         );
 
-        *world = new PrimitiveList(primitives, i, materials, materialCount);
+        *world = PrimitiveList(primitives, i, materials, materialCount);
     }
 }
 

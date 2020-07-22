@@ -67,7 +67,7 @@ __global__ static void renderInit(int width, int height, curandState *randState)
     curand_init(seed, pixelIndex, 0, &randState[pixelIndex]);
 }
 
-__device__ static Vec3 calculateLi(const Ray& ray, PrimitiveList *world, curandState &randState)
+__device__ static Vec3 calculateLi(const Ray& ray, const PrimitiveList *world, curandState &randState)
 {
     Vec3 beta = Vec3(1.f);
     Vec3 result = Vec3(0.f);
@@ -123,7 +123,7 @@ __global__ static void renderKernel(
     int spp,
     int currentSamples,
     int width, int height,
-    PrimitiveList **world,
+    PrimitiveList *world,
     curandState *randState
 ) {
     const int row = threadIdx.y + blockIdx.y * blockDim.y;
@@ -135,7 +135,7 @@ __global__ static void renderKernel(
     curandState &localRand = randState[pixelIndex];
     for (int sample = 1; sample <= spp; sample++) {
         const Ray cameraRay = camera->generateRay(row, col, localRand);
-        const Vec3 Li = calculateLi(cameraRay, *world, localRand);
+        const Vec3 Li = calculateLi(cameraRay, world, localRand);
 
         const int spp = currentSamples + sample;
 
