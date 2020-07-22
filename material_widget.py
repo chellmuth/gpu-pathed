@@ -16,5 +16,12 @@ class MaterialWidget(QGroupBox):
         layout.addStretch()
         self.setLayout(layout)
 
+        self.update()
+
     def update(self):
         self.albedoButton.update()
+
+        if self.model.getMaterialIndex() == -1:
+            self.albedoButton.hide()
+        else:
+            self.albedoButton.show()
