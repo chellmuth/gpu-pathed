@@ -22,14 +22,6 @@ class MaterialWidget(QGroupBox):
         )
         layout.addWidget(self.albedoButton)
 
-        self.emitButton = ColorButton(
-            "Emit",
-            self.model.getEmit,
-            self.model.setEmit,
-            self
-        )
-        layout.addWidget(self.emitButton)
-
         self.emitWidget = EmitWidget(self.model, self)
         layout.addWidget(self.emitWidget)
 
@@ -44,18 +36,15 @@ class MaterialWidget(QGroupBox):
     def update(self):
         self.materialIDLabel.setText(self._materialIDText())
         self.albedoButton.update()
-        self.emitButton.update()
         self.emitWidget.update()
 
         if self.model.getMaterialIndex() == -1:
             self.materialIDLabel.hide()
             self.albedoButton.hide()
-            self.emitButton.hide()
             self.emitWidget.hide()
         else:
             self.materialIDLabel.show()
             self.albedoButton.show()
-            self.emitButton.show()
             self.emitWidget.show()
 
 class EmitWidget(QWidget):
@@ -70,7 +59,6 @@ class EmitWidget(QWidget):
         self.sliders = EmitSliders(model.getEmit, model.setEmit, self)
         layout.addWidget(self.sliders)
 
-        layout.addStretch()
         self.setLayout(layout)
 
     def update(self):
