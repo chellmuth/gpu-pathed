@@ -24,6 +24,7 @@ class App(QWidget):
 
         self.gl = RenderWidget(self.pt, self.handleColorChange, self)
         layout.addWidget(self.gl)
+        layout.setAlignment(self.gl, Qt.AlignTop)
 
         self.sidebar = Sidebar(self.model, self)
         layout.addWidget(self.sidebar)
