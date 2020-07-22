@@ -28,8 +28,6 @@ struct HitTest {
 };
 
 __global__ static void hitTestKernel(
-    int width,
-    int height,
     int pixelX,
     int pixelY,
     PrimitiveList **world,
@@ -85,8 +83,6 @@ void hitTest(
 
     dim3 blocks(width, height);
     hitTestKernel<<<blocks, 1>>>(
-        width,
-        height,
         pixelX,
         pixelY,
         dev_world,
