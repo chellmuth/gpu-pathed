@@ -32,8 +32,7 @@ Vec3 SceneModel::getColor() const
 
 void SceneModel::setEmit(float r, float g, float b)
 {
-    constexpr float MagicEmitMagnitude = 14.f;
-    m_callback(getColor(), Vec3(r, g, b) * MagicEmitMagnitude);
+    m_callback(getColor(), Vec3(r, g, b));
 }
 
 Vec3 SceneModel::getEmit() const
