@@ -56,8 +56,6 @@ void hitTest(
     int width,
     int height
 ) {
-    std::cout << "Testing: " << pixelX << " " << pixelY << std::endl;
-
     Primitive **dev_primitives;
     Material *dev_materials;
     PrimitiveList **dev_world;
@@ -101,17 +99,12 @@ void hitTest(
     checkCudaErrors(cudaMemcpy(&isHit, dev_isHit, sizeof(bool), cudaMemcpyDeviceToHost));
     checkCudaErrors(cudaMemcpy(&materialIndex, dev_materialIndex, sizeof(int), cudaMemcpyDeviceToHost));
 
-    std::cout << "IS HIT?? " << isHit << std::endl;
     if (isHit) {
-        std::cout << "MATERIAL: " << materialIndex << std::endl;
-
         const Material &material = scene.getMaterial(materialIndex);
         sceneModel.setMaterialIndex(materialIndex, material.getAlbedo());
     } else {
         sceneModel.setMaterialIndex(-1, Vec3(0.f));
     }
-
-
 }
 
 }
