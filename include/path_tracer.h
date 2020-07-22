@@ -27,7 +27,7 @@ public:
     SceneModel& getSceneModel();
 
     void test(int x, int y) {
-        hitTest(*m_scene, *m_sceneModel, *m_cudaGlobals, x, y);
+        hitTest(*m_scene, *m_sceneModel, *m_cudaGlobals, x, y, m_width, m_height);
     }
 
 private:

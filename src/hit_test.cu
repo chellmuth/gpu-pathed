@@ -52,7 +52,9 @@ void hitTest(
     SceneModel &sceneModel,
     const CUDAGlobals &cudaGlobals,
     int pixelX,
-    int pixelY
+    int pixelY,
+    int width,
+    int height
 ) {
     std::cout << "Testing: " << pixelX << " " << pixelY << std::endl;
 
@@ -79,8 +81,6 @@ void hitTest(
 
     checkCudaErrors(cudaGetLastError());
 
-    constexpr int width = 640;
-    constexpr int height = 360;
     dim3 blocks(width, height);
     hitTestKernel<<<blocks, 1>>>(
         width,

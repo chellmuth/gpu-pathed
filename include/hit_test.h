@@ -11,7 +11,9 @@ void hitTest(
     SceneModel &sceneModel,
     const CUDAGlobals &cudaGlobals,
     int pixelX,
-    int pixelY
+    int pixelY,
+    int width,
+    int height
 );
 
 }
