@@ -15,7 +15,9 @@ add_library(rays STATIC
   src/material.cu
   src/path_tracer.cu
   src/primitive.cu
+  src/render_session.cu
   src/scene.cu
+  src/scene_model.cu
   src/sphere.cu
   src/triangle.cu
 )

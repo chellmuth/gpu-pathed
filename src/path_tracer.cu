@@ -21,39 +21,11 @@ static void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 
 namespace rays {
 
-const Vec3 defaultAlbedo = Vec3(0.45098f, 0.823529f, 0.0862745f);
 static constexpr bool debug = false;
 
 PathTracer::PathTracer()
     : m_currentSamples(0)
-{
-    m_cudaGlobals = std::make_unique<CUDAGlobals>();
-    m_scene = std::make_unique<Scene>(defaultAlbedo);
-    m_sceneModel = std::make_unique<SceneModel>(defaultAlbedo, defaultLightPosition);
-    m_sceneModel->subscribe([this]() {
-        m_currentSamples = 0;
-
-        m_scene->setColor(m_sceneModel->getMaterialIndex(), m_sceneModel->getColor());
-
-        checkCudaErrors(cudaMemcpy(
-            dev_materials,
-            m_scene->getMaterialsData(),
-            m_scene->getMaterialsSize(),
-            cudaMemcpyHostToDevice
-        ));
-
-        createWorld<<<1, 1>>>(
-            dev_primitives,
-            dev_materials,
-            m_cudaGlobals->d_world,
-            m_sceneModel->getLightPosition(),
-            true
-        );
-
-        checkCudaErrors(cudaGetLastError());
-        checkCudaErrors(cudaDeviceSynchronize());
-    });
-}
+{}
 
 __global__ static void renderInit(int width, int height, curandState *randState)
 {
@@ -175,37 +147,8 @@ void PathTracer::init(
     m_height = height;
     const int pixelCount = m_width * m_height;
 
-    const Camera camera(
-        Vec3(0.f, 0.3f, 5.f),
-        30.f / 180.f * M_PI,
-        { width, height }
-    );
-    m_cudaGlobals->copyCamera(camera);
-
     checkCudaErrors(cudaMalloc((void **)&dev_randState, pixelCount * sizeof(curandState)));
-    checkCudaErrors(cudaMalloc((void **)&dev_primitives, primitiveCount * sizeof(Primitive *)));
-    checkCudaErrors(cudaMalloc((void **)&dev_materials, materialCount * sizeof(Material)));
-    m_cudaGlobals->mallocWorld();
-
     checkCudaErrors(cudaMalloc((void **)&dev_radiances, pixelCount * sizeof(Vec3)));
-
-    m_scene->init();
-    checkCudaErrors(cudaMemcpy(
-        dev_materials,
-        m_scene->getMaterialsData(),
-        m_scene->getMaterialsSize(),
-        cudaMemcpyHostToDevice
-    ));
-
-    createWorld<<<1, 1>>>(
-        dev_primitives,
-        dev_materials,
-        m_cudaGlobals->d_world,
-        m_sceneModel->getLightPosition(),
-        false
-    );
-
-    checkCudaErrors(cudaGetLastError());
 
     dim3 blocks(m_width, m_height);
     renderInit<<<blocks, 1>>>(m_width, m_height, dev_randState);
@@ -214,7 +157,7 @@ void PathTracer::init(
     checkCudaErrors(cudaDeviceSynchronize());
 }
 
-void PathTracer::render()
+void PathTracer::render(const CUDAGlobals &cudaGlobals)
 {
     checkCudaErrors(cudaGraphicsMapResources(1, &m_cudaPbo, NULL));
     checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&dev_map, NULL, m_cudaPbo));
@@ -236,11 +179,11 @@ void PathTracer::render()
     renderKernel<<<blocks, threads>>>(
         dev_map,
         dev_radiances,
-        m_cudaGlobals->d_camera,
+        cudaGlobals.d_camera,
         samplesPerPass,
         m_currentSamples,
         m_width, m_height,
-        m_cudaGlobals->d_world,
+        cudaGlobals.d_world,
         dev_randState
     );
 
@@ -255,15 +198,14 @@ void PathTracer::render()
     }
 
     m_currentSamples += samplesPerPass;
-    m_sceneModel->updateSpp(m_currentSamples);
 
     checkCudaErrors(cudaDeviceSynchronize());
     checkCudaErrors(cudaGraphicsUnmapResources(1, &m_cudaPbo, NULL));
 }
 
-SceneModel& PathTracer::getSceneModel()
+void PathTracer::reset() 
 {
-    return *m_sceneModel;
+    m_currentSamples = 0;
 }
 
 }

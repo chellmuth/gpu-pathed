@@ -2,7 +2,7 @@
 
 #include <QOpenGLWidget>
 
-#include "path_tracer.h"
+#include "render_session.h"
 
 class GLWidget : public QOpenGLWidget {
 public:
@@ -13,5 +13,5 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
 
-    rays::PathTracer *m_pathTracer;
+    rays::RenderSession *m_renderSession;
 };

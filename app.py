@@ -171,7 +171,7 @@ class SppLabel(QWidget):
 def run():
     app = QApplication(sys.argv)
 
-    pt = path_tracer.PathTracer()
+    pt = path_tracer.RenderSession()
 
     widget = App(pt)
     widget.show()

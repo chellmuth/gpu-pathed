@@ -6,10 +6,6 @@
 #include <cuda_gl_interop.h>
 
 #include "cuda_globals.h"
-#include "hit_test.h"
-#include "primitive.h"
-#include "scene_model.h"
-#include "scene.h"
 #include "vec3.h"
 
 namespace rays {
@@ -22,27 +18,17 @@ public:
     PathTracer(PathTracer&& other) = delete;
 
     void init(GLuint pbo, int width, int height);
-    void render();
+    void render(const CUDAGlobals &cudaGlobals);
 
-    SceneModel& getSceneModel();
-
-    void test(int x, int y) {
-        hitTest(*m_scene, *m_sceneModel, *m_cudaGlobals, x, y, m_width, m_height);
-    }
+    void reset();
+    int getSpp() const { return m_currentSamples; }
 
 private:
-    std::unique_ptr<CUDAGlobals> m_cudaGlobals;
-    std::unique_ptr<Scene> m_scene;
-    std::unique_ptr<SceneModel> m_sceneModel;
-
     int m_width, m_height;
     int m_currentSamples;
 
     cudaGraphicsResource *m_cudaPbo;
-
     curandState *dev_randState;
-    Primitive **dev_primitives;
-    Material *dev_materials;
 
     Vec3 *dev_radiances;
     uchar4 *dev_map;
