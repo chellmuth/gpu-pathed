@@ -60,32 +60,14 @@ void hitTest(
     int width,
     int height
 ) {
-    Primitive **dev_primitives;
-    Material *dev_materials;
-    PrimitiveList **dev_world;
-
     HitTest *dev_hitTest;
-
-    checkCudaErrors(cudaMalloc((void **)&dev_primitives, primitiveCount * sizeof(Primitive *)));
-    checkCudaErrors(cudaMalloc((void **)&dev_materials, materialCount * sizeof(Material)));
-    checkCudaErrors(cudaMalloc((void **)&dev_world, sizeof(PrimitiveList *)));
     checkCudaErrors(cudaMalloc((void **)&dev_hitTest, sizeof(HitTest)));
-
-    createWorld<<<1, 1>>>(
-        dev_primitives,
-        dev_materials,
-        dev_world,
-        sceneModel.getLightPosition(),
-        false
-    );
-
-    checkCudaErrors(cudaGetLastError());
 
     dim3 blocks(width, height);
     hitTestKernel<<<blocks, 1>>>(
         pixelX,
         pixelY,
-        dev_world,
+        cudaGlobals.d_world,
         cudaGlobals.d_camera,
         dev_hitTest
     );

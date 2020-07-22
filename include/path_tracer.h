@@ -43,7 +43,6 @@ private:
     curandState *dev_randState;
     Primitive **dev_primitives;
     Material *dev_materials;
-    PrimitiveList **dev_world;
 
     Vec3 *dev_radiances;
     uchar4 *dev_map;

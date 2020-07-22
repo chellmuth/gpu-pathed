@@ -45,7 +45,7 @@ PathTracer::PathTracer()
         createWorld<<<1, 1>>>(
             dev_primitives,
             dev_materials,
-            dev_world,
+            m_cudaGlobals->d_world,
             m_sceneModel->getLightPosition(),
             true
         );
@@ -185,7 +185,8 @@ void PathTracer::init(
     checkCudaErrors(cudaMalloc((void **)&dev_randState, pixelCount * sizeof(curandState)));
     checkCudaErrors(cudaMalloc((void **)&dev_primitives, primitiveCount * sizeof(Primitive *)));
     checkCudaErrors(cudaMalloc((void **)&dev_materials, materialCount * sizeof(Material)));
-    checkCudaErrors(cudaMalloc((void **)&dev_world, sizeof(PrimitiveList *)));
+    m_cudaGlobals->mallocWorld();
+
     checkCudaErrors(cudaMalloc((void **)&dev_radiances, pixelCount * sizeof(Vec3)));
 
     m_scene->init();
@@ -199,7 +200,7 @@ void PathTracer::init(
     createWorld<<<1, 1>>>(
         dev_primitives,
         dev_materials,
-        dev_world,
+        m_cudaGlobals->d_world,
         m_sceneModel->getLightPosition(),
         false
     );
@@ -239,7 +240,7 @@ void PathTracer::render()
         samplesPerPass,
         m_currentSamples,
         m_width, m_height,
-        dev_world,
+        m_cudaGlobals->d_world,
         dev_randState
     );
 
