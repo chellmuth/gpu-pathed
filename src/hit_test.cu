@@ -27,6 +27,7 @@ __global__ static void hitTestKernel(
     int pixelX,
     int pixelY,
     PrimitiveList **world,
+    Camera *camera,
     bool *isHit,
     int *materialIndex
 ) {
@@ -35,13 +36,7 @@ __global__ static void hitTestKernel(
 
     if ((col != pixelX) || (row != pixelY)) { return; }
 
-    const Camera camera(
-        Vec3(0.f, 0.3f, 5.f),
-        30.f / 180.f * M_PI,
-        { width, height }
-    );
-
-    const Ray cameraRay = camera.generateRay(row, col);
+    const Ray cameraRay = camera->generateRay(row, col);
     HitRecord record;
 
     bool hit = (*world)->hit(cameraRay, 0.f, FLT_MAX, record);
@@ -52,8 +47,13 @@ __global__ static void hitTestKernel(
     *isHit = hit;
 }
 
-void hitTest(const Scene &scene, SceneModel &sceneModel, int pixelX, int pixelY)
-{
+void hitTest(
+    const Scene &scene,
+    SceneModel &sceneModel,
+    const CUDAGlobals &cudaGlobals,
+    int pixelX,
+    int pixelY
+) {
     std::cout << "Testing: " << pixelX << " " << pixelY << std::endl;
 
     Primitive **dev_primitives;
@@ -88,6 +88,7 @@ void hitTest(const Scene &scene, SceneModel &sceneModel, int pixelX, int pixelY)
         pixelX,
         pixelY,
         dev_world,
+        cudaGlobals.d_camera,
         dev_isHit,
         dev_materialIndex
     );

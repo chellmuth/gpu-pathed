@@ -5,6 +5,7 @@
 #include <curand_kernel.h>
 #include <cuda_gl_interop.h>
 
+#include "cuda_globals.h"
 #include "hit_test.h"
 #include "primitive.h"
 #include "scene_model.h"
@@ -26,10 +27,11 @@ public:
     SceneModel& getSceneModel();
 
     void test(int x, int y) {
-        hitTest(*m_scene, *m_sceneModel, x, y);
+        hitTest(*m_scene, *m_sceneModel, *m_cudaGlobals, x, y);
     }
 
 private:
+    std::unique_ptr<CUDAGlobals> m_cudaGlobals;
     std::unique_ptr<Scene> m_scene;
     std::unique_ptr<SceneModel> m_sceneModel;
 

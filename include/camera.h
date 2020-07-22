@@ -14,7 +14,7 @@ struct Resolution {
 
 class Camera {
 public:
-    __device__ Camera(
+    __host__ __device__ Camera(
         const Vec3 &origin,
         float verticalFOV,
         const Resolution &resolution
@@ -22,9 +22,10 @@ public:
 
     __device__ Ray generateRay(int row, int col, curandState &randState) const;
     __device__ Ray generateRay(int row, int col) const;
-    __device__ Ray generateRay(int row, int col, float2 samples) const;
 
 private:
+    __device__ Ray generateRay(int row, int col, float2 samples) const;
+
     Vec3 m_origin;
     float m_verticalFOV;
     Resolution m_resolution;

@@ -27,6 +27,7 @@ static constexpr bool debug = false;
 PathTracer::PathTracer()
     : m_currentSamples(0)
 {
+    m_cudaGlobals = std::make_unique<CUDAGlobals>();
     m_scene = std::make_unique<Scene>(defaultAlbedo);
     m_sceneModel = std::make_unique<SceneModel>(defaultAlbedo, defaultLightPosition);
     m_sceneModel->subscribe([this]() {
@@ -118,6 +119,7 @@ __device__ static Vec3 calculateLi(const Ray& ray, PrimitiveList *world, curandS
 __global__ static void renderKernel(
     uchar4 *fb,
     Vec3 *radiances,
+    Camera *camera,
     int spp,
     int currentSamples,
     int width, int height,
@@ -131,14 +133,8 @@ __global__ static void renderKernel(
     const int pixelIndex = row * width + col;
 
     curandState &localRand = randState[pixelIndex];
-    const Camera camera(
-        Vec3(0.f, 0.3f, 5.f),
-        30.f / 180.f * M_PI,
-        { width, height }
-    );
-
     for (int sample = 1; sample <= spp; sample++) {
-        const Ray cameraRay = camera.generateRay(row, col, localRand);
+        const Ray cameraRay = camera->generateRay(row, col, localRand);
         const Vec3 Li = calculateLi(cameraRay, *world, localRand);
 
         const int spp = currentSamples + sample;
@@ -178,6 +174,13 @@ void PathTracer::init(
     m_width = width;
     m_height = height;
     const int pixelCount = m_width * m_height;
+
+    const Camera camera(
+        Vec3(0.f, 0.3f, 5.f),
+        30.f / 180.f * M_PI,
+        { width, height }
+    );
+    m_cudaGlobals->copyCamera(camera);
 
     checkCudaErrors(cudaMalloc((void **)&dev_randState, pixelCount * sizeof(curandState)));
     checkCudaErrors(cudaMalloc((void **)&dev_primitives, primitiveCount * sizeof(Primitive *)));
@@ -232,6 +235,7 @@ void PathTracer::render()
     renderKernel<<<blocks, threads>>>(
         dev_map,
         dev_radiances,
+        m_cudaGlobals->d_camera,
         samplesPerPass,
         m_currentSamples,
         m_width, m_height,
