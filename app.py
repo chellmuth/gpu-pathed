@@ -47,7 +47,7 @@ class RenderWidget(QOpenGLWidget):
         self.setFixedSize(640, 360)
 
     def mousePressEvent(self, event):
-        self.pt.test(event.x(), self.height() - event.y() - 1)
+        self.pt.hitTest(event.x(), self.height() - event.y() - 1)
         self.handleColorChange
 
     def initializeGL(self):

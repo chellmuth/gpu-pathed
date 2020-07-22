@@ -21,8 +21,8 @@ public:
 
     void init(GLuint pbo, int width, int height);
 
-    void test(int x, int y) {
-        hitTest(*m_scene, *m_sceneModel, *m_cudaGlobals, x, y, m_width, m_height);
+    void hitTest(int x, int y) {
+        rays::hitTest(*m_scene, *m_sceneModel, *m_cudaGlobals, x, y, m_width, m_height);
     }
 
     void render() { m_pathTracer->render(*m_cudaGlobals); }

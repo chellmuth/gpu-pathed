@@ -29,7 +29,7 @@ void GLWidget::initializeGL()
     m_renderSession = new rays::RenderSession();
     m_renderSession->init(pbo, width, height);
 
-    m_renderSession->test(100, 100);
+    m_renderSession->hitTest(100, 100);
 }
 
 void GLWidget::resizeGL(int w, int h)

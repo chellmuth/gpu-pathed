@@ -32,7 +32,7 @@ PYBIND11_MODULE(path_tracer, m) {
         .def(py::init<>())
         .def("init", &RenderSession::init, "Initialize CUDA resources")
         .def("render", &RenderSession::render, "Render and update buffer")
-        .def("test", &RenderSession::test, "TEMP TEMP TEMP")
+        .def("hitTest", &RenderSession::hitTest, "Run a material hit test")
         .def(
             "getSceneModel",
             &RenderSession::getSceneModel,
