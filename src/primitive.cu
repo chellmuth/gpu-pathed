@@ -13,7 +13,7 @@ __device__ bool PrimitiveList::hit(
 
     for (int i = 0; i < m_triangleSize; i++) {
         HitRecord tempRecord;
-        if (m_triangles[i]->hit(ray, tMin, tNear, tempRecord)) {
+        if (m_triangles[i].hit(ray, tMin, tNear, tempRecord)) {
             isHit = true;
             tNear = tempRecord.t;
             record = tempRecord;
@@ -22,7 +22,7 @@ __device__ bool PrimitiveList::hit(
 
     for (int i = 0; i < m_sphereSize; i++) {
         HitRecord tempRecord;
-        if (m_spheres[i]->hit(ray, tMin, tNear, tempRecord)) {
+        if (m_spheres[i].hit(ray, tMin, tNear, tempRecord)) {
             isHit = true;
             tNear = tempRecord.t;
             record = tempRecord;

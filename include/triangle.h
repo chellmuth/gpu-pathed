@@ -8,7 +8,7 @@ namespace rays {
 
 class Triangle  {
 public:
-    __device__ Triangle(
+    __host__ __device__ Triangle(
         const Vec3 &p0,
         const Vec3 &p1,
         const Vec3 &p2,

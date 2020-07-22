@@ -35,10 +35,6 @@ private:
     std::unique_ptr<CUDAGlobals> m_cudaGlobals;
     std::unique_ptr<Scene> m_scene;
     std::unique_ptr<SceneModel> m_sceneModel;
-
-    Triangle **dev_triangles;
-    Sphere **dev_spheres;
-    Material *dev_materials;
 };
 
 }

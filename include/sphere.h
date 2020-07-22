@@ -8,7 +8,7 @@ namespace rays {
 
 class Sphere  {
 public:
-    __device__ Sphere(
+    __host__ __device__ Sphere(
         const Vec3 &center,
         float radius,
         size_t materialIndex

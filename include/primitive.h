@@ -12,9 +12,9 @@ namespace rays {
 class PrimitiveList {
 public:
     __device__ PrimitiveList(
-        Triangle **triangles,
+        Triangle *triangles,
         size_t triangleSize,
-        Sphere **spheres,
+        Sphere *spheres,
         size_t sphereSize,
         Material *materials,
         size_t materialSize
@@ -38,10 +38,10 @@ public:
     }
 
 private:
-    Triangle **m_triangles;
+    Triangle *m_triangles;
     size_t m_triangleSize;
 
-    Sphere **m_spheres;
+    Sphere *m_spheres;
     size_t m_sphereSize;
 
     Material *m_materials;

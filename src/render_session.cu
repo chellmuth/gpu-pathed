@@ -31,19 +31,18 @@ RenderSession::RenderSession()
         m_pathTracer->reset();
 
         checkCudaErrors(cudaMemcpy(
-            dev_materials,
+            m_cudaGlobals->d_materials,
             m_scene->getMaterialsData(),
             m_scene->getMaterialsSize(),
             cudaMemcpyHostToDevice
         ));
 
-        createWorld<<<1, 1>>>(
-            dev_triangles,
-            dev_spheres,
-            dev_materials,
+        copyGeometry(
+            m_cudaGlobals->d_triangles,
+            m_cudaGlobals->d_spheres,
+            m_cudaGlobals->d_materials,
             m_cudaGlobals->d_world,
-            m_sceneModel->getLightPosition(),
-            true
+            m_sceneModel->getLightPosition()
         );
 
         checkCudaErrors(cudaGetLastError());
@@ -66,26 +65,22 @@ void RenderSession::init(
     );
     m_cudaGlobals->copyCamera(camera);
 
-    checkCudaErrors(cudaMalloc((void **)&dev_triangles, triangleCount * sizeof(Triangle *)));
-    checkCudaErrors(cudaMalloc((void **)&dev_spheres, sphereCount * sizeof(Sphere *)));
-    checkCudaErrors(cudaMalloc((void **)&dev_materials, materialCount * sizeof(Material)));
     m_cudaGlobals->mallocWorld();
 
     m_scene->init();
     checkCudaErrors(cudaMemcpy(
-        dev_materials,
+        m_cudaGlobals->d_materials,
         m_scene->getMaterialsData(),
         m_scene->getMaterialsSize(),
         cudaMemcpyHostToDevice
     ));
 
-    createWorld<<<1, 1>>>(
-        dev_triangles,
-        dev_spheres,
-        dev_materials,
+    copyGeometry(
+        m_cudaGlobals->d_triangles,
+        m_cudaGlobals->d_spheres,
+        m_cudaGlobals->d_materials,
         m_cudaGlobals->d_world,
-        m_sceneModel->getLightPosition(),
-        false
+        m_sceneModel->getLightPosition()
     );
 
     checkCudaErrors(cudaGetLastError());

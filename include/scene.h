@@ -16,13 +16,12 @@ constexpr int triangleCount = 2;
 constexpr int sphereCount = 2;
 constexpr int materialCount = 3;
 
-__global__ void createWorld(
-    Triangle **triangles,
-    Sphere **spheres,
-    Material *materials,
-    PrimitiveList *world,
-    float lightPosition,
-    bool update
+void copyGeometry(
+    Triangle *d_triangles,
+    Sphere *d_spheres,
+    Material *d_materials,
+    PrimitiveList *d_world,
+    float lightPosition
 );
 
 class Scene {

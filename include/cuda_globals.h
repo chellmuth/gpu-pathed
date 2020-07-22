@@ -2,6 +2,8 @@
 
 #include "camera.h"
 #include "primitive.h"
+#include "sphere.h"
+#include "triangle.h"
 
 namespace rays {
 
@@ -12,6 +14,10 @@ public:
 
     Camera *d_camera;
     PrimitiveList *d_world;
+
+    Material *d_materials;
+    Triangle *d_triangles;
+    Sphere *d_spheres;
 };
 
 }
