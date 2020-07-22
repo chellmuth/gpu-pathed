@@ -17,20 +17,19 @@ public:
     SceneModel(
         const PathTracer *pathTracer,
         const Scene *scene,
-        const Vec3 &color,
         float lightPosition
     );
 
     SceneModel(const SceneModel &other) = delete;
     SceneModel(SceneModel&& other) = delete;
 
-    void subscribe(std::function<void()> callback);
+    void subscribe(std::function<void(Vec3 color)> callback);
 
     void setColor(float r, float g, float b);
     Vec3 getColor() const;
 
     int getMaterialIndex() const;
-    void setMaterialIndex(int materialIndex, const Vec3 &albedo);
+    void setMaterialIndex(int materialIndex);
 
     void setLightPosition(float lightPosition);
     float getLightPosition() const;
@@ -44,10 +43,9 @@ private:
     int m_materialIndex;
 
     int m_spp;
-    float m_r, m_g, m_b;
     float m_lightPosition;
 
-    std::function<void()> m_callback;
+    std::function<void(Vec3 color)> m_callback;
 };
 
 }

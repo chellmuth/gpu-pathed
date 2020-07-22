@@ -13,23 +13,20 @@ static void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 
 namespace rays {
 
-const Vec3 defaultAlbedo = Vec3(0.45098f, 0.823529f, 0.0862745f);
-
 RenderSession::RenderSession()
 {
     m_pathTracer = std::make_unique<PathTracer>();
 
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
-    m_scene = std::make_unique<Scene>(defaultAlbedo);
+    m_scene = std::make_unique<Scene>();
     m_sceneModel = std::make_unique<SceneModel>(
         m_pathTracer.get(),
         m_scene.get(),
-        defaultAlbedo,
         defaultLightPosition
     );
-    m_sceneModel->subscribe([this]() {
+    m_sceneModel->subscribe([this](Vec3 color) {
+        m_scene->setColor(m_sceneModel->getMaterialIndex(), color);
         m_pathTracer->reset();
-        m_scene->setColor(m_sceneModel->getMaterialIndex(), m_sceneModel->getColor());
 
         checkCudaErrors(cudaMemcpy(
             dev_materials,

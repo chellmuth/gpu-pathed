@@ -23,8 +23,6 @@ __global__ void createWorld(
 
 class Scene {
 public:
-    Scene(Vec3 color) : m_color(color) {}
-
     void init();
     void update();
 
@@ -37,7 +35,6 @@ public:
     }
 
 private:
-    Vec3 m_color;
     std::vector<Material> m_materials;
 };
 

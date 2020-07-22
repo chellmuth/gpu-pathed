@@ -52,7 +52,6 @@ __global__ static void hitTestKernel(
 }
 
 void hitTest(
-    const Scene &scene,
     SceneModel &sceneModel,
     const CUDAGlobals &cudaGlobals,
     int pixelX,
@@ -79,10 +78,9 @@ void hitTest(
     checkCudaErrors(cudaMemcpy(&hitTest, dev_hitTest, sizeof(HitTest), cudaMemcpyDeviceToHost));
 
     if (hitTest.isHit) {
-        const Material &material = scene.getMaterial(hitTest.materialIndex);
-        sceneModel.setMaterialIndex(hitTest.materialIndex, material.getAlbedo());
+        sceneModel.setMaterialIndex(hitTest.materialIndex);
     } else {
-        sceneModel.setMaterialIndex(-1, Vec3(0.f));
+        sceneModel.setMaterialIndex(-1);
     }
 
     checkCudaErrors(cudaFree(dev_hitTest));

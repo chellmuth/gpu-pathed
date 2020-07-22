@@ -15,7 +15,7 @@ void Scene::update()
 {
     m_materials.clear();
 
-    m_materials.push_back(Material(m_color));
+    m_materials.push_back(Material(Vec3(0.45098f, 0.823529f, 0.0862745f)));
     m_materials.push_back(Material(Vec3(1.f, 0.2f, 1.f), Vec3(14.f, 14.f, 14.f)));
     m_materials.push_back(Material(Vec3(1.f, 1.f, 1.f)));
 }
