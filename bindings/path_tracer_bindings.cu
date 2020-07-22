@@ -1,4 +1,5 @@
 #include "path_tracer.h"
+#include "render_session.h"
 #include "scene_model.h"
 
 #include <pybind11/pybind11.h>
@@ -16,19 +17,23 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("g", &Vec3::g)
         .def("b", &Vec3::b);
 
-    py::class_<PathTracer>(m, "PathTracer")
+    py::class_<RenderSession>(m, "RenderSession")
         .def(py::init<>())
-        .def("init", &PathTracer::init, "Initialize CUDA resources")
-        .def("render", &PathTracer::render, "Render and update buffer")
+        .def("init", &RenderSession::init, "Initialize CUDA resources")
+        .def("render", &RenderSession::render, "Render and update buffer")
+        .def("hitTest", &RenderSession::hitTest, "Run a material hit test")
         .def(
             "getSceneModel",
-            &PathTracer::getSceneModel,
+            &RenderSession::getSceneModel,
             py::return_value_policy::reference_internal
         );
 
     py::class_<SceneModel>(m, "SceneModel")
         .def("setColor", &SceneModel::setColor)
         .def("getColor", &SceneModel::getColor)
+        .def("setEmit", &SceneModel::setEmit)
+        .def("getEmit", &SceneModel::getEmit)
+        .def("getMaterialIndex", &SceneModel::getMaterialIndex)
         .def("setLightPosition", &SceneModel::setLightPosition)
         .def("getLightPosition", &SceneModel::getLightPosition)
         .def("getSpp", &SceneModel::getSpp);

@@ -11,9 +11,9 @@ __device__ bool PrimitiveList::hit(
     bool isHit = false;
     double tNear = tMax;
 
-    for (int i = 0; i < m_size; i++) {
+    for (int i = 0; i < m_primitiveSize; i++) {
         HitRecord tempRecord;
-        if (m_list[i]->hit(ray, tMin, tNear, tempRecord)) {
+        if (m_primitives[i]->hit(ray, tMin, tNear, tempRecord)) {
             isHit = true;
             tNear = tempRecord.t;
             record = tempRecord;

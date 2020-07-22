@@ -4,6 +4,8 @@
 
 #include <QOpenGLFunctions_4_5_Compatibility>
 
+#include "hit_test.h"
+
 GLuint pbo;
 
 void GLWidget::initializeGL()
@@ -24,8 +26,10 @@ void GLWidget::initializeGL()
     );
 	f->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-    m_pathTracer = new rays::PathTracer();
-    m_pathTracer->init(pbo, width, height);
+    m_renderSession = new rays::RenderSession();
+    m_renderSession->init(pbo, width, height);
+
+    m_renderSession->hitTest(100, 100);
 }
 
 void GLWidget::resizeGL(int w, int h)
@@ -41,7 +45,7 @@ void GLWidget::paintGL()
     f->glClear(GL_COLOR_BUFFER_BIT);
 
     f->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-    m_pathTracer->render();
+    m_renderSession->render();
 
     f->glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
     f->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);

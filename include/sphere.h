@@ -9,10 +9,14 @@ namespace rays {
 
 class Sphere: public Primitive  {
 public:
-    __device__ Sphere(const Vec3 &center, float radius, Material *materialPtr)
+    __device__ Sphere(
+        const Vec3 &center,
+        float radius,
+        size_t materialIndex
+    )
         : m_center(center),
           m_radius(radius),
-          m_materialPtr(materialPtr)
+          m_materialIndex(materialIndex)
     {}
 
     __device__ bool hit(
@@ -25,7 +29,7 @@ public:
 private:
     Vec3 m_center;
     float m_radius;
-    Material *m_materialPtr;
+    size_t m_materialIndex;
 };
 
 }
