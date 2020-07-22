@@ -24,6 +24,10 @@ public:
     __device__ Vec3 f(const Vec3 &wo, const Vec3 &wi) const;
     __device__ Vec3 getEmit(const HitRecord &hit) const;
 
+    __host__ void setAlbedo(const Vec3 &albedo) {
+        m_albedo = albedo;
+    }
+
 private:
     Vec3 m_albedo;
     Vec3 m_emit;

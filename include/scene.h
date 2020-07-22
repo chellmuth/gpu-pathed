@@ -33,9 +33,7 @@ public:
     size_t getMaterialsSize() const { return m_materials.size() * sizeof(Material); }
 
     void setColor(int materialIndex, Vec3 color) {
-        m_materials[materialIndex] = color;
-        /* m_color = color; */
-        /* update(); */
+        m_materials[materialIndex].setAlbedo(color);
     }
 
 private:
