@@ -162,7 +162,7 @@ void PathTracer::render(const CUDAGlobals &cudaGlobals)
     checkCudaErrors(cudaGraphicsMapResources(1, &m_cudaPbo, NULL));
     checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&dev_map, NULL, m_cudaPbo));
 
-    const int samplesPerPass = 8;
+    const int samplesPerPass = 1;
 
     const int blockWidth = 16;
     const int blockHeight = 16;

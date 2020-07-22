@@ -20,6 +20,8 @@ ObjResult ObjParser::parse()
     }
 
     ObjResult result;
+    result.vertices = m_vertices;
+    result.faces = m_faces;
     return result;
 }
 

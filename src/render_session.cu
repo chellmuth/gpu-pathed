@@ -4,6 +4,7 @@
 
 #include "camera.h"
 #include "parsers/obj_parser.h"
+#include "scene_data.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
 static void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
@@ -24,7 +25,12 @@ RenderSession::RenderSession()
 
     std::ifstream sceneFile("../scenes/cornell-box/CornellBox-Original.obj");
     ObjParser objParser(sceneFile);
-    m_scene = std::make_unique<Scene>();
+    SceneData sceneData = SceneAdapter::createSceneData(objParser);
+    std::cout << "triangle count: " << sceneData.triangles.size() << std::endl;
+    std::cout << "sphere count: " << sceneData.spheres.size() << std::endl;
+    std::cout << "material count: " << sceneData.materials.size() << std::endl;
+
+    m_scene = std::make_unique<Scene>(sceneData);
     m_sceneModel = std::make_unique<SceneModel>(
         m_pathTracer.get(),
         m_scene.get(),
@@ -43,13 +49,7 @@ RenderSession::RenderSession()
             cudaMemcpyHostToDevice
         ));
 
-        copyGeometry(
-            m_cudaGlobals->d_triangles,
-            m_cudaGlobals->d_spheres,
-            m_cudaGlobals->d_materials,
-            m_cudaGlobals->d_world,
-            m_sceneModel->getLightPosition()
-        );
+        m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
         checkCudaErrors(cudaGetLastError());
         checkCudaErrors(cudaDeviceSynchronize());
@@ -71,7 +71,7 @@ void RenderSession::init(
     );
     m_cudaGlobals->copyCamera(camera);
 
-    m_cudaGlobals->mallocWorld();
+    m_cudaGlobals->mallocWorld(m_scene->getSceneData());
 
     m_scene->init();
     checkCudaErrors(cudaMemcpy(
@@ -81,13 +81,7 @@ void RenderSession::init(
         cudaMemcpyHostToDevice
     ));
 
-    copyGeometry(
-        m_cudaGlobals->d_triangles,
-        m_cudaGlobals->d_spheres,
-        m_cudaGlobals->d_materials,
-        m_cudaGlobals->d_world,
-        m_sceneModel->getLightPosition()
-    );
+    m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
     checkCudaErrors(cudaGetLastError());
 

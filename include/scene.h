@@ -13,22 +13,16 @@ namespace rays {
 
 constexpr float defaultLightPosition = -0.6f;
 
-constexpr int triangleCount = 2;
-constexpr int sphereCount = 2;
-constexpr int materialCount = 3;
-
-void copyGeometry(
-    Triangle *d_triangles,
-    Sphere *d_spheres,
-    Material *d_materials,
-    PrimitiveList *d_world,
-    float lightPosition
-);
-
 class Scene {
 public:
+    Scene(SceneData sceneData)
+        : m_sceneData(sceneData)
+    {}
+
     void init();
     void update();
+
+    SceneData &getSceneData() { return m_sceneData; }
 
     const Material *getMaterialsData() const { return m_materials.data(); }
     const Material &getMaterial(int materialIndex) const { return m_materials[materialIndex]; }
@@ -42,6 +36,7 @@ public:
     }
 
 private:
+    SceneData m_sceneData;
     std::vector<Material> m_materials;
 };
 

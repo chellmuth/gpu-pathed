@@ -30,36 +30,66 @@ void CUDAGlobals::copyCamera(const Camera &camera)
 __global__ static void initWorldKernel(
     PrimitiveList *world,
     Triangle *triangles,
+    int triangleSize,
     Sphere *spheres,
-    Material *materials
+    int sphereSize,
+    Material *materials,
+    int materialSize
 ) {
     if (blockIdx.x != 0 || blockIdx.y != 0) { return; }
     if (threadIdx.x != 0 || threadIdx.y != 0) { return; }
 
     *world = PrimitiveList(
         triangles,
-        triangleCount,
+        triangleSize,
         spheres,
-        sphereCount,
+        sphereSize,
         materials,
-        materialCount
+        materialSize
     );
 }
 
-void CUDAGlobals::mallocWorld()
+void CUDAGlobals::mallocWorld(const SceneData &sceneData)
 {
-    checkCudaErrors(cudaMalloc((void **)&d_materials, materialCount * sizeof(Material)));
+    const int materialSize = sceneData.materials.size();
+    const int triangleSize = sceneData.triangles.size();
+    const int sphereSize = sceneData.spheres.size();
 
-    checkCudaErrors(cudaMalloc((void **)&d_triangles, triangleCount * sizeof(Triangle)));
-    checkCudaErrors(cudaMalloc((void **)&d_spheres, sphereCount * sizeof(Sphere)));
+    checkCudaErrors(cudaMalloc((void **)&d_materials, materialSize * sizeof(Material)));
+
+    checkCudaErrors(cudaMalloc((void **)&d_triangles, triangleSize * sizeof(Triangle)));
+    checkCudaErrors(cudaMalloc((void **)&d_spheres, sphereSize * sizeof(Sphere)));
 
     checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(PrimitiveList)));
 
-    initWorldKernel<<<1, 1>>>(d_world, d_triangles, d_spheres, d_materials);
+    initWorldKernel<<<1, 1>>>(
+        d_world,
+        d_triangles,
+        triangleSize,
+        d_spheres,
+        sphereSize,
+        d_materials,
+        materialSize
+    );
     checkCudaErrors(cudaDeviceSynchronize());
-
 }
 
+void CUDAGlobals::copySceneData(const SceneData &sceneData)
+{
+    checkCudaErrors(cudaMemcpy(
+        d_triangles,
+        sceneData.triangles.data(),
+        sceneData.triangles.size() * sizeof(Triangle),
+        cudaMemcpyHostToDevice
+    ));
+
+    checkCudaErrors(cudaMemcpy(
+        d_spheres,
+        sceneData.spheres.data(),
+        sceneData.spheres.size() * sizeof(Sphere),
+        cudaMemcpyHostToDevice
+    ));
+}
 
 }
 
