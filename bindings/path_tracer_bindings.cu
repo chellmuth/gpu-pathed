@@ -17,17 +17,6 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("g", &Vec3::g)
         .def("b", &Vec3::b);
 
-    // py::class_<PathTracer>(m, "PathTracer")
-    //     .def(py::init<>())
-    //     .def("init", &PathTracer::init, "Initialize CUDA resources")
-    //     .def("render", &PathTracer::render, "Render and update buffer")
-    //     .def("test", &PathTracer::test, "TEMP TEMP TEMP")
-    //     .def(
-    //         "getSceneModel",
-    //         &PathTracer::getSceneModel,
-    //         py::return_value_policy::reference_internal
-    //     );
-
     py::class_<RenderSession>(m, "RenderSession")
         .def(py::init<>())
         .def("init", &RenderSession::init, "Initialize CUDA resources")
