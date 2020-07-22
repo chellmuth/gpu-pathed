@@ -41,9 +41,7 @@ __global__ static void hitTestKernel(
         { width, height }
     );
 
-    curandState_t randState;
-    curand_init(0, 0, 0, &randState);
-    const Ray cameraRay = camera.generateRay(row, col, randState);
+    const Ray cameraRay = camera.generateRay(row, col);
     HitRecord record;
 
     bool hit = (*world)->hit(cameraRay, 0.f, FLT_MAX, record);
