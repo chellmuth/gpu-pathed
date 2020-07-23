@@ -44,6 +44,8 @@ public:
     Vec3 getCameraUp() const;
     void setCameraUp(float upX, float upY, float upZ);
 
+    void zoomCamera(float ticks);
+
     int getSpp() const;
 
 private:

@@ -115,7 +115,32 @@ Vec3 SceneModel::getCameraUp() const
 
 void SceneModel::setCameraUp(float upX, float upY, float upZ)
 {
-    // TODO
+    Vec3 up(upX, upY, upZ);
+
+    const Camera &current = m_scene->getCamera();
+    Camera updated(
+        current.getOrigin(),
+        current.getTarget(),
+        up,
+        current.getVerticalFOV(),
+        current.getResolution()
+    );
+    m_callback(getColor(), getEmit(), updated);
+}
+
+void SceneModel::zoomCamera(float ticks)
+{
+    const Camera &current = m_scene->getCamera();
+    const Vec3 tickDirection = normalized(current.getTarget() - current.getOrigin());
+
+    Camera updated(
+        current.getOrigin() + tickDirection * ticks,
+        current.getTarget(),
+        current.getUp(),
+        current.getVerticalFOV(),
+        current.getResolution()
+    );
+    m_callback(getColor(), getEmit(), updated);
 }
 
 }

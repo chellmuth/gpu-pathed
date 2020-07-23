@@ -53,7 +53,8 @@ class RenderWidget(QOpenGLWidget):
         self.handleColorChange
 
     def wheelEvent(self, event):
-        print("Wheel:", event.angleDelta())
+        ticks = event.angleDelta().y() / 120
+        self.pt.getSceneModel().zoomCamera(ticks)
 
     def initializeGL(self):
         super().initializeGL()

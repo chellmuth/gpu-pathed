@@ -51,5 +51,6 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("setCameraTarget", &SceneModel::setCameraTarget)
         .def("getCameraUp", &SceneModel::getCameraUp)
         .def("setCameraUp", &SceneModel::setCameraUp)
+        .def("zoomCamera", &SceneModel::zoomCamera)
         .def("getSpp", &SceneModel::getSpp);
 }
