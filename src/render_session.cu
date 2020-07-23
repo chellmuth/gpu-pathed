@@ -25,16 +25,10 @@ RenderSession::RenderSession(int width, int height)
 
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
 
-    std::string sceneFilename("../scenes/cornell-box/CornellBox-Original.obj");
-    ObjParser objParser(sceneFilename);
-    SceneData sceneData = SceneAdapter::createSceneData(objParser);
+    constexpr int sceneIndex = 0;
+    SceneData sceneData = SceneParameters::getSceneData(sceneIndex);
+    Camera camera = SceneParameters::getCamera(sceneIndex, { width, height });
 
-    Camera camera(
-        Vec3(0.f, 1.f, 6.8f),
-        Vec3(0.f, 1.f, 0.f),
-        19.5f / 180.f * M_PI,
-        { width, height }
-    );
     m_scene = std::make_unique<Scene>(
         camera,
         sceneData
@@ -89,7 +83,6 @@ SceneModel& RenderSession::getSceneModel()
 {
     return *m_sceneModel;
 }
-
 
 }
 
