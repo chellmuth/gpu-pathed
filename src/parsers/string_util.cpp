@@ -1,6 +1,25 @@
 #include "parsers/string_util.h"
 
-namespace rays {
+namespace rays { namespace StringUtil {
+
+std::queue<std::string> tokenize(const std::string &line)
+{
+    std::queue<std::string> tokens;
+    std::string remaining = lTrim(line);
+
+    while(remaining.length() > 0) {
+        std::string::size_type endContentIndex = remaining.find_first_of(" \t");
+        if (endContentIndex == std::string::npos) {
+            tokens.push(remaining);
+            return tokens;
+        }
+
+        tokens.push(remaining.substr(0, endContentIndex));
+        remaining = lTrim(remaining.substr(endContentIndex));
+    }
+
+    return tokens;
+}
 
 std::string lTrim(const std::string &token)
 {
@@ -14,4 +33,4 @@ std::string lTrim(const std::string &token)
     return token.substr(firstContentIndex);
 }
 
-}
+} }

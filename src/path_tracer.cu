@@ -55,9 +55,10 @@ __device__ static Vec3 calculateLi(const Ray& ray, const PrimitiveList *world, c
             result += emit * beta;
         }
     } else {
-        const Vec3 direction = normalized(ray.direction());
-        const float t = 0.5f * (direction.y() + 1.0f);
-        return Vec3(1.f - t) + t * Vec3(0.5f, 0.7f, 1.f);
+        return Vec3(0.f);
+        // const Vec3 direction = normalized(ray.direction());
+        // const float t = 0.5f * (direction.y() + 1.0f);
+        // return Vec3(1.f - t) + t * Vec3(0.5f, 0.7f, 1.f);
     }
 
     for (int path = 2; path < 10; path++) {
@@ -82,7 +83,7 @@ __device__ static Vec3 calculateLi(const Ray& ray, const PrimitiveList *world, c
             const Vec3 direction = normalized(ray.direction());
             const float t = 0.5f * (direction.y() + 1.f);
             const Vec3 skyRadiance = (Vec3(1.f - t) + t * Vec3(0.5f, 0.7f, 1.f)) * 0.5f;
-            return result + skyRadiance * beta;
+            return result;// + skyRadiance * beta;
         }
     }
 

@@ -1,43 +1,36 @@
 #include "parsers/obj_parser.h"
 
-#include <map>
+#include <fstream>
 #include <regex>
 
+#include <boost/filesystem.hpp>
+
+#include "parsers/mtl_parser.h"
 #include "parsers/string_util.h"
 
 namespace rays {
 
 using string = std::string;
 
-ObjParser::ObjParser(std::ifstream &objFile)
-    : m_objFile(objFile),
-      m_currentMaterialIndex(0)
+ObjParser::ObjParser(std::string &objFilename)
+    : m_objFilename(objFilename),
+      m_currentMtlIndex(0)
 {}
 
 ObjResult ObjParser::parse()
 {
+    std::ifstream objFile(m_objFilename);
+
     string line;
-    while(std::getline(m_objFile, line)) {
+    while(std::getline(objFile, line)) {
         parseLine(line);
     }
 
     ObjResult result;
     result.vertices = m_vertices;
     result.faces = m_faces;
-    result.materialIndices = m_materialIndices;
-
-    std::vector<Mtl> materials = {
-        Mtl(0.725, 0.71, 0.68), // floor
-        Mtl(0.725, 0.71, 0.68), // ceiling
-        Mtl(0.725, 0.71, 0.68), // back wall
-        Mtl(0.14, 0.45, 0.091), // right wall
-        Mtl(0.63, 0.065, 0.05), // left wall
-        Mtl(0.725, 0.71, 0.68), // short box
-        Mtl(0.725, 0.71, 0.68), // tall box
-        Mtl(0.78, 0.78, 0.78, 17.f, 12.f, 4.f) // light
-    };
-
-    result.materials = materials;
+    result.mtls = m_mtls;
+    result.mtlIndices = m_mtlIndices;
 
     return result;
 }
@@ -52,25 +45,16 @@ void ObjParser::parseLine(string &line)
     string command = line.substr(0, spaceIndex);
     if (command[0] == '#') { return; }
 
-    string rest = lTrim(line.substr(spaceIndex + 1));
+    string rest = StringUtil::lTrim(line.substr(spaceIndex + 1));
 
     if (command == "v") {
         processVertex(rest);
     } else if (command == "f") {
         processFace(rest);
+    } else if (command == "mtllib") {
+        processMaterialLibrary(rest);
     } else if (command == "usemtl") {
-        std::map<std::string, int> materialLookup = {
-            {"floor", 0},
-            {"ceiling", 1},
-            {"backWall", 2},
-            {"rightWall", 3},
-            {"leftWall", 4},
-            {"shortBox", 5},
-            {"tallBox", 6},
-            {"light", 7},
-        };
-
-        m_currentMaterialIndex = materialLookup[rest];
+        m_currentMtlIndex = m_mtlIndexLookup[rest];
     }
 }
 
@@ -95,7 +79,7 @@ void ObjParser::processFace(string &faceArgs)
     if (processDoubleFaceGeometryOnly(faceArgs)) { return; }
 }
 
-bool ObjParser::processDoubleFaceGeometryOnly(std::string &faceArgs)
+bool ObjParser::processDoubleFaceGeometryOnly(string &faceArgs)
 {
     static const std::regex expression("(-?\\d+)\\s+(-?\\d+)\\s+(-?\\d+)\\s+(-?\\d+)\\s*");
     std::smatch match;
@@ -126,7 +110,7 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
 
     Face face(v0, v1, v2);
     m_faces.push_back(face);
-    m_materialIndices.push_back(m_currentMaterialIndex);
+    m_mtlIndices.push_back(m_currentMtlIndex);
 }
 
 template <class T>
@@ -149,6 +133,21 @@ void ObjParser::correctIndices(
     correctIndex(indices, index0);
     correctIndex(indices, index1);
     correctIndex(indices, index2);
+}
+
+void ObjParser::processMaterialLibrary(string &libraryArgs)
+{
+    using path = boost::filesystem::path;
+    const path objPath(m_objFilename);
+
+    const string filename = libraryArgs;
+    const path mtlPath = objPath.parent_path() / filename;
+
+    MtlParser mtlParser(mtlPath.native());
+    MtlResult result = mtlParser.parse();
+
+    m_mtls = result.mtls;
+    m_mtlIndexLookup = result.indexLookup;
 }
 
 }

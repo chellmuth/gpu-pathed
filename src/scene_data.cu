@@ -13,7 +13,7 @@ SceneData createSceneData(ObjParser &objParser)
     size_t faceCount = result.faces.size();
     for (size_t i = 0; i < faceCount; i++) {
         Face &face = result.faces[i];
-        int materialIndex = result.materialIndices[i];
+        int materialIndex = result.mtlIndices[i];
 
         sceneData.triangles.push_back(
             Triangle(
@@ -25,7 +25,7 @@ SceneData createSceneData(ObjParser &objParser)
         );
     }
 
-    for (auto &mtl : result.materials) {
+    for (auto &mtl : result.mtls) {
         sceneData.materials.push_back(
             Material(
                 Vec3(mtl.r, mtl.g, mtl.b),

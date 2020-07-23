@@ -23,8 +23,8 @@ RenderSession::RenderSession()
 
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
 
-    std::ifstream sceneFile("../scenes/cornell-box/CornellBox-Original.obj");
-    ObjParser objParser(sceneFile);
+    std::string sceneFilename("../scenes/cornell-box/CornellBox-Original.obj");
+    ObjParser objParser(sceneFilename);
     SceneData sceneData = SceneAdapter::createSceneData(objParser);
     std::cout << "triangle count: " << sceneData.triangles.size() << std::endl;
     std::cout << "sphere count: " << sceneData.spheres.size() << std::endl;

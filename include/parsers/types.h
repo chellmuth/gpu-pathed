@@ -23,6 +23,8 @@ struct Face {
 };
 
 struct Mtl {
+    Mtl() : Mtl(0.f, 0.f, 0.f) {}
+
     Mtl(float _r, float _g, float _b)
         : Mtl(_r, _g, _b, 0.f, 0.f, 0.f)
     {}
@@ -33,7 +35,6 @@ struct Mtl {
     ) : r(_r), g(_g), b(_b),
         emitR(_emitR), emitG(_emitG), emitB(_emitB)
     {}
-
 
     float r;
     float g;
