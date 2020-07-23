@@ -8,16 +8,21 @@ class CameraWidget(QGroupBox):
 
         layout = QVBoxLayout()
 
-        origin = VectorWidget("Origin", model.getCameraOrigin, model.setCameraOrigin)
-        layout.addWidget(origin)
+        self.origin = VectorWidget("Origin", model.getCameraOrigin, model.setCameraOrigin)
+        layout.addWidget(self.origin)
 
-        target = VectorWidget("Target", model.getCameraTarget, model.setCameraTarget)
-        layout.addWidget(target)
+        self.target = VectorWidget("Target", model.getCameraTarget, model.setCameraTarget)
+        layout.addWidget(self.target)
 
-        up = VectorWidget("Up", model.getCameraUp, model.setCameraUp)
-        layout.addWidget(up)
+        self.up = VectorWidget("Up", model.getCameraUp, model.setCameraUp)
+        layout.addWidget(self.up)
 
         self.setLayout(layout)
+
+    def update(self):
+        self.origin.update()
+        self.target.update()
+        self.up.update()
 
 
 class VectorWidget(QWidget):
@@ -61,9 +66,9 @@ class VectorWidget(QWidget):
         if not any(modified): return
 
         self.setter(
-            float(self.x.text()),
-            float(self.y.text()),
-            float(self.z.text())
+            strToFloat(self.x.text()),
+            strToFloat(self.y.text()),
+            strToFloat(self.z.text())
         )
 
         self.update()
@@ -71,6 +76,17 @@ class VectorWidget(QWidget):
     def update(self):
         vector = self.getter()
 
-        self.x.setText(str(vector.x()))
-        self.y.setText(str(vector.y()))
-        self.z.setText(str(vector.z()))
+        if floatToStr(vector.x()) != self.x.text() and not self.x.isModified():
+            self.x.setText(floatToStr(vector.x()))
+
+        if floatToStr(vector.y()) != self.y.text() and not self.y.isModified():
+            self.y.setText(floatToStr(vector.y()))
+
+        if floatToStr(vector.z()) != self.z.text() and not self.z.isModified():
+            self.z.setText(floatToStr(vector.z()))
+
+def strToFloat(s):
+    return round(float(s), 2)
+
+def floatToStr(x):
+    return str(round(x, 2))

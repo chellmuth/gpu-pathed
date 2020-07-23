@@ -135,6 +135,7 @@ class Sidebar(QWidget):
 
     def update(self):
         self.materialGroup.update()
+        self.cameraGroup.update()
         self.spp.update()
 
 class LightSlider(QWidget):
