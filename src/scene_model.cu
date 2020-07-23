@@ -92,9 +92,28 @@ Vec3 SceneModel::getCameraTarget() const
     return m_scene->getCamera().getTarget();
 }
 
+void SceneModel::setCameraTarget(float targetX, float targetY, float targetZ)
+{
+    Vec3 target(targetX, targetY, targetZ);
+
+    const Camera &current = m_scene->getCamera();
+    Camera updated(
+        current.getOrigin(),
+        target,
+        current.getVerticalFOV(),
+        current.getResolution()
+    );
+    m_callback(getColor(), getEmit(), updated);
+}
+
 Vec3 SceneModel::getCameraUp() const
 {
     return m_scene->getCamera().getUp();
+}
+
+void SceneModel::setCameraUp(float upX, float upY, float upZ)
+{
+    // TODO
 }
 
 }

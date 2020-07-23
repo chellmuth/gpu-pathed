@@ -11,10 +11,10 @@ class CameraWidget(QGroupBox):
         origin = VectorWidget("Origin", model.getCameraOrigin, model.setCameraOrigin)
         layout.addWidget(origin)
 
-        target = VectorWidget("Target", model.getCameraTarget, model.setCameraOrigin)
+        target = VectorWidget("Target", model.getCameraTarget, model.setCameraTarget)
         layout.addWidget(target)
 
-        up = VectorWidget("Up", model.getCameraUp, model.setCameraOrigin)
+        up = VectorWidget("Up", model.getCameraUp, model.setCameraUp)
         layout.addWidget(up)
 
         self.setLayout(layout)

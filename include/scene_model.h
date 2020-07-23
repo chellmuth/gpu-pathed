@@ -40,7 +40,9 @@ public:
     Vec3 getCameraOrigin() const;
     void setCameraOrigin(float originX, float originY, float originZ);
     Vec3 getCameraTarget() const;
+    void setCameraTarget(float targetX, float targetY, float targetZ);
     Vec3 getCameraUp() const;
+    void setCameraUp(float upX, float upY, float upZ);
 
     int getSpp() const;
 
