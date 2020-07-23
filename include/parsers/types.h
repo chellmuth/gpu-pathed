@@ -22,4 +22,26 @@ struct Face {
     Vertex v2;
 };
 
+struct Mtl {
+    Mtl(float _r, float _g, float _b)
+        : Mtl(_r, _g, _b, 0.f, 0.f, 0.f)
+    {}
+
+    Mtl(
+        float _r, float _g, float _b,
+        float _emitR, float _emitG, float _emitB
+    ) : r(_r), g(_g), b(_b),
+        emitR(_emitR), emitG(_emitG), emitB(_emitB)
+    {}
+
+
+    float r;
+    float g;
+    float b;
+
+    float emitR;
+    float emitG;
+    float emitB;
+};
+
 }

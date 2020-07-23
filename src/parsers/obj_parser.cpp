@@ -1,5 +1,6 @@
 #include "parsers/obj_parser.h"
 
+#include <map>
 #include <regex>
 
 #include "parsers/string_util.h"
@@ -9,7 +10,8 @@ namespace rays {
 using string = std::string;
 
 ObjParser::ObjParser(std::ifstream &objFile)
-    : m_objFile(objFile)
+    : m_objFile(objFile),
+      m_currentMaterialIndex(0)
 {}
 
 ObjResult ObjParser::parse()
@@ -22,6 +24,21 @@ ObjResult ObjParser::parse()
     ObjResult result;
     result.vertices = m_vertices;
     result.faces = m_faces;
+    result.materialIndices = m_materialIndices;
+
+    std::vector<Mtl> materials = {
+        Mtl(0.725, 0.71, 0.68), // floor
+        Mtl(0.725, 0.71, 0.68), // ceiling
+        Mtl(0.725, 0.71, 0.68), // back wall
+        Mtl(0.14, 0.45, 0.091), // right wall
+        Mtl(0.63, 0.065, 0.05), // left wall
+        Mtl(0.725, 0.71, 0.68), // short box
+        Mtl(0.725, 0.71, 0.68), // tall box
+        Mtl(0.78, 0.78, 0.78, 17.f, 12.f, 4.f) // light
+    };
+
+    result.materials = materials;
+
     return result;
 }
 
@@ -41,6 +58,19 @@ void ObjParser::parseLine(string &line)
         processVertex(rest);
     } else if (command == "f") {
         processFace(rest);
+    } else if (command == "usemtl") {
+        std::map<std::string, int> materialLookup = {
+            {"floor", 0},
+            {"ceiling", 1},
+            {"backWall", 2},
+            {"rightWall", 3},
+            {"leftWall", 4},
+            {"shortBox", 5},
+            {"tallBox", 6},
+            {"light", 7},
+        };
+
+        m_currentMaterialIndex = materialLookup[rest];
     }
 }
 
@@ -96,6 +126,7 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
 
     Face face(v0, v1, v2);
     m_faces.push_back(face);
+    m_materialIndices.push_back(m_currentMaterialIndex);
 }
 
 template <class T>

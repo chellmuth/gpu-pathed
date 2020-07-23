@@ -11,6 +11,8 @@ namespace rays {
 struct ObjResult {
     std::vector<Vertex> vertices;
     std::vector<Face> faces;
+    std::vector<Mtl> materials;
+    std::vector<int> materialIndices;
 };
 
 class ObjParser {
@@ -43,6 +45,9 @@ private:
 
     std::vector<Vertex> m_vertices;
     std::vector<Face> m_faces;
+
+    int m_currentMaterialIndex;
+    std::vector<int> m_materialIndices;
 };
 
 }

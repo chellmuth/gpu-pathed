@@ -10,20 +10,30 @@ SceneData createSceneData(ObjParser &objParser)
 
     SceneData sceneData;
 
-    for (auto &face : result.faces) {
+    size_t faceCount = result.faces.size();
+    for (size_t i = 0; i < faceCount; i++) {
+        Face &face = result.faces[i];
+        int materialIndex = result.materialIndices[i];
+
         sceneData.triangles.push_back(
             Triangle(
                 Vec3(face.v0.x, face.v0.y, face.v0.z),
                 Vec3(face.v1.x, face.v1.y, face.v1.z),
                 Vec3(face.v2.x, face.v2.y, face.v2.z),
-                0
+                materialIndex
             )
         );
     }
 
-    sceneData.materials.push_back(
-        Material(Vec3(1.f))
-    );
+    for (auto &mtl : result.materials) {
+        sceneData.materials.push_back(
+            Material(
+                Vec3(mtl.r, mtl.g, mtl.b),
+                Vec3(mtl.emitR, mtl.emitG, mtl.emitB)
+            )
+        );
+    }
+
 
     return sceneData;
 }
