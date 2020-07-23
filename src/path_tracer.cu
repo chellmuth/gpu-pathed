@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "camera.h"
+#include "color.h"
 #include "frame.h"
 #include "primitive.h"
 #include "material.h"
@@ -122,11 +123,11 @@ __global__ static void renderKernel(
         radiances[pixelIndex] = next;
     }
 
-    const Vec3 finalRadiance = radiances[pixelIndex];
+    const Vec3 finalRadiance = Color::toSRGB(radiances[pixelIndex]);
 
-    fb[pixelIndex].x = fmaxf(0.f, fminf(1.f, finalRadiance.x())) * 255;
-    fb[pixelIndex].y = fmaxf(0.f, fminf(1.f, finalRadiance.y())) * 255;
-    fb[pixelIndex].z = fmaxf(0.f, fminf(1.f, finalRadiance.z())) * 255;
+    fb[pixelIndex].x = max(0.f, min(1.f, finalRadiance.x())) * 255;
+    fb[pixelIndex].y = max(0.f, min(1.f, finalRadiance.y())) * 255;
+    fb[pixelIndex].z = max(0.f, min(1.f, finalRadiance.z())) * 255;
     fb[pixelIndex].w = 255;
 }
 
