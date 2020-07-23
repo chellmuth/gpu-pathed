@@ -24,6 +24,9 @@ public:
     __device__ Ray generateRay(int row, int col, curandState &randState) const;
     __device__ Ray generateRay(int row, int col) const;
 
+    float getVerticalFOV() const { return m_verticalFOV; }
+    Resolution getResolution() const { return m_resolution; }
+
     Vec3 getOrigin() const { return m_origin; }
     Vec3 getTarget() const { return m_target; }
     Vec3 getUp() const { return Vec3(0.f, 1.f, 0.f); }

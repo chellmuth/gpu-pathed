@@ -42,6 +42,7 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("setLightPosition", &SceneModel::setLightPosition)
         .def("getLightPosition", &SceneModel::getLightPosition)
         .def("getCameraOrigin", &SceneModel::getCameraOrigin)
+        .def("setCameraOrigin", &SceneModel::setCameraOrigin)
         .def("getCameraTarget", &SceneModel::getCameraTarget)
         .def("getCameraUp", &SceneModel::getCameraUp)
         .def("getSpp", &SceneModel::getSpp);

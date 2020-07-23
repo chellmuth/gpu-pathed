@@ -8,42 +8,55 @@ class CameraWidget(QGroupBox):
 
         layout = QVBoxLayout()
 
-        origin = VectorWidget("Origin", model, model.getCameraOrigin)
+        origin = VectorWidget("Origin", model.getCameraOrigin, model.setCameraOrigin)
         layout.addWidget(origin)
 
-        target = VectorWidget("Target", model, model.getCameraTarget)
+        target = VectorWidget("Target", model.getCameraTarget, model.setCameraOrigin)
         layout.addWidget(target)
 
-        up = VectorWidget("Up", model, model.getCameraUp)
+        up = VectorWidget("Up", model.getCameraUp, model.setCameraOrigin)
         layout.addWidget(up)
 
         self.setLayout(layout)
 
 
 class VectorWidget(QWidget):
-    def __init__(self, name, model, getter, parent=None):
+    def __init__(self, name, getter, setter, parent=None):
         super().__init__(parent)
+
+        self.getter = getter
+        self.setter = setter
 
         layout = QHBoxLayout()
 
         label = QLabel(f"{name}:", self)
         layout.addWidget(label)
 
-        vector = getter()
+        vector = self.getter()
 
-        x = QLineEdit()
-        x.setFixedWidth(40)
-        x.setText(str(vector.x()))
-        layout.addWidget(x)
+        self.x = QLineEdit()
+        self.x.setFixedWidth(40)
+        self.x.setText(str(vector.x()))
+        self.x.editingFinished.connect(self.handleFinished)
+        layout.addWidget(self.x)
 
-        y = QLineEdit()
-        y.setFixedWidth(40)
-        y.setText(str(vector.y()))
-        layout.addWidget(y)
+        self.y = QLineEdit()
+        self.y.setFixedWidth(40)
+        self.y.setText(str(vector.y()))
+        self.y.editingFinished.connect(self.handleFinished)
+        layout.addWidget(self.y)
 
-        z = QLineEdit()
-        z.setFixedWidth(40)
-        z.setText(str(vector.z()))
-        layout.addWidget(z)
+        self.z = QLineEdit()
+        self.z.setFixedWidth(40)
+        self.z.setText(str(vector.z()))
+        self.z.editingFinished.connect(self.handleFinished)
+        layout.addWidget(self.z)
 
         self.setLayout(layout)
+
+    def handleFinished(self):
+        self.setter(
+            float(self.x.text()),
+            float(self.y.text()),
+            float(self.z.text())
+        )

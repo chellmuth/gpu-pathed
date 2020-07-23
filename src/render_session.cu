@@ -38,7 +38,7 @@ RenderSession::RenderSession(int width, int height)
         m_scene.get(),
         defaultLightPosition
     );
-    m_sceneModel->subscribe([this](Vec3 albedo, Vec3 emit) {
+    m_sceneModel->subscribe([this](Vec3 albedo, Vec3 emit, Camera camera) {
         m_scene->setColor(m_sceneModel->getMaterialIndex(), albedo);
         m_scene->setEmit(m_sceneModel->getMaterialIndex(), emit);
 
