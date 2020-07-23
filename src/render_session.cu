@@ -17,7 +17,9 @@ static void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 
 namespace rays {
 
-RenderSession::RenderSession()
+RenderSession::RenderSession(int width, int height)
+    : m_width(width),
+      m_height(height)
 {
     m_pathTracer = std::make_unique<PathTracer>();
 
@@ -26,11 +28,17 @@ RenderSession::RenderSession()
     std::string sceneFilename("../scenes/cornell-box/CornellBox-Original.obj");
     ObjParser objParser(sceneFilename);
     SceneData sceneData = SceneAdapter::createSceneData(objParser);
-    std::cout << "triangle count: " << sceneData.triangles.size() << std::endl;
-    std::cout << "sphere count: " << sceneData.spheres.size() << std::endl;
-    std::cout << "material count: " << sceneData.materials.size() << std::endl;
 
-    m_scene = std::make_unique<Scene>(sceneData);
+    Camera camera(
+        Vec3(0.f, 1.f, 6.8f),
+        Vec3(0.f, 1.f, 0.f),
+        19.5f / 180.f * M_PI,
+        { width, height }
+    );
+    m_scene = std::make_unique<Scene>(
+        camera,
+        sceneData
+    );
     m_sceneModel = std::make_unique<SceneModel>(
         m_pathTracer.get(),
         m_scene.get(),
@@ -56,21 +64,9 @@ RenderSession::RenderSession()
     });
 }
 
-void RenderSession::init(
-    GLuint pbo,
-    int width,
-    int height
-) {
-    m_width = width;
-    m_height = height;
-
-    const Camera camera(
-        Vec3(0.f, 1.f, 6.8f),
-        Vec3(0.f, 1.f, 0.f),
-        19.5f / 180.f * M_PI,
-        { width, height }
-    );
-    m_cudaGlobals->copyCamera(camera);
+void RenderSession::init(GLuint pbo)
+{
+    m_cudaGlobals->copyCamera(m_scene->getCamera());
 
     m_cudaGlobals->mallocWorld(m_scene->getSceneData());
 
@@ -86,7 +82,7 @@ void RenderSession::init(
 
     checkCudaErrors(cudaGetLastError());
 
-    m_pathTracer->init(pbo, width, height);
+    m_pathTracer->init(pbo, m_width, m_height);
 }
 
 SceneModel& RenderSession::getSceneModel()

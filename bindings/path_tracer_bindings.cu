@@ -18,10 +18,12 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("b", &Vec3::b);
 
     py::class_<RenderSession>(m, "RenderSession")
-        .def(py::init<>())
+        .def(py::init<int, int>())
         .def("init", &RenderSession::init, "Initialize CUDA resources")
         .def("render", &RenderSession::render, "Render and update buffer")
         .def("hitTest", &RenderSession::hitTest, "Run a material hit test")
+        .def("getWidth", &RenderSession::getWidth)
+        .def("getHeight", &RenderSession::getHeight)
         .def(
             "getSceneModel",
             &RenderSession::getSceneModel,

@@ -13,14 +13,17 @@ namespace rays {
 
 class RenderSession {
 public:
-    RenderSession();
+    RenderSession(int width, int height);
 
     RenderSession(const RenderSession &other) = delete;
     RenderSession(RenderSession&& other) = delete;
 
     SceneModel& getSceneModel();
 
-    void init(GLuint pbo, int width, int height);
+    void init(GLuint pbo);
+
+    int getWidth() const { return m_width; }
+    int getHeight() const { return m_height; }
 
     void hitTest(int x, int y) {
         rays::hitTest(*m_sceneModel, *m_cudaGlobals, x, y, m_width, m_height);

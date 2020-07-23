@@ -45,7 +45,7 @@ class RenderWidget(QOpenGLWidget):
 
         self.pt = pt
         self.handleColorChange = handleColorChange
-        self.setFixedSize(640, 360)
+        self.setFixedSize(pt.getWidth(), pt.getHeight())
 
     def mousePressEvent(self, event):
         self.pt.hitTest(event.x(), self.height() - event.y() - 1)
@@ -71,7 +71,7 @@ class RenderWidget(QOpenGLWidget):
         )
         gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, 0)
 
-        self.pt.init(self.pbo, width, height)
+        self.pt.init(self.pbo)
 
     def paintGL(self):
         super().paintGL()
@@ -172,7 +172,8 @@ class SppLabel(QWidget):
 def run():
     app = QApplication(sys.argv)
 
-    pt = path_tracer.RenderSession()
+    width, height = 640, 360
+    pt = path_tracer.RenderSession(width, height)
 
     widget = App(pt)
     widget.show()

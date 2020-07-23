@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "camera.h"
 #include "material.h"
 #include "primitive.h"
 #include "scene_data.h"
@@ -15,13 +16,17 @@ constexpr float defaultLightPosition = -0.6f;
 
 class Scene {
 public:
-    Scene(SceneData sceneData)
-        : m_sceneData(sceneData)
+    Scene(
+        Camera &camera,
+        SceneData sceneData
+    ) : m_camera(camera),
+        m_sceneData(sceneData)
     {}
 
     void init();
     void update();
 
+    Camera &getCamera() { return m_camera; }
     SceneData &getSceneData() { return m_sceneData; }
 
     const Material *getMaterialsData() const { return m_materials.data(); }
@@ -36,6 +41,7 @@ public:
     }
 
 private:
+    Camera m_camera;
     SceneData m_sceneData;
     std::vector<Material> m_materials;
 };
