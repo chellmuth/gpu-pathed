@@ -1,10 +1,9 @@
 #include "gl_widget.h"
 
-#include <iostream>
-
 #include <QOpenGLFunctions_4_5_Compatibility>
 
-#include "hit_test.h"
+#include <render_session.h>
+#include <hit_test.h>
 
 GLuint pbo;
 
@@ -26,8 +25,8 @@ void GLWidget::initializeGL()
     );
 	f->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-    m_renderSession = new rays::RenderSession();
-    m_renderSession->init(pbo, width, height);
+    m_renderSession = new rays::RenderSession(width, height);
+    m_renderSession->init(pbo);
 
     m_renderSession->hitTest(100, 100);
 }

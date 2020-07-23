@@ -2,29 +2,32 @@
 
 #include <vector>
 
+#include "camera.h"
 #include "material.h"
 #include "primitive.h"
+#include "scene_data.h"
+#include "sphere.h"
+#include "triangle.h"
 #include "vec3.h"
 
 namespace rays {
 
 constexpr float defaultLightPosition = -0.6f;
 
-constexpr int primitiveCount = 4;
-constexpr int materialCount = 3;
-
-__global__ void createWorld(
-    Primitive **primitives,
-    Material *materials,
-    PrimitiveList *world,
-    float lightPosition,
-    bool update
-);
-
 class Scene {
 public:
+    Scene(
+        Camera &camera,
+        SceneData sceneData
+    ) : m_camera(camera),
+        m_sceneData(sceneData)
+    {}
+
     void init();
     void update();
+
+    Camera &getCamera() { return m_camera; }
+    SceneData &getSceneData() { return m_sceneData; }
 
     const Material *getMaterialsData() const { return m_materials.data(); }
     const Material &getMaterial(int materialIndex) const { return m_materials[materialIndex]; }
@@ -38,7 +41,17 @@ public:
     }
 
 private:
+    Camera m_camera;
+    SceneData m_sceneData;
     std::vector<Material> m_materials;
 };
 
 }
+
+
+namespace rays { namespace SceneParameters {
+
+SceneData getSceneData(int index);
+Camera getCamera(int index, Resolution resolution);
+
+} }

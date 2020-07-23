@@ -16,6 +16,7 @@ class Camera {
 public:
     __host__ __device__ Camera(
         const Vec3 &origin,
+        const Vec3 &target,
         float verticalFOV,
         const Resolution &resolution
     );
@@ -27,6 +28,7 @@ private:
     __device__ Ray generateRay(int row, int col, float2 samples) const;
 
     Vec3 m_origin;
+    Vec3 m_target;
     float m_verticalFOV;
     Resolution m_resolution;
 };

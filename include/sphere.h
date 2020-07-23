@@ -1,15 +1,14 @@
 #pragma once
 
-#include "primitive.h"
 #include "material.h"
 #include "ray.h"
 #include "vec3.h"
 
 namespace rays {
 
-class Sphere: public Primitive  {
+class Sphere  {
 public:
-    __device__ Sphere(
+    __host__ __device__ Sphere(
         const Vec3 &center,
         float radius,
         size_t materialIndex
@@ -24,7 +23,7 @@ public:
         float tMin,
         float tMax,
         HitRecord& record
-    ) const override;
+    ) const;
 
 private:
     Vec3 m_center;

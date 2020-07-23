@@ -1,10 +1,50 @@
 #include "scene.h"
-
-#include "material.h"
-#include "sphere.h"
-#include "triangle.h"
-
 namespace rays {
+
+namespace SceneParameters {
+
+SceneData getSceneData(int index)
+{
+    if (index == 0) {
+        std::string sceneFilename("../scenes/cornell-box/CornellBox-Original.obj");
+        ObjParser objParser(sceneFilename);
+        return SceneAdapter::createSceneData(objParser);
+    } else if (index == 1) {
+        std::string sceneFilename("../scenes/bunny/bunny.obj");
+        ObjParser objParser(sceneFilename);
+        return SceneAdapter::createSceneData(objParser);
+    } else {
+        return SceneAdapter::createSceneData(defaultLightPosition);
+    }
+}
+
+Camera getCamera(int index, Resolution resolution)
+{
+    if (index == 0) {
+        return Camera(
+            Vec3(0.f, 1.f, 6.8f),
+            Vec3(0.f, 1.f, 0.f),
+            19.5f / 180.f * M_PI,
+            resolution
+        );
+    } else if (index == 1) {
+        return Camera(
+            Vec3(0.f, 0.7f, 4.f),
+            Vec3(0.f, 0.7f, 0.f),
+            28.f / 180.f * M_PI,
+            resolution
+        );
+    } else {
+        return Camera(
+            Vec3(0.f, 0.3f, 5.f),
+            Vec3(0.f),
+            30.f / 180.f * M_PI,
+            resolution
+        );
+    }
+}
+
+}
 
 void Scene::init()
 {
@@ -13,66 +53,7 @@ void Scene::init()
 
 void Scene::update()
 {
-    m_materials.clear();
-
-    m_materials.push_back(Material(Vec3(0.45098f, 0.823529f, 0.0862745f)));
-    m_materials.push_back(Material(Vec3(1.f, 0.2f, 1.f), Vec3(14.f, 14.f, 14.f)));
-    m_materials.push_back(Material(Vec3(1.f, 1.f, 1.f)));
-}
-
-__device__ static Vec3 rotateY(Vec3 vector, float theta)
-{
-    return Vec3(
-        cos(theta) * vector.x() - sin(theta) * vector.z(),
-        vector.y(),
-        sin(theta) * vector.x() + cos(theta) * vector.z()
-    );
-}
-
-__global__ void createWorld(
-    Primitive **primitives,
-    Material *materials,
-    PrimitiveList *world,
-    float lightPosition,
-    bool update
-) {
-    if (update) {
-        for (int i = 0; i < primitiveCount; i++) {
-            delete(primitives[i]);
-        }
-        delete(world);
-    }
-
-    if (threadIdx.x == 0 && blockIdx.x == 0) {
-        size_t i = 0;
-        primitives[i++] = new Sphere(
-            Vec3(0.f, 0.f, -1.f),
-            0.8f,
-            0
-        );
-
-        const float theta = lightPosition * M_PI;
-        primitives[i++] = new Triangle(
-            rotateY(Vec3(-0.5f, 0.6f, -2.f), theta),
-            rotateY(Vec3(0.3f, 0.6f, -2.f), theta),
-            rotateY(Vec3(-0.5f, 1.2f, -1.8f), theta),
-            1
-        );
-        primitives[i++] = new Triangle(
-            rotateY(Vec3(0.3f, 0.6f, -2.f), theta),
-            rotateY(Vec3(0.3f, 1.2f, -1.8f), theta),
-            rotateY(Vec3(-0.5f, 1.2f, -1.8f), theta),
-            1
-        );
-
-        primitives[i++] = new Sphere(
-            Vec3(0.f, -100.8f, -1.f),
-            100.f,
-            2
-        );
-
-        *world = PrimitiveList(primitives, i, materials, materialCount);
-    }
+    m_materials = m_sceneData.materials;
 }
 
 }

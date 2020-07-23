@@ -8,6 +8,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Skip LTO to avoid issue with nvcc passthrough
 set(PYBIND11_LTO_CXX_FLAGS "")
 
+find_package(Boost 1.56 REQUIRED COMPONENTS filesystem)
+
 add_library(rays STATIC
   src/camera.cu
   src/cuda_globals.cu
@@ -17,11 +19,17 @@ add_library(rays STATIC
   src/primitive.cu
   src/render_session.cu
   src/scene.cu
+  src/scene_data.cu
   src/scene_model.cu
   src/sphere.cu
   src/triangle.cu
+
+  src/parsers/mtl_parser.cpp
+  src/parsers/obj_parser.cpp
+  src/parsers/string_util.cpp
 )
 target_include_directories(rays PUBLIC include)
+target_link_libraries(rays Boost::filesystem)
 set_property(TARGET rays PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET rays PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 

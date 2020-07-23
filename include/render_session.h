@@ -4,22 +4,26 @@
 #include "hit_test.h"
 #include "material.h"
 #include "path_tracer.h"
-#include "primitive.h"
 #include "scene.h"
 #include "scene_model.h"
+#include "sphere.h"
+#include "triangle.h"
 
 namespace rays {
 
 class RenderSession {
 public:
-    RenderSession();
+    RenderSession(int width, int height);
 
     RenderSession(const RenderSession &other) = delete;
     RenderSession(RenderSession&& other) = delete;
 
     SceneModel& getSceneModel();
 
-    void init(GLuint pbo, int width, int height);
+    void init(GLuint pbo);
+
+    int getWidth() const { return m_width; }
+    int getHeight() const { return m_height; }
 
     void hitTest(int x, int y) {
         rays::hitTest(*m_sceneModel, *m_cudaGlobals, x, y, m_width, m_height);
@@ -34,9 +38,6 @@ private:
     std::unique_ptr<CUDAGlobals> m_cudaGlobals;
     std::unique_ptr<Scene> m_scene;
     std::unique_ptr<SceneModel> m_sceneModel;
-
-    Primitive **dev_primitives;
-    Material *dev_materials;
 };
 
 }

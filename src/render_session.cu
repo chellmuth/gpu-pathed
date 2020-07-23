@@ -1,6 +1,10 @@
 #include "render_session.h"
 
+#include <fstream>
+
 #include "camera.h"
+#include "parsers/obj_parser.h"
+#include "scene_data.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
 static void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
@@ -13,12 +17,22 @@ static void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 
 namespace rays {
 
-RenderSession::RenderSession()
+RenderSession::RenderSession(int width, int height)
+    : m_width(width),
+      m_height(height)
 {
     m_pathTracer = std::make_unique<PathTracer>();
 
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
-    m_scene = std::make_unique<Scene>();
+
+    constexpr int sceneIndex = 0;
+    SceneData sceneData = SceneParameters::getSceneData(sceneIndex);
+    Camera camera = SceneParameters::getCamera(sceneIndex, { width, height });
+
+    m_scene = std::make_unique<Scene>(
+        camera,
+        sceneData
+    );
     m_sceneModel = std::make_unique<SceneModel>(
         m_pathTracer.get(),
         m_scene.get(),
@@ -31,70 +45,44 @@ RenderSession::RenderSession()
         m_pathTracer->reset();
 
         checkCudaErrors(cudaMemcpy(
-            dev_materials,
+            m_cudaGlobals->d_materials,
             m_scene->getMaterialsData(),
             m_scene->getMaterialsSize(),
             cudaMemcpyHostToDevice
         ));
 
-        createWorld<<<1, 1>>>(
-            dev_primitives,
-            dev_materials,
-            m_cudaGlobals->d_world,
-            m_sceneModel->getLightPosition(),
-            true
-        );
+        m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
         checkCudaErrors(cudaGetLastError());
         checkCudaErrors(cudaDeviceSynchronize());
     });
 }
 
-void RenderSession::init(
-    GLuint pbo,
-    int width,
-    int height
-) {
-    m_width = width;
-    m_height = height;
+void RenderSession::init(GLuint pbo)
+{
+    m_cudaGlobals->copyCamera(m_scene->getCamera());
 
-    const Camera camera(
-        Vec3(0.f, 0.3f, 5.f),
-        30.f / 180.f * M_PI,
-        { width, height }
-    );
-    m_cudaGlobals->copyCamera(camera);
-
-    checkCudaErrors(cudaMalloc((void **)&dev_primitives, primitiveCount * sizeof(Primitive *)));
-    checkCudaErrors(cudaMalloc((void **)&dev_materials, materialCount * sizeof(Material)));
-    m_cudaGlobals->mallocWorld();
+    m_cudaGlobals->mallocWorld(m_scene->getSceneData());
 
     m_scene->init();
     checkCudaErrors(cudaMemcpy(
-        dev_materials,
+        m_cudaGlobals->d_materials,
         m_scene->getMaterialsData(),
         m_scene->getMaterialsSize(),
         cudaMemcpyHostToDevice
     ));
 
-    createWorld<<<1, 1>>>(
-        dev_primitives,
-        dev_materials,
-        m_cudaGlobals->d_world,
-        m_sceneModel->getLightPosition(),
-        false
-    );
+    m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
     checkCudaErrors(cudaGetLastError());
 
-    m_pathTracer->init(pbo, width, height);
+    m_pathTracer->init(pbo, m_width, m_height);
 }
 
 SceneModel& RenderSession::getSceneModel()
 {
     return *m_sceneModel;
 }
-
 
 }
 

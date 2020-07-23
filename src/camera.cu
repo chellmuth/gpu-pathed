@@ -2,14 +2,17 @@
 
 #include <cmath>
 
-#include "vec3.h"
-
 namespace rays {
 
-__device__ Camera::Camera(const Vec3 &origin, float verticalFOV, const Resolution &resolution)
-    : m_origin(origin),
-      m_verticalFOV(verticalFOV),
-      m_resolution(resolution)
+__device__ Camera::Camera(
+    const Vec3 &origin,
+    const Vec3 &target,
+    float verticalFOV,
+    const Resolution &resolution
+) : m_origin(origin),
+    m_target(target),
+    m_verticalFOV(verticalFOV),
+    m_resolution(resolution)
 {}
 
 __device__ Ray Camera::generateRay(int row, int col) const
