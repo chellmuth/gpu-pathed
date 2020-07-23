@@ -9,6 +9,10 @@ SceneData getSceneData(int index)
         std::string sceneFilename("../scenes/cornell-box/CornellBox-Original.obj");
         ObjParser objParser(sceneFilename);
         return SceneAdapter::createSceneData(objParser);
+    } else if (index == 1) {
+        std::string sceneFilename("../scenes/bunny/bunny.obj");
+        ObjParser objParser(sceneFilename);
+        return SceneAdapter::createSceneData(objParser);
     } else {
         return SceneAdapter::createSceneData(defaultLightPosition);
     }
@@ -21,6 +25,13 @@ Camera getCamera(int index, Resolution resolution)
             Vec3(0.f, 1.f, 6.8f),
             Vec3(0.f, 1.f, 0.f),
             19.5f / 180.f * M_PI,
+            resolution
+        );
+    } else if (index == 1) {
+        return Camera(
+            Vec3(0.f, 0.7f, 4.f),
+            Vec3(0.f, 0.7f, 0.f),
+            28.f / 180.f * M_PI,
             resolution
         );
     } else {

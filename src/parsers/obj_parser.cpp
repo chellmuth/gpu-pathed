@@ -77,6 +77,7 @@ void ObjParser::processVertex(string &vertexArgs)
 void ObjParser::processFace(string &faceArgs)
 {
     if (processDoubleFaceGeometryOnly(faceArgs)) { return; }
+    if (processSingleFaceTriplets(faceArgs)) { return; }
 }
 
 bool ObjParser::processDoubleFaceGeometryOnly(string &faceArgs)
@@ -100,6 +101,37 @@ bool ObjParser::processDoubleFaceGeometryOnly(string &faceArgs)
     return true;
 }
 
+bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
+{
+    static std::regex expression("(-?\\d+)/(-?\\d+)/(-?\\d+) (-?\\d+)/(-?\\d+)/(-?\\d+) (-?\\d+)/(-?\\d+)/(-?\\d+)\\s*");
+    std::smatch match;
+    std::regex_match (faceArgs, match, expression);
+
+    if (match.empty()) {
+        return false;
+    }
+
+    int vertexIndex0 = std::stoi(match[1]);
+    int vertexIndex1 = std::stoi(match[4]);
+    int vertexIndex2 = std::stoi(match[7]);
+
+    int UVIndex0 = std::stoi(match[2]);
+    int UVIndex1 = std::stoi(match[5]);
+    int UVIndex2 = std::stoi(match[8]);
+
+    int normalIndex0 = std::stoi(match[3]);
+    int normalIndex1 = std::stoi(match[6]);
+    int normalIndex2 = std::stoi(match[9]);
+
+    processTriangle(
+        vertexIndex0, vertexIndex1, vertexIndex2,
+        normalIndex0, normalIndex1, normalIndex2,
+        UVIndex0, UVIndex1, UVIndex2
+    );
+
+    return true;
+}
+
 void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2)
 {
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
@@ -111,6 +143,15 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
     Face face(v0, v1, v2);
     m_faces.push_back(face);
     m_mtlIndices.push_back(m_currentMtlIndex);
+}
+
+void ObjParser::processTriangle(
+    int vertexIndex0, int vertexIndex1, int vertexIndex2,
+    int normalIndex0, int normalIndex1, int normalIndex2,
+    int UVIndex0, int UVIndex1, int UVIndex2
+) {
+    // TODO: Handle normals and UVs
+    processTriangle(vertexIndex0, vertexIndex1, vertexIndex2);
 }
 
 template <class T>

@@ -25,6 +25,12 @@ SceneData createSceneData(ObjParser &objParser)
         );
     }
 
+    if (result.mtls.empty()) {
+        sceneData.materials.push_back(
+            Material(Vec3(1.f), Vec3(0.f))
+        );
+    }
+
     for (auto &mtl : result.mtls) {
         sceneData.materials.push_back(
             Material(
