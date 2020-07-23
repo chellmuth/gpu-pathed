@@ -22,6 +22,7 @@ add_library(rays STATIC
   src/scene_data.cu
   src/scene_model.cu
   src/sphere.cu
+  src/transform.cu
   src/triangle.cu
 
   src/parsers/mtl_parser.cpp

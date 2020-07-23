@@ -81,6 +81,7 @@ void SceneModel::setCameraOrigin(float originX, float originY, float originZ)
     Camera updated(
         origin,
         current.getTarget(),
+        current.getUp(),
         current.getVerticalFOV(),
         current.getResolution()
     );
@@ -100,6 +101,7 @@ void SceneModel::setCameraTarget(float targetX, float targetY, float targetZ)
     Camera updated(
         current.getOrigin(),
         target,
+        current.getUp(),
         current.getVerticalFOV(),
         current.getResolution()
     );

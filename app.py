@@ -52,6 +52,9 @@ class RenderWidget(QOpenGLWidget):
         self.pt.hitTest(event.x(), self.height() - event.y() - 1)
         self.handleColorChange
 
+    def wheelEvent(self, event):
+        print("Wheel:", event.angleDelta())
+
     def initializeGL(self):
         super().initializeGL()
 

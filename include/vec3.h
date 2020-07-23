@@ -21,6 +21,13 @@ public:
     __host__ __device__ inline float operator[](int i) const { return e[i]; }
     __host__ __device__ inline float& operator[](int i) { return e[i]; };
 
+    __host__ __device__ inline bool operator==(const Vec3 &v2) const {
+        return e[0] == v2.e[0]
+            && e[1] == v2.e[1]
+            && e[2] == v2.e[2]
+        ;
+    }
+
     __host__ __device__ inline Vec3& operator+=(const Vec3 &v2);
     __host__ __device__ inline Vec3& operator-=(const Vec3 &v2);
     __host__ __device__ inline Vec3& operator*=(const Vec3 &v2);

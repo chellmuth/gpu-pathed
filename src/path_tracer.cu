@@ -22,7 +22,7 @@ static void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 
 namespace rays {
 
-static constexpr bool debug = false;
+static constexpr bool debug = true;
 
 PathTracer::PathTracer()
     : m_currentSamples(0),
