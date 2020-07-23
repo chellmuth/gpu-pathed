@@ -68,4 +68,20 @@ int SceneModel::getSpp() const
     return m_pathTracer->getSpp();
 }
 
+Vec3 SceneModel::getCameraOrigin() const
+{
+    return m_scene->getCamera().getOrigin();
+}
+
+Vec3 SceneModel::getCameraTarget() const
+{
+    return m_scene->getCamera().getTarget();
+}
+
+Vec3 SceneModel::getCameraUp() const
+{
+    return m_scene->getCamera().getUp();
+}
+
+
 }

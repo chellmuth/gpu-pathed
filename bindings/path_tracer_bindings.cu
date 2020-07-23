@@ -13,6 +13,9 @@ PYBIND11_MODULE(path_tracer, m) {
 
     py::class_<Vec3>(m, "Vec3")
         .def(py::init<>())
+        .def("x", &Vec3::x)
+        .def("y", &Vec3::y)
+        .def("z", &Vec3::z)
         .def("r", &Vec3::r)
         .def("g", &Vec3::g)
         .def("b", &Vec3::b);
@@ -38,5 +41,8 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("getMaterialIndex", &SceneModel::getMaterialIndex)
         .def("setLightPosition", &SceneModel::setLightPosition)
         .def("getLightPosition", &SceneModel::getLightPosition)
+        .def("getCameraOrigin", &SceneModel::getCameraOrigin)
+        .def("getCameraTarget", &SceneModel::getCameraTarget)
+        .def("getCameraUp", &SceneModel::getCameraUp)
         .def("getSpp", &SceneModel::getSpp);
 }

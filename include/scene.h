@@ -26,7 +26,7 @@ public:
     void init();
     void update();
 
-    Camera &getCamera() { return m_camera; }
+    const Camera &getCamera() const { return m_camera; }
     SceneData &getSceneData() { return m_sceneData; }
 
     const Material *getMaterialsData() const { return m_materials.data(); }

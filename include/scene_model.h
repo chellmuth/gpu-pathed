@@ -37,6 +37,10 @@ public:
     void setLightPosition(float lightPosition);
     float getLightPosition() const;
 
+    Vec3 getCameraOrigin() const;
+    Vec3 getCameraTarget() const;
+    Vec3 getCameraUp() const;
+
     int getSpp() const;
 
 private:

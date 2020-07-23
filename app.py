@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QApplication, QGroupBox, QHBoxLayout, QLabel, QOpenGLWidget, QSlider, QVBoxLayout, QWidget
 
 import path_tracer
+from camera_widget import CameraWidget
 from material_widget import MaterialWidget
 
 class App(QWidget):
@@ -94,6 +95,9 @@ class Sidebar(QWidget):
         # Materials group
         self.materialGroup = MaterialWidget(self.model, self)
 
+        # Camera group
+        self.cameraGroup = CameraWidget(self.model, self)
+
         # Settings group
         self.settingsGroup = QGroupBox("Settings", self)
         settingsLayout = QVBoxLayout()
@@ -115,6 +119,7 @@ class Sidebar(QWidget):
         # Sidebar layout
         layout = QVBoxLayout()
         layout.addWidget(self.materialGroup)
+        layout.addWidget(self.cameraGroup)
         layout.addWidget(self.settingsGroup)
         layout.addWidget(self.infoGroup)
         layout.addStretch()
