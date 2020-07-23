@@ -65,8 +65,9 @@ void RenderSession::init(
     m_height = height;
 
     const Camera camera(
-        Vec3(0.f, 0.3f, 5.f),
-        30.f / 180.f * M_PI,
+        Vec3(0.f, 1.f, 6.8f),
+        Vec3(0.f, 1.f, 0.f),
+        19.5f / 180.f * M_PI,
         { width, height }
     );
     m_cudaGlobals->copyCamera(camera);
