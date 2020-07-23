@@ -62,27 +62,31 @@ class RenderWidget(QOpenGLWidget):
 
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
-        self.pbo = gl.glGenBuffers(1)
-        gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, self.pbo)
-        gl.glBufferData(
-            gl.GL_PIXEL_UNPACK_BUFFER,
-            4 * width * height,
-            None,
-            gl.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, 0)
+        self.pbo1, self.pbo2 = gl.glGenBuffers(2)
 
-        self.pt.init(self.pbo)
+        for pbo in [self.pbo1, self.pbo2]:
+            gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, pbo)
+            gl.glBufferData(
+                gl.GL_PIXEL_UNPACK_BUFFER,
+                4 * width * height,
+                None,
+                gl.GL_DYNAMIC_DRAW
+            )
+            gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, 0)
+
+        self.state = self.pt.init(self.pbo1, self.pbo2)
 
     def paintGL(self):
-        super().paintGL()
+        if self.state.isRendering:
+            self.state = self.pt.pollRender()
+        else:
+            self.state = self.pt.renderAsync()
 
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-
-        gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, self.pbo)
-        self.pt.render()
+        gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, self.state.pbo)
 
         gl.glDrawPixels(self.width(), self.height(), gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, None)
+
         gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, 0)
 
 

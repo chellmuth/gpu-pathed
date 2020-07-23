@@ -32,31 +32,45 @@ class VectorWidget(QWidget):
         label = QLabel(f"{name}:", self)
         layout.addWidget(label)
 
-        vector = self.getter()
-
         self.x = QLineEdit()
         self.x.setFixedWidth(40)
-        self.x.setText(str(vector.x()))
         self.x.editingFinished.connect(self.handleFinished)
         layout.addWidget(self.x)
 
         self.y = QLineEdit()
         self.y.setFixedWidth(40)
-        self.y.setText(str(vector.y()))
         self.y.editingFinished.connect(self.handleFinished)
         layout.addWidget(self.y)
 
         self.z = QLineEdit()
         self.z.setFixedWidth(40)
-        self.z.setText(str(vector.z()))
         self.z.editingFinished.connect(self.handleFinished)
         layout.addWidget(self.z)
 
         self.setLayout(layout)
 
+        self.update()
+
     def handleFinished(self):
+        modified = [
+            self.x.isModified(),
+            self.y.isModified(),
+            self.z.isModified(),
+        ]
+
+        if not any(modified): return
+
         self.setter(
             float(self.x.text()),
             float(self.y.text()),
             float(self.z.text())
         )
+
+        self.update()
+
+    def update(self):
+        vector = self.getter()
+
+        self.x.setText(str(vector.x()))
+        self.y.setText(str(vector.y()))
+        self.z.setText(str(vector.z()))
