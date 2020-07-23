@@ -42,6 +42,9 @@ RenderSession::RenderSession(int width, int height)
         m_scene->setColor(m_sceneModel->getMaterialIndex(), albedo);
         m_scene->setEmit(m_sceneModel->getMaterialIndex(), emit);
 
+        m_scene->setCamera(camera);
+        m_cudaGlobals->copyCamera(m_scene->getCamera());
+
         m_pathTracer->reset();
 
         checkCudaErrors(cudaMemcpy(
@@ -60,6 +63,7 @@ RenderSession::RenderSession(int width, int height)
 
 void RenderSession::init(GLuint pbo)
 {
+    m_cudaGlobals->mallocCamera();
     m_cudaGlobals->copyCamera(m_scene->getCamera());
 
     m_cudaGlobals->mallocWorld(m_scene->getSceneData());

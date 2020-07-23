@@ -76,7 +76,6 @@ Vec3 SceneModel::getCameraOrigin() const
 void SceneModel::setCameraOrigin(float originX, float originY, float originZ)
 {
     Vec3 origin(originX, originY, originZ);
-    std::cout << origin.x() << " " << origin.y() << " " << origin.z() << std::endl;
 
     const Camera &current = m_scene->getCamera();
     Camera updated(

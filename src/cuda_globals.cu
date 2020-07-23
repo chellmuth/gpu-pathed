@@ -15,10 +15,13 @@ static void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 
 namespace rays {
 
-void CUDAGlobals::copyCamera(const Camera &camera)
+void CUDAGlobals::mallocCamera()
 {
     checkCudaErrors(cudaMalloc((void **)&d_camera, sizeof(Camera)));
+}
 
+void CUDAGlobals::copyCamera(const Camera &camera)
+{
     checkCudaErrors(cudaMemcpy(
         d_camera,
         &camera,
