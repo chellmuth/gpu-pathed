@@ -6,26 +6,21 @@
 #include "camera.h"
 #include "color.h"
 #include "frame.h"
+#include "macro_helper.h"
 #include "primitive.h"
 #include "material.h"
 #include "scene.h"
 #include "vec3.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
-static void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
-{
-	if (code != cudaSuccess) {
-		fprintf(stderr, "CUDA error: %s %s %d\n", cudaGetErrorString(code), file, line);
-		if (abort) exit(code);
-	}
-}
 
 namespace rays {
 
-static constexpr bool debug = false;
+static constexpr bool debug = true;
 
 PathTracer::PathTracer()
-    : m_currentSamples(0)
+    : m_currentSamples(0),
+      m_shouldReset(false)
 {}
 
 __global__ static void renderInit(int width, int height, curandState *randState)
@@ -132,18 +127,9 @@ __global__ static void renderKernel(
 }
 
 void PathTracer::init(
-    GLuint pbo,
     int width,
     int height
 ) {
-    checkCudaErrors(
-        cudaGraphicsGLRegisterBuffer(
-            &m_cudaPbo,
-            pbo,
-            cudaGraphicsRegisterFlagsWriteDiscard
-        )
-    );
-
     m_width = width;
     m_height = height;
     const int pixelCount = m_width * m_height;
@@ -158,12 +144,11 @@ void PathTracer::init(
     checkCudaErrors(cudaDeviceSynchronize());
 }
 
-void PathTracer::render(const CUDAGlobals &cudaGlobals)
+static constexpr int samplesPerPass = 1;
+RenderRecord PathTracer::renderAsync(cudaGraphicsResource *pboResource, const CUDAGlobals &cudaGlobals)
 {
-    checkCudaErrors(cudaGraphicsMapResources(1, &m_cudaPbo, NULL));
-    checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&dev_map, NULL, m_cudaPbo));
-
-    const int samplesPerPass = 1;
+    checkCudaErrors(cudaGraphicsMapResources(1, &pboResource, NULL));
+    checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&dev_map, NULL, pboResource));
 
     const int blockWidth = 16;
     const int blockHeight = 16;
@@ -171,11 +156,16 @@ void PathTracer::render(const CUDAGlobals &cudaGlobals)
     const dim3 blocks(m_width / blockWidth + 1, m_height / blockHeight + 1);
     const dim3 threads(blockWidth, blockHeight);
 
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
+    cudaEvent_t beginEvent, endEvent;
+    cudaEventCreate(&beginEvent);
+    cudaEventCreate(&endEvent);
 
-    cudaEventRecord(start);
+    cudaEventRecord(beginEvent);
+
+    if (m_shouldReset) {
+        m_currentSamples = 0;
+        m_shouldReset = false;
+    }
 
     renderKernel<<<blocks, threads>>>(
         dev_map,
@@ -188,27 +178,34 @@ void PathTracer::render(const CUDAGlobals &cudaGlobals)
         dev_randState
     );
 
-    cudaEventRecord(stop);
+    cudaEventRecord(endEvent);
 
-    cudaEventSynchronize(stop);
+    return RenderRecord{beginEvent, endEvent};
+}
+
+bool PathTracer::pollRender(cudaGraphicsResource *pboResource, RenderRecord record)
+{
+    if (cudaEventQuery(record.endEvent) != cudaSuccess) {
+        return false;
+    }
+
+    cudaEventSynchronize(record.endEvent);
+    checkCudaErrors(cudaDeviceSynchronize());
+    checkCudaErrors(cudaGraphicsUnmapResources(1, &pboResource, NULL));
 
     if (debug) {
         float milliseconds = 0;
-        cudaEventElapsedTime(&milliseconds, start, stop);
-        std::cout << "CUDA Frame: " << milliseconds << std::endl;
+        cudaEventElapsedTime(&milliseconds, record.beginEvent, record.endEvent);
+        std::cout << "CUDA Frame: " << milliseconds << "ms" << std::endl;
     }
 
     m_currentSamples += samplesPerPass;
-
-    checkCudaErrors(cudaDeviceSynchronize());
-    checkCudaErrors(cudaGraphicsUnmapResources(1, &m_cudaPbo, NULL));
+    return true;
 }
 
 void PathTracer::reset() 
 {
-    m_currentSamples = 0;
+    m_shouldReset = true;
 }
 
 }
-
-#undef checkCudaErrors

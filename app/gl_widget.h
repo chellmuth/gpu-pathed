@@ -14,4 +14,5 @@ protected:
     void paintGL() override;
 
     rays::RenderSession *m_renderSession;
+    rays::RenderState m_currentState;
 };

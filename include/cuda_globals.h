@@ -10,7 +10,9 @@ namespace rays {
 
 class CUDAGlobals {
 public:
+    void mallocCamera();
     void copyCamera(const Camera &camera);
+
     void copySceneData(const SceneData &sceneData);
     void mallocWorld(const SceneData &sceneData);
 

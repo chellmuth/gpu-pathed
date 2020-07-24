@@ -24,6 +24,7 @@ Camera getCamera(int index, Resolution resolution)
         return Camera(
             Vec3(0.f, 1.f, 6.8f),
             Vec3(0.f, 1.f, 0.f),
+            Vec3(0.f, 1.f, 0.f),
             19.5f / 180.f * M_PI,
             resolution
         );
@@ -31,6 +32,7 @@ Camera getCamera(int index, Resolution resolution)
         return Camera(
             Vec3(0.f, 0.7f, 4.f),
             Vec3(0.f, 0.7f, 0.f),
+            Vec3(0.f, 1.f, 0.f),
             28.f / 180.f * M_PI,
             resolution
         );
@@ -38,6 +40,7 @@ Camera getCamera(int index, Resolution resolution)
         return Camera(
             Vec3(0.f, 0.3f, 5.f),
             Vec3(0.f),
+            Vec3(0.f, 1.f, 0.f),
             30.f / 180.f * M_PI,
             resolution
         );

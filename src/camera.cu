@@ -4,16 +4,20 @@
 
 namespace rays {
 
-__device__ Camera::Camera(
+Camera::Camera(
     const Vec3 &origin,
     const Vec3 &target,
+    const Vec3 &up,
     float verticalFOV,
     const Resolution &resolution
 ) : m_origin(origin),
     m_target(target),
+    m_up(up),
     m_verticalFOV(verticalFOV),
     m_resolution(resolution)
-{}
+{
+    m_cameraToWorld = lookAt(m_origin, m_target, m_up);
+}
 
 __device__ Ray Camera::generateRay(int row, int col) const
 {
@@ -43,6 +47,10 @@ __device__ Ray Camera::generateRay(int row, int col, float2 samples) const
     const float x = xCanonical * width - right;
 
     const Vec3 direction = normalized(Vec3(x, y, -1));
+
+    const Vec3 origin(0.f);
+    const Ray transformedRay = m_cameraToWorld.apply(Ray(origin, direction));
+    return transformedRay;
 
     return Ray(m_origin, direction);
 }

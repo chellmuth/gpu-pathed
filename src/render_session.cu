@@ -3,26 +3,59 @@
 #include <fstream>
 
 #include "camera.h"
+#include "macro_helper.h"
 #include "parsers/obj_parser.h"
 #include "scene_data.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
-static void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
-{
-	if (code != cudaSuccess) {
-		fprintf(stderr, "CUDA error: %s %s %d\n", cudaGetErrorString(code), file, line);
-		if (abort) exit(code);
-	}
-}
 
 namespace rays {
+
+void PBOManager::init(GLuint pbo1, GLuint pbo2)
+{
+    m_computeOnPrimary = false;
+
+    m_pbo1 = pbo1;
+    m_pbo2 = pbo2;
+
+    checkCudaErrors(
+        cudaGraphicsGLRegisterBuffer(
+            &m_resource1,
+            m_pbo1,
+            cudaGraphicsRegisterFlagsWriteDiscard
+        )
+    );
+    checkCudaErrors(
+        cudaGraphicsGLRegisterBuffer(
+            &m_resource2,
+            m_pbo2,
+            cudaGraphicsRegisterFlagsWriteDiscard
+        )
+    );
+}
+
+cudaGraphicsResource *PBOManager::getRenderResource()
+{
+    if (m_computeOnPrimary) { return m_resource1; }
+    else { return m_resource2; }
+}
+
+GLuint PBOManager::getDisplayPBO()
+{
+    if (m_computeOnPrimary) { return m_pbo2; }
+    else { return m_pbo1; }
+}
+
+void PBOManager::swapPBOs()
+{
+    m_computeOnPrimary = !m_computeOnPrimary;
+}
 
 RenderSession::RenderSession(int width, int height)
     : m_width(width),
       m_height(height)
 {
     m_pathTracer = std::make_unique<PathTracer>();
-
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
 
     constexpr int sceneIndex = 0;
@@ -38,9 +71,12 @@ RenderSession::RenderSession(int width, int height)
         m_scene.get(),
         defaultLightPosition
     );
-    m_sceneModel->subscribe([this](Vec3 albedo, Vec3 emit) {
+    m_sceneModel->subscribe([this](Vec3 albedo, Vec3 emit, Camera camera) {
         m_scene->setColor(m_sceneModel->getMaterialIndex(), albedo);
         m_scene->setEmit(m_sceneModel->getMaterialIndex(), emit);
+
+        m_scene->setCamera(camera);
+        m_cudaGlobals->copyCamera(m_scene->getCamera());
 
         m_pathTracer->reset();
 
@@ -58,8 +94,11 @@ RenderSession::RenderSession(int width, int height)
     });
 }
 
-void RenderSession::init(GLuint pbo)
+RenderState RenderSession::init(GLuint pbo1, GLuint pbo2)
 {
+    m_pboManager.init(pbo1, pbo2);
+
+    m_cudaGlobals->mallocCamera();
     m_cudaGlobals->copyCamera(m_scene->getCamera());
 
     m_cudaGlobals->mallocWorld(m_scene->getSceneData());
@@ -76,7 +115,9 @@ void RenderSession::init(GLuint pbo)
 
     checkCudaErrors(cudaGetLastError());
 
-    m_pathTracer->init(pbo, m_width, m_height);
+    m_pathTracer->init(m_width, m_height);
+
+    return RenderState{false, pbo1};
 }
 
 SceneModel& RenderSession::getSceneModel()
@@ -85,5 +126,3 @@ SceneModel& RenderSession::getSceneModel()
 }
 
 }
-
-#undef checkCudaErrors

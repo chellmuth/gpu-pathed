@@ -23,7 +23,7 @@ public:
     SceneModel(const SceneModel &other) = delete;
     SceneModel(SceneModel&& other) = delete;
 
-    void subscribe(std::function<void(Vec3 albedo, Vec3 emit)> callback);
+    void subscribe(std::function<void(Vec3 albedo, Vec3 emit, Camera camera)> callback);
 
     void setColor(float r, float g, float b);
     Vec3 getColor() const;
@@ -37,6 +37,15 @@ public:
     void setLightPosition(float lightPosition);
     float getLightPosition() const;
 
+    Vec3 getCameraOrigin() const;
+    void setCameraOrigin(float originX, float originY, float originZ);
+    Vec3 getCameraTarget() const;
+    void setCameraTarget(float targetX, float targetY, float targetZ);
+    Vec3 getCameraUp() const;
+    void setCameraUp(float upX, float upY, float upZ);
+
+    void zoomCamera(float ticks);
+
     int getSpp() const;
 
 private:
@@ -48,7 +57,7 @@ private:
     int m_spp;
     float m_lightPosition;
 
-    std::function<void(Vec3 albedo, Vec3 emit)> m_callback;
+    std::function<void(Vec3 albedo, Vec3 emit, Camera camera)> m_callback;
 };
 
 }

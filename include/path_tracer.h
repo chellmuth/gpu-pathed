@@ -10,6 +10,11 @@
 
 namespace rays {
 
+struct RenderRecord {
+    cudaEvent_t beginEvent;
+    cudaEvent_t endEvent;
+};
+
 class PathTracer {
 public:
     PathTracer();
@@ -17,8 +22,9 @@ public:
     PathTracer(const PathTracer &other) = delete;
     PathTracer(PathTracer&& other) = delete;
 
-    void init(GLuint pbo, int width, int height);
-    void render(const CUDAGlobals &cudaGlobals);
+    void init(int width, int height);
+    RenderRecord renderAsync(cudaGraphicsResource *pboResource, const CUDAGlobals &cudaGlobals);
+    bool pollRender(cudaGraphicsResource *pboResource, RenderRecord record);
 
     void reset();
     int getSpp() const { return m_currentSamples; }
@@ -26,8 +32,8 @@ public:
 private:
     int m_width, m_height;
     int m_currentSamples;
+    bool m_shouldReset;
 
-    cudaGraphicsResource *m_cudaPbo;
     curandState *dev_randState;
 
     Vec3 *dev_radiances;

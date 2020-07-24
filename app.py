@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QApplication, QGroupBox, QHBoxLayout, QLabel, QOpenGLWidget, QSlider, QVBoxLayout, QWidget
 
 import path_tracer
+from camera_widget import CameraWidget
 from material_widget import MaterialWidget
 
 class App(QWidget):
@@ -51,6 +52,10 @@ class RenderWidget(QOpenGLWidget):
         self.pt.hitTest(event.x(), self.height() - event.y() - 1)
         self.handleColorChange
 
+    def wheelEvent(self, event):
+        ticks = event.angleDelta().y() / 120
+        self.pt.getSceneModel().zoomCamera(ticks)
+
     def initializeGL(self):
         super().initializeGL()
 
@@ -61,27 +66,31 @@ class RenderWidget(QOpenGLWidget):
 
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
-        self.pbo = gl.glGenBuffers(1)
-        gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, self.pbo)
-        gl.glBufferData(
-            gl.GL_PIXEL_UNPACK_BUFFER,
-            4 * width * height,
-            None,
-            gl.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, 0)
+        self.pbo1, self.pbo2 = gl.glGenBuffers(2)
 
-        self.pt.init(self.pbo)
+        for pbo in [self.pbo1, self.pbo2]:
+            gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, pbo)
+            gl.glBufferData(
+                gl.GL_PIXEL_UNPACK_BUFFER,
+                4 * width * height,
+                None,
+                gl.GL_DYNAMIC_DRAW
+            )
+            gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, 0)
+
+        self.state = self.pt.init(self.pbo1, self.pbo2)
 
     def paintGL(self):
-        super().paintGL()
+        if self.state.isRendering:
+            self.state = self.pt.pollRender()
+        else:
+            self.state = self.pt.renderAsync()
 
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
-
-        gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, self.pbo)
-        self.pt.render()
+        gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, self.state.pbo)
 
         gl.glDrawPixels(self.width(), self.height(), gl.GL_RGBA, gl.GL_UNSIGNED_BYTE, None)
+
         gl.glBindBuffer(gl.GL_PIXEL_UNPACK_BUFFER, 0)
 
 
@@ -93,6 +102,9 @@ class Sidebar(QWidget):
 
         # Materials group
         self.materialGroup = MaterialWidget(self.model, self)
+
+        # Camera group
+        self.cameraGroup = CameraWidget(self.model, self)
 
         # Settings group
         self.settingsGroup = QGroupBox("Settings", self)
@@ -115,6 +127,7 @@ class Sidebar(QWidget):
         # Sidebar layout
         layout = QVBoxLayout()
         layout.addWidget(self.materialGroup)
+        layout.addWidget(self.cameraGroup)
         layout.addWidget(self.settingsGroup)
         layout.addWidget(self.infoGroup)
         layout.addStretch()
@@ -122,6 +135,7 @@ class Sidebar(QWidget):
 
     def update(self):
         self.materialGroup.update()
+        self.cameraGroup.update()
         self.spp.update()
 
 class LightSlider(QWidget):
