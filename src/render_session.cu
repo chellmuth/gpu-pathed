@@ -3,17 +3,11 @@
 #include <fstream>
 
 #include "camera.h"
+#include "macro_helper.h"
 #include "parsers/obj_parser.h"
 #include "scene_data.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
-static void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
-{
-	if (code != cudaSuccess) {
-		fprintf(stderr, "CUDA error: %s %s %d\n", cudaGetErrorString(code), file, line);
-		if (abort) exit(code);
-	}
-}
 
 namespace rays {
 
@@ -132,5 +126,3 @@ SceneModel& RenderSession::getSceneModel()
 }
 
 }
-
-#undef checkCudaErrors

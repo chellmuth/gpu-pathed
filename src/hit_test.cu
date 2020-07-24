@@ -5,19 +5,13 @@
 #include <memory>
 
 #include "camera.h"
+#include "macro_helper.h"
 #include "material.h"
 #include "primitive.h"
 #include "scene.h"
 #include "vec3.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
-static void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
-{
-	if (code != cudaSuccess) {
-		fprintf(stderr, "CUDA error: %s %s %d\n", cudaGetErrorString(code), file, line);
-		if (abort) exit(code);
-	}
-}
 
 namespace rays {
 
@@ -87,5 +81,3 @@ void hitTest(
 }
 
 }
-
-#undef checkCudaErrors

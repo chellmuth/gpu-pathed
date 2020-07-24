@@ -2,16 +2,10 @@
 
 #include <iostream>
 
+#include "macro_helper.h"
 #include "scene.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
-static void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true)
-{
-	if (code != cudaSuccess) {
-		fprintf(stderr, "CUDA error: %s %s %d\n", cudaGetErrorString(code), file, line);
-		if (abort) exit(code);
-	}
-}
 
 namespace rays {
 
@@ -95,5 +89,3 @@ void CUDAGlobals::copySceneData(const SceneData &sceneData)
 }
 
 }
-
-#undef checkCudaErrors
