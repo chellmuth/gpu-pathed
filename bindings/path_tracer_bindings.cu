@@ -37,7 +37,14 @@ PYBIND11_MODULE(path_tracer, m) {
             py::return_value_policy::reference_internal
         );
 
+    py::enum_<RendererType>(m, "RendererType")
+        .value("CUDA", RendererType::CUDA)
+        .value("Optix", RendererType::Optix)
+        .export_values();
+
     py::class_<SceneModel>(m, "SceneModel")
+        .def("getRendererType", &SceneModel::getRendererType)
+        .def("setRendererType", &SceneModel::setRendererType)
         .def("setColor", &SceneModel::setColor)
         .def("getColor", &SceneModel::getColor)
         .def("setEmit", &SceneModel::setEmit)

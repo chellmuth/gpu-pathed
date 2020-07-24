@@ -10,20 +10,28 @@
 
 namespace rays {
 
-class PathTracer;
+class OptixTracer;
+
+enum class RendererType {
+    CUDA,
+    Optix
+};
 
 class SceneModel {
 public:
     SceneModel(
-        const PathTracer *pathTracer,
         const Scene *scene,
-        float lightPosition
+        float lightPosition,
+        RendererType rendererType
     );
 
     SceneModel(const SceneModel &other) = delete;
     SceneModel(SceneModel&& other) = delete;
 
-    void subscribe(std::function<void(Vec3 albedo, Vec3 emit, Camera camera)> callback);
+    void subscribe(std::function<void(Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType)> callback);
+
+    RendererType getRendererType() const;
+    void setRendererType(RendererType rendererType);
 
     void setColor(float r, float g, float b);
     Vec3 getColor() const;
@@ -46,18 +54,19 @@ public:
 
     void zoomCamera(float ticks);
 
+    void updateSpp(int spp);
     int getSpp() const;
 
 private:
-    const PathTracer *m_pathTracer;
     const Scene *m_scene;
 
+    RendererType m_rendererType;
     int m_materialIndex;
 
     int m_spp;
     float m_lightPosition;
 
-    std::function<void(Vec3 albedo, Vec3 emit, Camera camera)> m_callback;
+    std::function<void(Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType)> m_callback;
 };
 
 }

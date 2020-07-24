@@ -4,8 +4,8 @@
 #include <iostream>
 
 #include "camera.h"
-#include "color.h"
 #include "frame.h"
+#include "framebuffer.h"
 #include "macro_helper.h"
 #include "primitive.h"
 #include "material.h"
@@ -50,12 +50,10 @@ __device__ static Vec3 calculateLi(const Ray& ray, const PrimitiveList *world, c
             result += emit * beta;
         }
     } else {
-        const Vec3 direction = normalized(ray.direction());
-        const float t = 0.5f * (direction.y() + 1.0f);
-        return Vec3(1.f - t) + t * Vec3(0.5f, 0.7f, 1.f);
+        return Vec3(0.f);
     }
 
-    for (int path = 2; path < 10; path++) {
+    for (int path = 2; path < 3; path++) {
         const Frame intersection(record.normal);
         const Material &material = world->getMaterial(record.materialIndex);
         float pdf;
@@ -74,10 +72,7 @@ __device__ static Vec3 calculateLi(const Ray& ray, const PrimitiveList *world, c
                 result += emit * beta;
             }
         } else {
-            const Vec3 direction = normalized(ray.direction());
-            const float t = 0.5f * (direction.y() + 1.f);
-            const Vec3 skyRadiance = (Vec3(1.f - t) + t * Vec3(0.5f, 0.7f, 1.f)) * 0.5f;
-            return result + skyRadiance * beta;
+            return result;
         }
     }
 
@@ -85,11 +80,9 @@ __device__ static Vec3 calculateLi(const Ray& ray, const PrimitiveList *world, c
 }
 
 __global__ static void renderKernel(
-    uchar4 *fb,
-    Vec3 *radiances,
+    Vec3 *passRadiances,
     Camera *camera,
     int spp,
-    int currentSamples,
     int width, int height,
     PrimitiveList *world,
     curandState *randState
@@ -99,36 +92,23 @@ __global__ static void renderKernel(
     if ((row >= height) || (col >= width)) { return; }
 
     const int pixelIndex = row * width + col;
-
     curandState &localRand = randState[pixelIndex];
     for (int sample = 1; sample <= spp; sample++) {
         const Ray cameraRay = camera->generateRay(row, col, localRand);
         const Vec3 Li = calculateLi(cameraRay, world, localRand);
 
-        const int spp = currentSamples + sample;
-
-        Vec3 next;
-        if (spp > 1) {
-            const Vec3 current = radiances[pixelIndex];
-            next = current * (spp - 1) / spp + (Li / spp);
+        if (sample == 1) {
+            passRadiances[pixelIndex] = Li;
         } else {
-            next = Li;
+            passRadiances[pixelIndex] += Li / spp;
         }
-
-        radiances[pixelIndex] = next;
     }
-
-    const Vec3 finalRadiance = Color::toSRGB(radiances[pixelIndex]);
-
-    fb[pixelIndex].x = max(0.f, min(1.f, finalRadiance.x())) * 255;
-    fb[pixelIndex].y = max(0.f, min(1.f, finalRadiance.y())) * 255;
-    fb[pixelIndex].z = max(0.f, min(1.f, finalRadiance.z())) * 255;
-    fb[pixelIndex].w = 255;
 }
 
 void PathTracer::init(
     int width,
-    int height
+    int height,
+    const Scene &scene
 ) {
     m_width = width;
     m_height = height;
@@ -136,6 +116,7 @@ void PathTracer::init(
 
     checkCudaErrors(cudaMalloc((void **)&dev_randState, pixelCount * sizeof(curandState)));
     checkCudaErrors(cudaMalloc((void **)&dev_radiances, pixelCount * sizeof(Vec3)));
+    checkCudaErrors(cudaMalloc((void **)&dev_passRadiances, pixelCount * sizeof(Vec3)));
 
     dim3 blocks(m_width, m_height);
     renderInit<<<blocks, 1>>>(m_width, m_height, dev_randState);
@@ -168,14 +149,23 @@ RenderRecord PathTracer::renderAsync(cudaGraphicsResource *pboResource, const CU
     }
 
     renderKernel<<<blocks, threads>>>(
-        dev_map,
-        dev_radiances,
+        dev_passRadiances,
         cudaGlobals.d_camera,
         samplesPerPass,
-        m_currentSamples,
         m_width, m_height,
         cudaGlobals.d_world,
         dev_randState
+    );
+
+    updateFramebuffer(
+        dev_map,
+        dev_passRadiances,
+        dev_radiances,
+        samplesPerPass,
+        m_currentSamples,
+        m_width,
+        m_height,
+        0
     );
 
     cudaEventRecord(endEvent);
@@ -203,7 +193,7 @@ bool PathTracer::pollRender(cudaGraphicsResource *pboResource, RenderRecord reco
     return true;
 }
 
-void PathTracer::reset() 
+void PathTracer::reset()
 {
     m_shouldReset = true;
 }

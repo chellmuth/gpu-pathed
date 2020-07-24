@@ -18,6 +18,8 @@ __device__ inline void coordinateSystem(const Vec3 &a, Vec3 &b, Vec3 &c)
 
 class Frame {
 public:
+    __device__ Frame() {}
+
     __device__ Frame(const Vec3 &normal) : n(normal)
     {
         coordinateSystem(n, s, t);

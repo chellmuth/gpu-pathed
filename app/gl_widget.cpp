@@ -2,7 +2,6 @@
 
 #include <QOpenGLFunctions_4_5_Compatibility>
 
-#include <render_session.h>
 #include <hit_test.h>
 
 void GLWidget::initializeGL()

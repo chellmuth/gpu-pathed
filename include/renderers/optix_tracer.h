@@ -1,18 +1,22 @@
 #pragma once
 
+#include <memory>
+
+#include <cuda_gl_interop.h>
 #include <curand_kernel.h>
 
 #include "cuda_globals.h"
-#include "renderers/renderer.h"
 #include "render_record.h"
+#include "renderers/optix.h"
+#include "renderers/renderer.h"
 #include "scene.h"
 #include "vec3.h"
 
 namespace rays {
 
-class PathTracer : public Renderer {
+class OptixTracer : public Renderer {
 public:
-    PathTracer();
+    OptixTracer();
 
     void init(int width, int height, const Scene &scene) override;
     RenderRecord renderAsync(cudaGraphicsResource *pboResource, const CUDAGlobals &cudaGlobals) override;
@@ -29,8 +33,9 @@ private:
     curandState *dev_randState;
 
     Vec3 *dev_radiances;
-    Vec3 *dev_passRadiances;
     uchar4 *dev_map;
+
+    Optix m_optix;
 };
 
 }
