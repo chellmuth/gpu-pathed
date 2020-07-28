@@ -2,7 +2,15 @@ import sys
 
 import OpenGL.GL as gl
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QApplication, QGroupBox, QHBoxLayout, QLabel, QOpenGLWidget, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (
+    QApplication,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QOpenGLWidget,
+    QVBoxLayout,
+    QWidget
+)
 
 import path_tracer
 from camera_widget import CameraWidget
