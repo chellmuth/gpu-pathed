@@ -95,6 +95,7 @@ class MaxDepthWidget(QWidget):
         layout.addWidget(self.text)
 
         self.maxDepth = QSpinBox(self)
+        self.maxDepth.setMinimum(0)
         self.maxDepth.setValue(self.getter())
         self.maxDepth.valueChanged.connect(self.handleValueChanged)
         layout.addWidget(self.maxDepth)
