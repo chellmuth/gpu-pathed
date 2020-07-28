@@ -35,8 +35,14 @@ __global__ static void renderInit(int width, int height, curandState *randState)
     curand_init(seed, pixelIndex, 0, &randState[pixelIndex]);
 }
 
-__device__ static Vec3 calculateLi(const Ray& ray, const PrimitiveList *world, curandState &randState)
-{
+__device__ static Vec3 calculateLi(
+    const Ray& ray,
+    const PrimitiveList *world,
+    int maxDepth,
+    curandState &randState
+) {
+    if (maxDepth == 0) { return Vec3(0.f); }
+
     Vec3 beta = Vec3(1.f);
     Vec3 result = Vec3(0.f);
 
@@ -53,7 +59,7 @@ __device__ static Vec3 calculateLi(const Ray& ray, const PrimitiveList *world, c
         return Vec3(0.f);
     }
 
-    for (int path = 2; path < 3; path++) {
+    for (int path = 1; path < maxDepth; path++) {
         const Frame intersection(record.normal);
         const Material &material = world->getMaterial(record.materialIndex);
         float pdf;
@@ -82,6 +88,7 @@ __device__ static Vec3 calculateLi(const Ray& ray, const PrimitiveList *world, c
 __global__ static void renderKernel(
     Vec3 *passRadiances,
     Camera *camera,
+    int maxDepth,
     int spp,
     int width, int height,
     PrimitiveList *world,
@@ -95,7 +102,7 @@ __global__ static void renderKernel(
     curandState &localRand = randState[pixelIndex];
     for (int sample = 1; sample <= spp; sample++) {
         const Ray cameraRay = camera->generateRay(row, col, localRand);
-        const Vec3 Li = calculateLi(cameraRay, world, localRand);
+        const Vec3 Li = calculateLi(cameraRay, world, maxDepth, localRand);
 
         if (sample == 1) {
             passRadiances[pixelIndex] = Li;
@@ -154,6 +161,7 @@ RenderRecord PathTracer::renderAsync(
     renderKernel<<<blocks, threads>>>(
         dev_passRadiances,
         cudaGlobals.d_camera,
+        scene.getMaxDepth(),
         samplesPerPass,
         m_width, m_height,
         cudaGlobals.d_world,

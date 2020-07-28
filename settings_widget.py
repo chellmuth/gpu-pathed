@@ -1,5 +1,15 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QMenu, QPushButton, QSlider, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QMenu,
+    QPushButton,
+    QSlider,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget
+)
 
 from path_tracer import RendererType
 
@@ -17,6 +27,13 @@ class SettingsWidget(QGroupBox):
             self
         )
         layout.addWidget(self.renderer)
+
+        self.maxDepth = MaxDepthWidget(
+            self.model.getMaxDepth,
+            self.model.setMaxDepth,
+            self
+        )
+        layout.addWidget(self.maxDepth)
 
         self.lightSlider = LightSlider(self.model, self)
         layout.addWidget(self.lightSlider)
@@ -63,6 +80,37 @@ class RendererWidget(QWidget):
     def handleStateChanged(self, renderer_type):
         self.setter(renderer_type)
         self.update()
+
+
+class MaxDepthWidget(QWidget):
+    def __init__(self, getter, setter, parent=None):
+        super().__init__(parent)
+
+        self.getter = getter
+        self.setter = setter
+
+        layout = QHBoxLayout()
+
+        self.text = QLabel("Max Depth: ", self)
+        layout.addWidget(self.text)
+
+        self.maxDepth = QSpinBox(self)
+        self.maxDepth.setMinimum(0)
+        self.maxDepth.setValue(self.getter())
+        self.maxDepth.valueChanged.connect(self.handleValueChanged)
+        layout.addWidget(self.maxDepth)
+
+        self.setLayout(layout)
+
+        self.update()
+
+    def handleValueChanged(self):
+        self.setter(self.maxDepth.value())
+        self.update()
+
+    def update(self):
+        maxDepth = self.getter()
+        self.maxDepth.setValue(maxDepth)
 
 
 class LightSlider(QWidget):

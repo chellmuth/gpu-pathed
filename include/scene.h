@@ -14,6 +14,7 @@
 namespace rays {
 
 constexpr float defaultLightPosition = -0.6f;
+constexpr int defaultMaxDepth = 3;
 
 class Scene {
 public:
@@ -21,7 +22,8 @@ public:
         Camera &camera,
         SceneData sceneData
     ) : m_camera(camera),
-        m_sceneData(sceneData)
+        m_sceneData(sceneData),
+        m_maxDepth(defaultMaxDepth)
     {}
 
     void init();
@@ -43,10 +45,19 @@ public:
         m_materials[materialIndex].setEmit(color);
     }
 
+    int getMaxDepth() const {
+        return m_maxDepth;
+    }
+
+    void setMaxDepth(int maxDepth) {
+        m_maxDepth = maxDepth;
+    }
+
 private:
     Camera m_camera;
     SceneData m_sceneData;
     std::vector<Material> m_materials;
+    int m_maxDepth;
 };
 
 }

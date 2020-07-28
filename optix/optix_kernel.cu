@@ -53,8 +53,10 @@ extern "C" __global__ void __raygen__rg()
 
     rays::Vec3 result(0.f);
 
-    int spp = 100;
+    int spp = 10;
     for (int i = 0; i < spp; i++) {
+
+    if (params.maxDepth == 0) { continue; }
 
     const rays::Ray cameraRay = params.camera.generateRay(row, col, make_float2(0.5f, 0.5f));
     const rays::Vec3 origin = cameraRay.origin();
@@ -83,12 +85,19 @@ extern "C" __global__ void __raygen__rg()
     );
 
     if (!prd.done) {
-        const rays::Material &material = *prd.material;
         const Intersection &intersection = prd.intersection;
+        const rays::Material &material = *prd.material;
 
         if (intersection.isFront()) {
             result += material.getEmit();
         }
+    }
+
+    for (int path = 1; path < params.maxDepth; path++) {
+        if (prd.done) { break; }
+
+        const Intersection &intersection = prd.intersection;
+        const rays::Material &material = *prd.material;
 
         const float xi1 = rnd(seed);
         const float xi2 = rnd(seed);
@@ -117,11 +126,11 @@ extern "C" __global__ void __raygen__rg()
             p0, p1
         );
 
-        if (!prd.done) {
-            const rays::Material &bounceMaterial = *prd.material;
-            if (intersection.isFront()) {
-                result += bounceMaterial.getEmit() * beta;
-            }
+        if (prd.done) { break; }
+
+        const rays::Material &bounceMaterial = *prd.material;
+        if (intersection.isFront()) {
+            result += bounceMaterial.getEmit() * beta;
         }
     }
 
