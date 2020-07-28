@@ -19,7 +19,11 @@ public:
     OptixTracer();
 
     void init(int width, int height, const Scene &scene) override;
-    RenderRecord renderAsync(cudaGraphicsResource *pboResource, const CUDAGlobals &cudaGlobals) override;
+    RenderRecord renderAsync(
+        cudaGraphicsResource *pboResource,
+        const Scene &scene,
+        const CUDAGlobals &cudaGlobals
+    ) override;
     bool pollRender(cudaGraphicsResource *pboResource, RenderRecord record) override;
 
     void reset() override;

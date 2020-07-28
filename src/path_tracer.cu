@@ -126,8 +126,11 @@ void PathTracer::init(
 }
 
 static constexpr int samplesPerPass = 1;
-RenderRecord PathTracer::renderAsync(cudaGraphicsResource *pboResource, const CUDAGlobals &cudaGlobals)
-{
+RenderRecord PathTracer::renderAsync(
+    cudaGraphicsResource *pboResource,
+    const Scene &scene,
+    const CUDAGlobals &cudaGlobals
+) {
     checkCudaErrors(cudaGraphicsMapResources(1, &pboResource, NULL));
     checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&dev_map, NULL, pboResource));
 

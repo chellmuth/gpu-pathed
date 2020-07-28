@@ -55,9 +55,13 @@ void PBOManager::swapPBOs()
 RenderSession::RenderSession(int width, int height)
     : m_width(width),
       m_height(height),
-      m_rendererType(RendererType::CUDA)
+      m_rendererType(RendererType::Optix)
 {
-    m_pathTracer = std::make_unique<PathTracer>();
+    if (m_rendererType == RendererType::CUDA) {
+        m_pathTracer = std::make_unique<PathTracer>();
+    } else if (m_rendererType == RendererType::Optix) {
+        m_pathTracer = std::make_unique<OptixTracer>();
+    }
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
 
     constexpr int sceneIndex = 0;

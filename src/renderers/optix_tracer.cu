@@ -38,17 +38,26 @@ void OptixTracer::init(
     checkCudaErrors(cudaMalloc((void **)&dev_radiances, pixelCount * sizeof(Vec3)));
 }
 
-RenderRecord OptixTracer::renderAsync(cudaGraphicsResource *pboResource, const CUDAGlobals &cudaGlobals)
-{
+RenderRecord OptixTracer::renderAsync(
+    cudaGraphicsResource *pboResource,
+    const Scene &scene,
+    const CUDAGlobals &cudaGlobals
+) {
     checkCudaErrors(cudaGraphicsMapResources(1, &pboResource, NULL));
     checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&dev_map, NULL, pboResource));
+
+    if (m_shouldReset) {
+        m_currentSamples = 0;
+        m_optix.updateMaterials(scene);
+        m_shouldReset = false;
+    }
 
     cudaEvent_t beginEvent, endEvent;
     cudaEventCreate(&beginEvent);
     cudaEventCreate(&endEvent);
     cudaEventRecord(beginEvent);
 
-    uchar4 *image = m_optix.launch();
+    uchar4 *image = m_optix.launch(m_currentSamples);
     checkCudaErrors(cudaMemcpy(dev_map, image, m_width * m_height * sizeof(uchar4), cudaMemcpyHostToDevice));
 
     cudaEventRecord(endEvent);
@@ -73,7 +82,7 @@ bool OptixTracer::pollRender(cudaGraphicsResource *pboResource, RenderRecord rec
         std::cout << "CUDA Frame: " << milliseconds << "ms" << std::endl;
     }
 
-    m_currentSamples += m_optix.getCurrentSamples();
+    m_currentSamples += 1;
     return true;
 }
 

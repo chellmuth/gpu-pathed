@@ -53,7 +53,7 @@ public:
 
     RenderState renderAsync() {
         cudaGraphicsResource *pboResource = m_pboManager.getRenderResource();
-        m_currentRecord = m_pathTracer->renderAsync(pboResource, *m_cudaGlobals);
+        m_currentRecord = m_pathTracer->renderAsync(pboResource, *m_scene, *m_cudaGlobals);
         return RenderState{true, m_pboManager.getDisplayPBO()};
     }
 

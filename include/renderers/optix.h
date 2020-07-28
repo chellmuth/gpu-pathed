@@ -31,22 +31,20 @@ struct HitGroupData {
 
 class Optix {
 public:
-    Optix() : m_currentSamples(0) {}
-
     void init(int width, int height, const Scene &scene);
-    uchar4 *launch();
-    int getCurrentSamples() const { return m_currentSamples; }
+    uchar4 *launch(int currentSamples);
+
+    void updateMaterials(const Scene &scene);
 
 private:
     int m_width;
     int m_height;
     Params m_params;
 
-    int m_currentSamples;
-
     uchar4 *d_image;
     Vec3 *d_passRadiances;
     Vec3 *d_radiances;
+    Material *d_materials;
     CUdeviceptr d_param;
 
     OptixTraversableHandle m_gasHandle;

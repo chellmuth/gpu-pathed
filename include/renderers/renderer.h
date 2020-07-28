@@ -12,7 +12,11 @@ namespace rays {
 class Renderer {
 public:
     virtual void init(int width, int height, const Scene &scene) = 0;
-    virtual RenderRecord renderAsync(cudaGraphicsResource *pboResource, const CUDAGlobals &cudaGlobals) = 0;
+    virtual RenderRecord renderAsync(
+        cudaGraphicsResource *pboResource,
+        const Scene &scene,
+        const CUDAGlobals &cudaGlobals
+    ) = 0;
     virtual bool pollRender(cudaGraphicsResource *pboResource, RenderRecord record) = 0;
 
     virtual void reset() = 0;

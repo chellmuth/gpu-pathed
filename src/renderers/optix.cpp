@@ -384,6 +384,18 @@ static void setupShaderBindingTable(
     sbt.hitgroupRecordCount = materials.size();
 }
 
+void Optix::updateMaterials(const Scene &scene)
+{
+    const Material *materials = scene.getMaterialsData();
+    const size_t materialsSizeInBytes = scene.getMaterialsSize();
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(d_materials),
+        materials,
+        materialsSizeInBytes,
+        cudaMemcpyHostToDevice
+    ));
+}
+
 void Optix::init(int width, int height, const Scene &scene)
 {
     char log[2048];
@@ -447,16 +459,9 @@ void Optix::init(int width, int height, const Scene &scene)
         width * height * sizeof(uchar4)
     ));
 
-    const std::vector<Material> &materials = scene.getSceneData().materials;
-    Material *d_materials = 0;
-    const size_t materialsSizeInBytes = materials.size() * sizeof(Material);
+   const size_t materialsSizeInBytes = scene.getMaterialsSize();
     checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_materials), materialsSizeInBytes));
-    checkCUDA(cudaMemcpy(
-        reinterpret_cast<void *>(d_materials),
-        materials.data(),
-        materialsSizeInBytes,
-        cudaMemcpyHostToDevice
-    ));
+    updateMaterials(scene);
 
     const std::vector<Triangle> &triangles = scene.getSceneData().triangles;
     Triangle *d_triangles = 0;
@@ -509,7 +514,6 @@ static uchar4 *launchOptix(
         cudaMemcpyHostToDevice
     ));
 
-    std::cout << "LAUNCH!" << std::endl;
     checkOptix(optixLaunch(
         pipeline,
         stream,
@@ -549,13 +553,13 @@ static uchar4 *launchOptix(
     return image;
 }
 
-uchar4 *Optix::launch()
+uchar4 *Optix::launch(int currentSamples)
 {
     uchar4 *image = launchOptix(
         m_params,
         m_width,
         m_height,
-        m_currentSamples,
+        currentSamples,
         m_gasHandle,
         m_pipeline,
         m_sbt,
@@ -565,7 +569,6 @@ uchar4 *Optix::launch()
         d_param
     );
 
-    m_currentSamples += 1;
     return image;
 }
 
