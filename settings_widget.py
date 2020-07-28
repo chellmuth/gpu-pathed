@@ -28,7 +28,11 @@ class SettingsWidget(QGroupBox):
         )
         layout.addWidget(self.renderer)
 
-        self.maxDepth = MaxDepthWidget(self)
+        self.maxDepth = MaxDepthWidget(
+            self.model.getMaxDepth,
+            self.model.setMaxDepth,
+            self
+        )
         layout.addWidget(self.maxDepth)
 
         self.lightSlider = LightSlider(self.model, self)
@@ -79,8 +83,11 @@ class RendererWidget(QWidget):
 
 
 class MaxDepthWidget(QWidget):
-    def __init__(self, model, parent=None):
+    def __init__(self, getter, setter, parent=None):
         super().__init__(parent)
+
+        self.getter = getter
+        self.setter = setter
 
         layout = QHBoxLayout()
 
@@ -88,9 +95,21 @@ class MaxDepthWidget(QWidget):
         layout.addWidget(self.text)
 
         self.maxDepth = QSpinBox(self)
+        self.maxDepth.setValue(self.getter())
+        self.maxDepth.valueChanged.connect(self.handleValueChanged)
         layout.addWidget(self.maxDepth)
 
         self.setLayout(layout)
+
+        self.update()
+
+    def handleValueChanged(self):
+        self.setter(self.maxDepth.value())
+        self.update()
+
+    def update(self):
+        maxDepth = self.getter()
+        self.maxDepth.setValue(maxDepth)
 
 
 class LightSlider(QWidget):

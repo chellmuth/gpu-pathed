@@ -60,13 +60,13 @@ public:
     Vec3 getCameraUp() const;
     void setCameraUp(float upX, float upY, float upZ);
 
-    void zoomCamera(float ticks);
-
     void updateSpp(int spp);
     int getSpp() const;
 
     int getMaxDepth() const;
     void setMaxDepth(int maxDepth);
+
+    void zoomCamera(float ticks);
 
 private:
     const Scene *m_scene;
