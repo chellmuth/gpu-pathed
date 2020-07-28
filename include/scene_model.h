@@ -28,7 +28,7 @@ public:
     SceneModel(const SceneModel &other) = delete;
     SceneModel(SceneModel&& other) = delete;
 
-    void subscribe(std::function<void(Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType)> callback);
+    void subscribe(std::function<void(Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType, int maxDepth)> callback);
 
     RendererType getRendererType() const;
     void setRendererType(RendererType rendererType);
@@ -57,6 +57,9 @@ public:
     void updateSpp(int spp);
     int getSpp() const;
 
+    int getMaxDepth() const;
+    void setMaxDepth(int maxDepth);
+
 private:
     const Scene *m_scene;
 
@@ -66,7 +69,7 @@ private:
     int m_spp;
     float m_lightPosition;
 
-    std::function<void(Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType)> m_callback;
+    std::function<void(Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType, int maxDepth)> m_callback;
 };
 
 }

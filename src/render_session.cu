@@ -77,13 +77,14 @@ RenderSession::RenderSession(int width, int height)
         defaultLightPosition,
         m_rendererType
     );
-    m_sceneModel->subscribe([this](Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType) {
+    m_sceneModel->subscribe([this](Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType, int maxDepth) {
         if (rendererType != m_rendererType) {
             m_rendererType = rendererType;
             m_resetRenderer = true;
             return;
         }
 
+        m_scene->setMaxDepth(maxDepth);
         m_scene->setColor(m_sceneModel->getMaterialIndex(), albedo);
         m_scene->setEmit(m_sceneModel->getMaterialIndex(), emit);
 
