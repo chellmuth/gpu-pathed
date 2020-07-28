@@ -10,21 +10,7 @@ SceneData createSceneData(ObjParser &objParser)
 
     SceneData sceneData;
 
-    size_t faceCount = result.faces.size();
-    for (size_t i = 0; i < faceCount; i++) {
-        Face &face = result.faces[i];
-        int materialIndex = result.mtlIndices[i];
-
-        sceneData.triangles.push_back(
-            Triangle(
-                Vec3(face.v0.x, face.v0.y, face.v0.z),
-                Vec3(face.v1.x, face.v1.y, face.v1.z),
-                Vec3(face.v2.x, face.v2.y, face.v2.z),
-                materialIndex
-            )
-        );
-    }
-
+    // Process materials
     if (result.mtls.empty()) {
         sceneData.materials.push_back(
             Material(Vec3(1.f), Vec3(0.f))
@@ -40,6 +26,29 @@ SceneData createSceneData(ObjParser &objParser)
         );
     }
 
+    // Process geometry
+    size_t faceCount = result.faces.size();
+    for (size_t i = 0; i < faceCount; i++) {
+        Face &face = result.faces[i];
+        int materialIndex = result.mtlIndices[i];
+
+        sceneData.triangles.push_back(
+            Triangle(
+                Vec3(face.v0.x, face.v0.y, face.v0.z),
+                Vec3(face.v1.x, face.v1.y, face.v1.z),
+                Vec3(face.v2.x, face.v2.y, face.v2.z),
+                materialIndex
+            )
+        );
+    }
+
+    // Process lights
+    for (size_t i = 0; i < faceCount; i++) {
+        size_t materialIndex = sceneData.triangles[i].materialIndex();
+        if (sceneData.materials[materialIndex].getEmit().isZero()) { continue; }
+
+        sceneData.lightIndices.push_back(i);
+    }
 
     return sceneData;
 }

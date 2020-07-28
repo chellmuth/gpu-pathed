@@ -35,6 +35,50 @@ __global__ static void renderInit(int width, int height, curandState *randState)
     curand_init(seed, pixelIndex, 0, &randState[pixelIndex]);
 }
 
+__device__ static Vec3 directSampleLights(
+    const HitRecord &hitRecord,
+    const PrimitiveList *world,
+    curandState &randState
+) {
+    const LightSample lightSample = world->sampleDirectLights(hitRecord.point, randState);
+
+    const Vec3 wiWorld = normalized(lightSample.point - hitRecord.point);
+    const Ray shadowRay(hitRecord.point, wiWorld);
+
+    HitRecord occlusionRecord;
+    const bool occluded = world->hit(
+        shadowRay,
+        1e-4,
+        (lightSample.point - hitRecord.point).length() - 2e-4,
+        occlusionRecord
+    );
+
+    if (!occluded) {
+        const Vec3 wi = Frame(hitRecord.normal).toLocal(wiWorld);
+        const float pdf = lightSample.solidAnglePDF(hitRecord.point);
+        const Material &emitMaterial = world->getMaterial(lightSample.materialIndex);
+        const Material &hitMaterial = world->getMaterial(hitRecord.materialIndex);
+        const Vec3 lightContribution = Vec3(1.f)
+            * emitMaterial.getEmit()
+            * hitMaterial.f(hitRecord.wo, wi)
+            * WorldFrame::absCosTheta(hitRecord.normal, wiWorld)
+            / pdf;
+
+        return lightContribution;
+    } else {
+        return Vec3(0.f);
+    }
+}
+
+__device__ static Vec3 direct(
+    const HitRecord &hitRecord,
+// todo bsdf sample
+    const PrimitiveList *world,
+    curandState &randState
+) {
+    return directSampleLights(hitRecord, world, randState);
+}
+
 __device__ static Vec3 calculateLi(
     const Ray& ray,
     const PrimitiveList *world,
@@ -60,6 +104,8 @@ __device__ static Vec3 calculateLi(
     }
 
     for (int path = 1; path < maxDepth; path++) {
+        result += direct(record, world, randState) * beta;
+
         const Frame intersection(record.normal);
         const Material &material = world->getMaterial(record.materialIndex);
         float pdf;
@@ -72,11 +118,11 @@ __device__ static Vec3 calculateLi(
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
         if (hit) {
-            const Material &emitMaterial = world->getMaterial(record.materialIndex);
-            const Vec3 emit = emitMaterial.getEmit(record);
-            if (!emit.isZero()) {
-                result += emit * beta;
-            }
+            // const Material &emitMaterial = world->getMaterial(record.materialIndex);
+            // const Vec3 emit = emitMaterial.getEmit(record);
+            // if (!emit.isZero()) {
+            //     result += emit * beta;
+            // }
         } else {
             return result;
         }

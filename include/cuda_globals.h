@@ -22,6 +22,7 @@ public:
     Material *d_materials;
     Triangle *d_triangles;
     Sphere *d_spheres;
+    int *d_lightIndices;
 };
 
 }

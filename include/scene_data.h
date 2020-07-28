@@ -13,6 +13,7 @@ struct SceneData {
     std::vector<Triangle> triangles;
     std::vector<Sphere> spheres;
     std::vector<Material> materials;
+    std::vector<int> lightIndices;
 };
 
 }
