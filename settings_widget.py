@@ -11,8 +11,34 @@ class SettingsWidget(QGroupBox):
 
         layout = QVBoxLayout()
 
-        self.lightSlider = LightSlider(self.model)
+        self.renderer = RendererWidget(
+            self.model.getRendererType,
+            self.model.setRendererType,
+            self
+        )
+        layout.addWidget(self.renderer)
+
+        self.lightSlider = LightSlider(self.model, self)
         layout.addWidget(self.lightSlider)
+
+        self.setLayout(layout)
+        self.update()
+
+    def update(self):
+        self.renderer.update()
+
+
+class RendererWidget(QWidget):
+    def __init__(self, getter, setter, parent=None):
+        super().__init__(parent)
+
+        self.getter = getter
+        self.setter = setter
+
+        layout = QHBoxLayout()
+
+        self.rendererLabel = QLabel("Renderer:")
+        layout.addWidget(self.rendererLabel)
 
         self.rendererButton = QPushButton("Renderer")
         menu = QMenu(self)
@@ -23,10 +49,9 @@ class SettingsWidget(QGroupBox):
         layout.addWidget(self.rendererButton)
 
         self.setLayout(layout)
-        self.update()
 
     def update(self):
-        renderer_type = self.model.getRendererType()
+        renderer_type = self.getter()
         if renderer_type == RendererType.CUDA:
             self.rendererButton.setText("CUDA")
         elif renderer_type == RendererType.Optix:
@@ -36,8 +61,9 @@ class SettingsWidget(QGroupBox):
             exit(1)
 
     def handleStateChanged(self, renderer_type):
-        self.model.setRendererType(renderer_type)
+        self.setter(renderer_type)
         self.update()
+
 
 class LightSlider(QWidget):
     def __init__(self, model, parent=None):
