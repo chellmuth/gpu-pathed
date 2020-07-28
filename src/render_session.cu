@@ -77,18 +77,18 @@ RenderSession::RenderSession(int width, int height)
         defaultLightPosition,
         m_rendererType
     );
-    m_sceneModel->subscribe([this](Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType, int maxDepth) {
-        if (rendererType != m_rendererType) {
-            m_rendererType = rendererType;
+    m_sceneModel->subscribe([this](const SceneModelAttributes &attributes) {
+        if (attributes.rendererType != m_rendererType) {
+            m_rendererType = attributes.rendererType;
             m_resetRenderer = true;
             return;
         }
 
-        m_scene->setMaxDepth(maxDepth);
-        m_scene->setColor(m_sceneModel->getMaterialIndex(), albedo);
-        m_scene->setEmit(m_sceneModel->getMaterialIndex(), emit);
+        m_scene->setMaxDepth(attributes.maxDepth);
+        m_scene->setColor(m_sceneModel->getMaterialIndex(), attributes.albedo);
+        m_scene->setEmit(m_sceneModel->getMaterialIndex(), attributes.emitted);
 
-        m_scene->setCamera(camera);
+        m_scene->setCamera(attributes.camera);
         m_cudaGlobals->copyCamera(m_scene->getCamera());
 
         m_pathTracer->reset();

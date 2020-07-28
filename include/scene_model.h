@@ -17,6 +17,14 @@ enum class RendererType {
     Optix
 };
 
+struct SceneModelAttributes {
+    Vec3 albedo;
+    Vec3 emitted;
+    Camera camera;
+    RendererType rendererType;
+    int maxDepth;
+};
+
 class SceneModel {
 public:
     SceneModel(
@@ -28,7 +36,7 @@ public:
     SceneModel(const SceneModel &other) = delete;
     SceneModel(SceneModel&& other) = delete;
 
-    void subscribe(std::function<void(Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType, int maxDepth)> callback);
+    void subscribe(std::function<void(const SceneModelAttributes &attributes)> callback);
 
     RendererType getRendererType() const;
     void setRendererType(RendererType rendererType);
@@ -69,7 +77,7 @@ private:
     int m_spp;
     float m_lightPosition;
 
-    std::function<void(Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType, int maxDepth)> m_callback;
+    std::function<void(const SceneModelAttributes &attributes)> m_callback;
 };
 
 }

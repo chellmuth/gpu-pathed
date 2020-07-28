@@ -13,7 +13,7 @@ SceneModel::SceneModel(
     m_materialIndex(-1)
 {}
 
-void SceneModel::subscribe(std::function<void(Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType, int maxDepth)> callback)
+void SceneModel::subscribe(std::function<void(const SceneModelAttributes &attributes)> callback)
 {
     m_callback = callback;
 }
@@ -25,12 +25,24 @@ RendererType SceneModel::getRendererType() const {
 void SceneModel::setRendererType(RendererType rendererType)
 {
     m_rendererType = rendererType;
-    m_callback(getColor(), getEmit(), m_scene->getCamera(), m_rendererType, getMaxDepth());
+    m_callback({
+        getColor(),
+        getEmit(),
+        m_scene->getCamera(),
+        m_rendererType,
+        getMaxDepth()
+    });
 }
 
 void SceneModel::setColor(float r, float g, float b)
 {
-    m_callback(Vec3(r, g, b), getEmit(), m_scene->getCamera(), m_rendererType, getMaxDepth());
+    m_callback({
+        Vec3(r, g, b),
+        getEmit(),
+        m_scene->getCamera(),
+        m_rendererType,
+        getMaxDepth()
+    });
 }
 
 Vec3 SceneModel::getColor() const
@@ -42,7 +54,13 @@ Vec3 SceneModel::getColor() const
 
 void SceneModel::setEmit(float r, float g, float b)
 {
-    m_callback(getColor(), Vec3(r, g, b), m_scene->getCamera(), m_rendererType, getMaxDepth());
+    m_callback({
+        getColor(),
+        Vec3(r, g, b),
+        m_scene->getCamera(),
+        m_rendererType,
+        getMaxDepth()
+    });
 }
 
 Vec3 SceneModel::getEmit() const
@@ -65,7 +83,13 @@ void SceneModel::setMaterialIndex(int materialIndex)
 void SceneModel::setLightPosition(float lightPosition)
 {
     m_lightPosition = lightPosition;
-    m_callback(getColor(), getEmit(), m_scene->getCamera(), m_rendererType, getMaxDepth());
+    m_callback({
+        getColor(),
+        getEmit(),
+        m_scene->getCamera(),
+        m_rendererType,
+        getMaxDepth()
+    });
 }
 
 float SceneModel::getLightPosition() const
@@ -100,7 +124,13 @@ void SceneModel::setCameraOrigin(float originX, float originY, float originZ)
         current.getVerticalFOV(),
         current.getResolution()
     );
-    m_callback(getColor(), getEmit(), updated, m_rendererType, getMaxDepth());
+    m_callback({
+        getColor(),
+        getEmit(),
+        updated,
+        m_rendererType,
+        getMaxDepth()
+    });
 }
 
 Vec3 SceneModel::getCameraTarget() const
@@ -120,7 +150,13 @@ void SceneModel::setCameraTarget(float targetX, float targetY, float targetZ)
         current.getVerticalFOV(),
         current.getResolution()
     );
-    m_callback(getColor(), getEmit(), updated, m_rendererType, getMaxDepth());
+    m_callback({
+        getColor(),
+        getEmit(),
+        updated,
+        m_rendererType,
+        getMaxDepth()
+    });
 }
 
 Vec3 SceneModel::getCameraUp() const
@@ -140,7 +176,13 @@ void SceneModel::setCameraUp(float upX, float upY, float upZ)
         current.getVerticalFOV(),
         current.getResolution()
     );
-    m_callback(getColor(), getEmit(), updated, m_rendererType, getMaxDepth());
+    m_callback({
+        getColor(),
+        getEmit(),
+        updated,
+        m_rendererType,
+        getMaxDepth()
+    });
 }
 
 void SceneModel::zoomCamera(float ticks)
@@ -155,7 +197,13 @@ void SceneModel::zoomCamera(float ticks)
         current.getVerticalFOV(),
         current.getResolution()
     );
-    m_callback(getColor(), getEmit(), updated, m_rendererType, getMaxDepth());
+    m_callback({
+        getColor(),
+        getEmit(),
+        updated,
+        m_rendererType,
+        getMaxDepth()
+    });
 }
 
 int SceneModel::getMaxDepth() const
@@ -165,7 +213,13 @@ int SceneModel::getMaxDepth() const
 
 void SceneModel::setMaxDepth(int maxDepth)
 {
-    m_callback(getColor(), getEmit(), m_scene->getCamera(), m_rendererType, maxDepth);
+    m_callback({
+        getColor(),
+        getEmit(),
+        m_scene->getCamera(),
+        m_rendererType,
+        maxDepth
+    });
 }
 
 }
