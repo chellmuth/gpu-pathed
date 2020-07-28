@@ -4,6 +4,7 @@
 
 #include "camera.h"
 #include "macro_helper.h"
+#include "renderers/optix.h"
 #include "parsers/obj_parser.h"
 #include "scene_data.h"
 
@@ -53,9 +54,14 @@ void PBOManager::swapPBOs()
 
 RenderSession::RenderSession(int width, int height)
     : m_width(width),
-      m_height(height)
+      m_height(height),
+      m_rendererType(RendererType::Optix)
 {
-    m_pathTracer = std::make_unique<PathTracer>();
+    if (m_rendererType == RendererType::CUDA) {
+        m_pathTracer = std::make_unique<PathTracer>();
+    } else if (m_rendererType == RendererType::Optix) {
+        m_pathTracer = std::make_unique<OptixTracer>();
+    }
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
 
     constexpr int sceneIndex = 0;
@@ -67,11 +73,17 @@ RenderSession::RenderSession(int width, int height)
         sceneData
     );
     m_sceneModel = std::make_unique<SceneModel>(
-        m_pathTracer.get(),
         m_scene.get(),
-        defaultLightPosition
+        defaultLightPosition,
+        m_rendererType
     );
-    m_sceneModel->subscribe([this](Vec3 albedo, Vec3 emit, Camera camera) {
+    m_sceneModel->subscribe([this](Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType) {
+        if (rendererType != m_rendererType) {
+            m_rendererType = rendererType;
+            m_resetRenderer = true;
+            return;
+        }
+
         m_scene->setColor(m_sceneModel->getMaterialIndex(), albedo);
         m_scene->setEmit(m_sceneModel->getMaterialIndex(), emit);
 
@@ -115,7 +127,7 @@ RenderState RenderSession::init(GLuint pbo1, GLuint pbo2)
 
     checkCudaErrors(cudaGetLastError());
 
-    m_pathTracer->init(m_width, m_height);
+    m_pathTracer->init(m_width, m_height, *m_scene);
 
     return RenderState{false, pbo1};
 }

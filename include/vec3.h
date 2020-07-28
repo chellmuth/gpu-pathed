@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cmath>
+
 namespace rays {
 
 class Vec3 {
 public:
-    __host__ __device__ Vec3() {e[0] = 0.f; e[1] = 0.f; e[2] = 0.f; }
+    __host__ __device__ Vec3() {}
     __host__ __device__ Vec3(float e0, float e1, float e2) { e[0] = e0; e[1] = e1; e[2] = e2; }
     __host__ __device__ Vec3(float ee) { e[0] = ee; e[1] = ee; e[2] = ee; }
     __host__ __device__ inline float x() const { return e[0]; }
@@ -36,7 +38,7 @@ public:
     __host__ __device__ inline Vec3& operator/=(const float t);
 
     __host__ __device__ inline float length() const {
-        return sqrt(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
+        return sqrtf(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
     }
 
     __host__ __device__ inline bool isZero() const

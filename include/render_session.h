@@ -4,6 +4,9 @@
 #include "hit_test.h"
 #include "material.h"
 #include "path_tracer.h"
+#include "render_record.h"
+#include "renderers/optix_tracer.h"
+#include "renderers/renderer.h"
 #include "scene.h"
 #include "scene_model.h"
 #include "sphere.h"
@@ -50,7 +53,7 @@ public:
 
     RenderState renderAsync() {
         cudaGraphicsResource *pboResource = m_pboManager.getRenderResource();
-        m_currentRecord = m_pathTracer->renderAsync(pboResource, *m_cudaGlobals);
+        m_currentRecord = m_pathTracer->renderAsync(pboResource, *m_scene, *m_cudaGlobals);
         return RenderState{true, m_pboManager.getDisplayPBO()};
     }
 
@@ -59,16 +62,31 @@ public:
         bool finished = m_pathTracer->pollRender(pboResource, m_currentRecord);
         if (finished) {
             m_pboManager.swapPBOs();
+            m_sceneModel->updateSpp(m_pathTracer->getSpp());
+
+            if (m_resetRenderer) {
+                if (m_rendererType == RendererType::CUDA) {
+                    m_pathTracer.reset(new PathTracer());
+                } else if (m_rendererType == RendererType::Optix) {
+                    m_pathTracer.reset(new OptixTracer());
+                }
+                m_pathTracer->init(m_width, m_height, *m_scene);
+                m_resetRenderer = false;
+            }
         }
+
         return RenderState{!finished, m_pboManager.getDisplayPBO()};
     }
 
 private:
     RenderRecord m_currentRecord;
 
-    std::unique_ptr<PathTracer> m_pathTracer;
+    std::unique_ptr<Renderer> m_pathTracer;
     PBOManager m_pboManager;
     int m_width, m_height;
+
+    bool m_resetRenderer;
+    RendererType m_rendererType;
 
     std::unique_ptr<CUDAGlobals> m_cudaGlobals;
     std::unique_ptr<Scene> m_scene;

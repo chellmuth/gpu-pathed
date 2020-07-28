@@ -2,7 +2,7 @@
 
 #include <QOpenGLWidget>
 
-#include "render_session.h"
+#include <render_session.h>
 
 class GLWidget : public QOpenGLWidget {
 public:

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 
 #include "camera.h"
@@ -29,7 +30,7 @@ public:
     const Camera &getCamera() const { return m_camera; }
     void setCamera(const Camera &camera) { m_camera = camera; }
 
-    SceneData &getSceneData() { return m_sceneData; }
+    const SceneData &getSceneData() const { return m_sceneData; }
 
     const Material *getMaterialsData() const { return m_materials.data(); }
     const Material &getMaterial(int materialIndex) const { return m_materials[materialIndex]; }

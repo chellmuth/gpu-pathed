@@ -2,11 +2,12 @@ import sys
 
 import OpenGL.GL as gl
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QApplication, QGroupBox, QHBoxLayout, QLabel, QOpenGLWidget, QSlider, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QGroupBox, QHBoxLayout, QLabel, QOpenGLWidget, QVBoxLayout, QWidget
 
 import path_tracer
 from camera_widget import CameraWidget
 from material_widget import MaterialWidget
+from settings_widget import SettingsWidget
 
 class App(QWidget):
     def __init__(self, pt, parent=None):
@@ -107,13 +108,7 @@ class Sidebar(QWidget):
         self.cameraGroup = CameraWidget(self.model, self)
 
         # Settings group
-        self.settingsGroup = QGroupBox("Settings", self)
-        settingsLayout = QVBoxLayout()
-
-        self.lightSlider = LightSlider(self.model)
-        settingsLayout.addWidget(self.lightSlider)
-
-        self.settingsGroup.setLayout(settingsLayout)
+        self.settingsGroup = SettingsWidget(self.model, self)
 
         # Info group
         self.infoGroup = QGroupBox("Info", self)
@@ -137,31 +132,6 @@ class Sidebar(QWidget):
         self.materialGroup.update()
         self.cameraGroup.update()
         self.spp.update()
-
-class LightSlider(QWidget):
-    def __init__(self, model, parent=None):
-        super().__init__(parent)
-
-        self.model = model
-
-        layout = QHBoxLayout()
-
-        self.text = QLabel("Light Position: ", self)
-        self.slider = QSlider(Qt.Horizontal, self)
-        self.slider.setMinimum(-100)
-        self.slider.setMaximum(100)
-        self.slider.setValue(int(self.model.getLightPosition() * 100))
-
-        self.slider.valueChanged.connect(self.handleChanged)
-
-        layout.addWidget(self.text)
-        layout.addWidget(self.slider)
-        layout.addStretch()
-
-        self.setLayout(layout)
-
-    def handleChanged(self, value):
-        self.model.setLightPosition(value / 100.)
 
 class SppLabel(QWidget):
     def __init__(self, model, parent=None):

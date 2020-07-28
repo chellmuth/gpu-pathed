@@ -3,24 +3,34 @@
 namespace rays {
 
 SceneModel::SceneModel(
-    const PathTracer *pathTracer,
     const Scene *scene,
-    float lightPosition
-) : m_pathTracer(pathTracer),
-    m_scene(scene),
+    float lightPosition,
+    RendererType rendererType
+) : m_scene(scene),
     m_lightPosition(lightPosition),
+    m_rendererType(rendererType),
     m_spp(0),
     m_materialIndex(-1)
 {}
 
-void SceneModel::subscribe(std::function<void(Vec3 albedo, Vec3 emit, Camera camera)> callback)
+void SceneModel::subscribe(std::function<void(Vec3 albedo, Vec3 emit, Camera camera, RendererType rendererType)> callback)
 {
     m_callback = callback;
 }
 
+RendererType SceneModel::getRendererType() const {
+    return m_rendererType;
+}
+
+void SceneModel::setRendererType(RendererType rendererType)
+{
+    m_rendererType = rendererType;
+    m_callback(getColor(), getEmit(), m_scene->getCamera(), m_rendererType);
+}
+
 void SceneModel::setColor(float r, float g, float b)
 {
-    m_callback(Vec3(r, g, b), getEmit(), m_scene->getCamera());
+    m_callback(Vec3(r, g, b), getEmit(), m_scene->getCamera(), m_rendererType);
 }
 
 Vec3 SceneModel::getColor() const
@@ -32,7 +42,7 @@ Vec3 SceneModel::getColor() const
 
 void SceneModel::setEmit(float r, float g, float b)
 {
-    m_callback(getColor(), Vec3(r, g, b), m_scene->getCamera());
+    m_callback(getColor(), Vec3(r, g, b), m_scene->getCamera(), m_rendererType);
 }
 
 Vec3 SceneModel::getEmit() const
@@ -55,7 +65,7 @@ void SceneModel::setMaterialIndex(int materialIndex)
 void SceneModel::setLightPosition(float lightPosition)
 {
     m_lightPosition = lightPosition;
-    m_callback(getColor(), getEmit(), m_scene->getCamera());
+    m_callback(getColor(), getEmit(), m_scene->getCamera(), m_rendererType);
 }
 
 float SceneModel::getLightPosition() const
@@ -63,9 +73,14 @@ float SceneModel::getLightPosition() const
     return m_lightPosition;
 }
 
+void SceneModel::updateSpp(int spp)
+{
+    m_spp = spp;
+}
+
 int SceneModel::getSpp() const
 {
-    return m_pathTracer->getSpp();
+    return m_spp;
 }
 
 Vec3 SceneModel::getCameraOrigin() const
@@ -85,7 +100,7 @@ void SceneModel::setCameraOrigin(float originX, float originY, float originZ)
         current.getVerticalFOV(),
         current.getResolution()
     );
-    m_callback(getColor(), getEmit(), updated);
+    m_callback(getColor(), getEmit(), updated, m_rendererType);
 }
 
 Vec3 SceneModel::getCameraTarget() const
@@ -105,7 +120,7 @@ void SceneModel::setCameraTarget(float targetX, float targetY, float targetZ)
         current.getVerticalFOV(),
         current.getResolution()
     );
-    m_callback(getColor(), getEmit(), updated);
+    m_callback(getColor(), getEmit(), updated, m_rendererType);
 }
 
 Vec3 SceneModel::getCameraUp() const
@@ -125,7 +140,7 @@ void SceneModel::setCameraUp(float upX, float upY, float upZ)
         current.getVerticalFOV(),
         current.getResolution()
     );
-    m_callback(getColor(), getEmit(), updated);
+    m_callback(getColor(), getEmit(), updated, m_rendererType);
 }
 
 void SceneModel::zoomCamera(float ticks)
@@ -140,7 +155,7 @@ void SceneModel::zoomCamera(float ticks)
         current.getVerticalFOV(),
         current.getResolution()
     );
-    m_callback(getColor(), getEmit(), updated);
+    m_callback(getColor(), getEmit(), updated, m_rendererType);
 }
 
 }
