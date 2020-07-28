@@ -401,6 +401,11 @@ void Optix::updateCamera(const Scene &scene)
     m_params.camera = scene.getCamera();
 }
 
+void Optix::updateMaxDepth(const Scene &scene)
+{
+    m_params.maxDepth = scene.getMaxDepth();
+}
+
 void Optix::init(int width, int height, const Scene &scene)
 {
     char log[2048];
@@ -487,6 +492,7 @@ void Optix::init(int width, int height, const Scene &scene)
     m_params.materials = d_materials;
     m_params.primitives = d_triangles;
     m_params.handle = gasHandle;
+    updateMaxDepth(scene);
 
     checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_param), sizeof(Params)));
 

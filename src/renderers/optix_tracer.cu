@@ -48,8 +48,11 @@ RenderRecord OptixTracer::renderAsync(
 
     if (m_shouldReset) {
         m_currentSamples = 0;
+
+        m_optix.updateMaxDepth(scene);
         m_optix.updateCamera(scene);
         m_optix.updateMaterials(scene);
+
         m_shouldReset = false;
     }
 
