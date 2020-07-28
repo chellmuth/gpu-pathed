@@ -396,6 +396,11 @@ void Optix::updateMaterials(const Scene &scene)
     ));
 }
 
+void Optix::updateCamera(const Scene &scene)
+{
+    m_params.camera = scene.getCamera();
+}
+
 void Optix::init(int width, int height, const Scene &scene)
 {
     char log[2048];

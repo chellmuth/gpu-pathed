@@ -34,6 +34,7 @@ public:
     void init(int width, int height, const Scene &scene);
     uchar4 *launch(int currentSamples);
 
+    void updateCamera(const Scene &scene);
     void updateMaterials(const Scene &scene);
 
 private:
