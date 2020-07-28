@@ -19,15 +19,6 @@ __device__ Vec3 Material::sample(
     return Vec3(x, y, z);
 }
 
-__device__ Vec3 Material::f(const Vec3 &wo, const Vec3 &wi) const
-{
-    if (wo.z() < 0.f || wi.z() < 0.f) {
-        return Vec3(0.f);
-    }
-
-    return m_albedo / M_PI;
-}
-
 __device__ Vec3 Material::getEmit(const HitRecord &hit) const
 {
     if (hit.isFront()) {

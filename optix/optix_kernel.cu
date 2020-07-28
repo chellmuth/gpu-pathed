@@ -92,13 +92,14 @@ extern "C" __global__ void __raygen__rg()
 
         const float xi1 = rnd(seed);
         const float xi2 = rnd(seed);
-        const rays::Vec3 sample = material.sample(xi1, xi2);
+        float pdf;
+        const rays::Vec3 sample = material.sample(&pdf, xi1, xi2);
 
         const rays::Frame &frame = intersection.frame;
         const rays::Vec3 bounceWorld = normalized(frame.toWorld(sample));
 
         const float3 normal = vec3_to_float3(intersection.normal);
-        beta *= material.getAlbedo() * sample.z();
+        beta *= material.f(intersection.woLocal, sample) * sample.z() / pdf;
 
         rays::packPointer(&prd, p0, p1);
         optixTrace(
