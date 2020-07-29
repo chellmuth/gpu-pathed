@@ -1,17 +1,16 @@
 import OpenGL.GL as gl
 from PyQt5.QtWidgets import QOpenGLWidget
 
+
 class RenderWidget(QOpenGLWidget):
-    def __init__(self, pt, handleColorChange, parent=None):
+    def __init__(self, pt, parent=None):
         super().__init__(parent)
 
         self.pt = pt
-        self.handleColorChange = handleColorChange
         self.setFixedSize(pt.getWidth(), pt.getHeight())
 
     def mousePressEvent(self, event):
         self.pt.hitTest(event.x(), self.height() - event.y() - 1)
-        self.handleColorChange
 
     def wheelEvent(self, event):
         ticks = event.angleDelta().y() / 120

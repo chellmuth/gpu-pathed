@@ -31,7 +31,7 @@ class App(QWidget):
 
         layout = QHBoxLayout()
 
-        self.gl = RenderWidget(self.pt, self.handleColorChange, self)
+        self.gl = RenderWidget(self.pt, self)
         layout.addWidget(self.gl)
         layout.setAlignment(self.gl, Qt.AlignTop)
 
@@ -39,9 +39,6 @@ class App(QWidget):
         layout.addWidget(self.sidebar)
 
         self.setLayout(layout)
-
-    def handleColorChange(self):
-        self.sidebar.update()
 
     def update(self):
         self.gl.update()
