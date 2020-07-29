@@ -15,6 +15,7 @@ struct Params
 {
     Vec3 *passRadiances;
     int launchCount;
+    int samplesPerPass;
     unsigned int width;
     unsigned int height;
     Camera camera;

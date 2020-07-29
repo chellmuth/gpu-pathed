@@ -53,8 +53,7 @@ extern "C" __global__ void __raygen__rg()
 
     rays::Vec3 result(0.f);
 
-    int spp = 10;
-    for (int i = 0; i < spp; i++) {
+    for (int i = 0; i < params.samplesPerPass; i++) {
 
     if (params.maxDepth == 0) { continue; }
 
@@ -136,7 +135,7 @@ extern "C" __global__ void __raygen__rg()
 
     }
 
-    params.passRadiances[idx.y * params.width + idx.x] = result / spp;
+    params.passRadiances[idx.y * params.width + idx.x] = result / params.samplesPerPass;
 }
 
 extern "C" __global__ void __miss__ms()

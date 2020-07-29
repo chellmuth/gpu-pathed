@@ -21,6 +21,8 @@
 
 namespace rays {
 
+constexpr int samplesPerPass = 1;
+
 template <typename T>
 struct SbtRecord
 {
@@ -486,6 +488,7 @@ void Optix::init(int width, int height, const Scene &scene)
 
     m_params.passRadiances = d_passRadiances;
     m_params.launchCount = 0;
+    m_params.samplesPerPass = samplesPerPass;
     m_params.width = width;
     m_params.height = height;
     m_params.camera = scene.getCamera();
