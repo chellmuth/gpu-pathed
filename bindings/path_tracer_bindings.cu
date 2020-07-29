@@ -60,6 +60,8 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("setCameraUp", &SceneModel::setCameraUp)
         .def("getMaxDepth", &SceneModel::getMaxDepth)
         .def("setMaxDepth", &SceneModel::setMaxDepth)
+        .def("getNextEventEstimation", &SceneModel::getNextEventEstimation)
+        .def("setNextEventEstimation", &SceneModel::setNextEventEstimation)
         .def("zoomCamera", &SceneModel::zoomCamera)
         .def("getSpp", &SceneModel::getSpp);
 }

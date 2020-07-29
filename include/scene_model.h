@@ -23,6 +23,7 @@ struct SceneModelAttributes {
     Camera camera;
     RendererType rendererType;
     int maxDepth;
+    bool nextEventEstimation;
 };
 
 class SceneModel {
@@ -65,6 +66,9 @@ public:
 
     int getMaxDepth() const;
     void setMaxDepth(int maxDepth);
+
+    bool getNextEventEstimation() const;
+    void setNextEventEstimation(bool nextEventEstimation);
 
     void zoomCamera(float ticks);
 

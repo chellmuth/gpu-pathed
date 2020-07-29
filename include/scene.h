@@ -23,7 +23,8 @@ public:
         SceneData sceneData
     ) : m_camera(camera),
         m_sceneData(sceneData),
-        m_maxDepth(defaultMaxDepth)
+        m_maxDepth(defaultMaxDepth),
+        m_nextEventEstimation(true)
     {}
 
     void init();
@@ -48,9 +49,15 @@ public:
     int getMaxDepth() const {
         return m_maxDepth;
     }
-
     void setMaxDepth(int maxDepth) {
         m_maxDepth = maxDepth;
+    }
+
+    bool getNextEventEstimation() const {
+        return m_nextEventEstimation;
+    }
+    void setNextEventEstimation(bool nextEventEstimation) {
+        m_nextEventEstimation = nextEventEstimation;
     }
 
 private:
@@ -58,6 +65,7 @@ private:
     SceneData m_sceneData;
     std::vector<Material> m_materials;
     int m_maxDepth;
+    bool m_nextEventEstimation;
 };
 
 }
