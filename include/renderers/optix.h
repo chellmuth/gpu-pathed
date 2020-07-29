@@ -20,6 +20,7 @@ struct Params
     unsigned int height;
     Camera camera;
     int maxDepth;
+    bool useNextEventEstimation;
     Material *materials;
     Triangle *primitives;
     OptixTraversableHandle handle;
@@ -39,6 +40,7 @@ public:
     void updateCamera(const Scene &scene);
     void updateMaterials(const Scene &scene);
     void updateMaxDepth(const Scene &scene);
+    void updateNextEventEstimation(const Scene &scene);
 
 private:
     int m_width;

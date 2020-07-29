@@ -41,7 +41,93 @@ static __forceinline__ __device__ PerRayData *getPRD()
     return reinterpret_cast<PerRayData *>(rays::unpackPointer(u0, u1));
 }
 
-static __forceinline__ __device__ rays::Vec3 Li(
+static __forceinline__ __device__ rays::Vec3 LiNEE(
+    const rays::Ray &cameraRay,
+    unsigned int &seed
+) {
+    rays::Vec3 result(0.f);
+
+    if (params.maxDepth == 0) { return result; }
+
+    const rays::Vec3 origin = cameraRay.origin();
+    const rays::Vec3 direction = cameraRay.direction();
+
+    rays::Vec3 beta(1.f);
+
+    PerRayData prd;
+    prd.done = false;
+
+    unsigned int p0, p1;
+    rays::packPointer(&prd, p0, p1);
+    optixTrace(
+        params.handle,
+        make_float3(origin.x(), origin.y(), origin.z()),
+        make_float3(direction.x(), direction.y(), direction.z()),
+        0.0f,                // Min intersection distance
+        1e16f,               // Max intersection distance
+        0.0f,                // rayTime -- used for motion blur
+        OptixVisibilityMask(255), // Specify always visible
+        OPTIX_RAY_FLAG_NONE,
+        0,                   // SBT offset   -- See SBT discussion
+        1,                   // SBT stride   -- See SBT discussion
+        0,                   // missSBTIndex -- See SBT discussion
+        p0, p1
+    );
+
+    if (!prd.done) {
+        const Intersection &intersection = prd.intersection;
+        const rays::Material &material = *prd.material;
+
+        if (intersection.isFront()) {
+            result += material.getEmit();
+        }
+    }
+
+    for (int path = 1; path < params.maxDepth; path++) {
+        if (prd.done) { break; }
+
+        const Intersection &intersection = prd.intersection;
+        const rays::Material &material = *prd.material;
+
+        const float xi1 = rnd(seed);
+        const float xi2 = rnd(seed);
+        float pdf;
+        const rays::Vec3 sample = material.sample(&pdf, xi1, xi2);
+
+        const rays::Frame &frame = intersection.frame;
+        const rays::Vec3 bounceWorld = normalized(frame.toWorld(sample));
+
+        const float3 normal = vec3_to_float3(intersection.normal);
+        beta *= material.f(intersection.woLocal, sample) * sample.z() / pdf;
+
+        rays::packPointer(&prd, p0, p1);
+        optixTrace(
+            params.handle,
+            vec3_to_float3(intersection.point),
+            vec3_to_float3(bounceWorld),
+            1e-4,
+            1e16f,
+            0.0f,
+            OptixVisibilityMask(255),
+            OPTIX_RAY_FLAG_NONE,
+            0,
+            1,
+            0,
+            p0, p1
+        );
+
+        if (prd.done) { break; }
+
+        const rays::Material &bounceMaterial = *prd.material;
+        if (intersection.isFront()) {
+            result += bounceMaterial.getEmit() * beta;
+        }
+    }
+
+    return result;
+}
+
+static __forceinline__ __device__ rays::Vec3 LiNaive(
     const rays::Ray &cameraRay,
     unsigned int &seed
 ) {
@@ -145,7 +231,11 @@ extern "C" __global__ void __raygen__rg()
             col,
             make_float2(0.5f, 0.5f)
         );
-        result += Li(cameraRay, seed);
+        if (params.useNextEventEstimation) {
+            result += LiNEE(cameraRay, seed);
+        } else {
+            result += LiNaive(cameraRay, seed);
+        }
     }
 
     params.passRadiances[idx.y * params.width + idx.x] = result / params.samplesPerPass;
