@@ -41,23 +41,14 @@ static __forceinline__ __device__ PerRayData *getPRD()
     return reinterpret_cast<PerRayData *>(rays::unpackPointer(u0, u1));
 }
 
-extern "C" __global__ void __raygen__rg()
-{
-    const uint3 idx = optixGetLaunchIndex();
-    const uint3 dim = optixGetLaunchDimensions();
-
-    unsigned int seed = tea<4>(idx.y * params.width + idx.x, params.launchCount);
-
-    const int row = idx.y;
-    const int col = idx.x;
-
+static __forceinline__ __device__ rays::Vec3 Li(
+    const rays::Ray &cameraRay,
+    unsigned int &seed
+) {
     rays::Vec3 result(0.f);
 
-    for (int i = 0; i < params.samplesPerPass; i++) {
+    if (params.maxDepth == 0) { return result; }
 
-    if (params.maxDepth == 0) { continue; }
-
-    const rays::Ray cameraRay = params.camera.generateRay(row, col, make_float2(0.5f, 0.5f));
     const rays::Vec3 origin = cameraRay.origin();
     const rays::Vec3 direction = cameraRay.direction();
 
@@ -133,6 +124,28 @@ extern "C" __global__ void __raygen__rg()
         }
     }
 
+    return result;
+}
+
+extern "C" __global__ void __raygen__rg()
+{
+    const uint3 idx = optixGetLaunchIndex();
+    const uint3 dim = optixGetLaunchDimensions();
+
+    unsigned int seed = tea<4>(idx.y * params.width + idx.x, params.launchCount);
+
+    const int row = idx.y;
+    const int col = idx.x;
+
+    rays::Vec3 result(0.f);
+
+    for (int i = 0; i < params.samplesPerPass; i++) {
+        const rays::Ray cameraRay = params.camera.generateRay(
+            row,
+            col,
+            make_float2(0.5f, 0.5f)
+        );
+        result += Li(cameraRay, seed);
     }
 
     params.passRadiances[idx.y * params.width + idx.x] = result / params.samplesPerPass;
