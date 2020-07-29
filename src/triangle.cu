@@ -45,36 +45,12 @@ __device__ bool Triangle::hit(
     return true;
 }
 
-__device__ float Triangle::area() const
-{
-    const Vec3 e1 = m_p1 - m_p0;
-    const Vec3 e2 = m_p2 - m_p0;
-
-    const Vec3 crossed = cross(e1, e2);
-    return fabsf(crossed.length() / 2.f);
-}
-
 __device__ SurfaceSample Triangle::sample(curandState &randState) const
 {
-    const float r1 = curand_uniform(&randState);
-    const float r2 = curand_uniform(&randState);
+    const float xi1 = curand_uniform(&randState);
+    const float xi2 = curand_uniform(&randState);
 
-    const float a = 1 - sqrt(r1);
-    const float b = sqrt(r1) * (1 - r2);
-    const float c = 1 - a - b;
-
-    const Vec3 point = m_p0 * a + m_p1 * b + m_p2 * c;
-
-    const Vec3 e1 = m_p1 - m_p0;
-    const Vec3 e2 = m_p2 - m_p0;
-    const Vec3 normal = normalized(cross(e1, e2));
-
-    SurfaceSample sample = {
-        .point = point,
-        .normal = normal,
-        .pdf = 1.f / area(),
-    };
-    return sample;
+    return sample(xi1, xi2);
 }
 
 }

@@ -509,8 +509,9 @@ void Optix::init(int width, int height, const Scene &scene)
     m_params.height = height;
     m_params.camera = scene.getCamera();
     m_params.materials = d_materials;
-    m_params.primitives = d_triangles;
+    m_params.triangles = d_triangles;
     m_params.lightIndices = d_lightIndices;
+    m_params.lightIndexSize = lightIndices.size();
     m_params.handle = gasHandle;
     updateMaxDepth(scene);
     updateNextEventEstimation(scene);

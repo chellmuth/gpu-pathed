@@ -22,8 +22,9 @@ struct Params
     int maxDepth;
     bool useNextEventEstimation;
     Material *materials;
-    Triangle *primitives;
+    Triangle *triangles;
     int *lightIndices;
+    int lightIndexSize;
     OptixTraversableHandle handle;
 };
 

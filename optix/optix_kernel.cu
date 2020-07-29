@@ -7,8 +7,10 @@
 #include "renderers/optix.h"
 #include "renderers/payload_helpers.h"
 #include "renderers/random.h"
+#include "sampler.h"
 #include "triangle.h"
 #include "vec3.h"
+#include "world_frame.h"
 
 extern "C" {
     __constant__ rays::Params params;
@@ -34,14 +36,72 @@ struct PerRayData {
     int pad;
 };
 
-static __forceinline__ __device__ PerRayData *getPRD()
+__forceinline__ __device__ static PerRayData *getPRD()
 {
     const unsigned int u0 = optixGetPayload_0();
     const unsigned int u1 = optixGetPayload_1();
     return reinterpret_cast<PerRayData *>(rays::unpackPointer(u0, u1));
 }
 
-static __forceinline__ __device__ rays::Vec3 LiNEE(
+__forceinline__ __device__ static rays::Vec3 direct(
+    const Intersection &intersection,
+    const rays::Material &hitMaterial,
+    unsigned int &seed
+) {
+    const float xi1 = rnd(seed);
+    const float xi2 = rnd(seed);
+    const float xi3 = rnd(seed);
+
+    const rays::LightSample lightSample = rays::Sampler::sampleDirectLights(
+        intersection.point,
+        make_float3(xi1, xi2, xi3),
+        params.lightIndices,
+        params.lightIndexSize,
+        params.triangles
+    );
+
+    const rays::Vec3 lightDirection = (lightSample.point - intersection.point);
+    const rays::Vec3 wiWorld = normalized(lightDirection);
+    const rays::Ray shadowRay(intersection.point, wiWorld);
+
+    PerRayData prd;
+    prd.done = false;
+
+    unsigned int p0, p1;
+    rays::packPointer(&prd, p0, p1);
+    optixTrace(
+        params.handle,
+        vec3_to_float3(shadowRay.origin()),
+        vec3_to_float3(shadowRay.direction()),
+        1e-4,
+        lightDirection.length() - 2e-4,
+        0.0f,
+        OptixVisibilityMask(255),
+        OPTIX_RAY_FLAG_NONE,
+        0,                   // SBT offset   -- See SBT discussion
+        1,                   // SBT stride   -- See SBT discussion
+        0,                   // missSBTIndex -- See SBT discussion
+        p0, p1
+    );
+
+    const bool isHit = !prd.done;
+    if (!isHit) {
+        const rays::Vec3 wi = intersection.frame.toLocal(wiWorld);
+        const float pdf = lightSample.solidAnglePDF(intersection.point);
+        const rays::Material &emitMaterial = params.materials[lightSample.materialIndex];
+        const rays::Vec3 lightContribution = rays::Vec3(1.f)
+            * emitMaterial.getEmit()
+            * hitMaterial.f(intersection.woLocal, wi)
+            * rays::WorldFrame::absCosTheta(intersection.normal, wiWorld)
+            / pdf;
+
+        return lightContribution;
+    } else {
+        return rays::Vec3(0.f);
+    }
+}
+
+__forceinline__ __device__ static rays::Vec3 LiNEE(
     const rays::Ray &cameraRay,
     unsigned int &seed
 ) {
@@ -63,9 +123,9 @@ static __forceinline__ __device__ rays::Vec3 LiNEE(
         params.handle,
         make_float3(origin.x(), origin.y(), origin.z()),
         make_float3(direction.x(), direction.y(), direction.z()),
-        0.0f,                // Min intersection distance
-        1e16f,               // Max intersection distance
-        0.0f,                // rayTime -- used for motion blur
+        0.0f,
+        1e16f,
+        0.0f,
         OptixVisibilityMask(255), // Specify always visible
         OPTIX_RAY_FLAG_NONE,
         0,                   // SBT offset   -- See SBT discussion
@@ -88,6 +148,8 @@ static __forceinline__ __device__ rays::Vec3 LiNEE(
 
         const Intersection &intersection = prd.intersection;
         const rays::Material &material = *prd.material;
+
+        result += direct(intersection, material, seed) * beta;
 
         const float xi1 = rnd(seed);
         const float xi2 = rnd(seed);
@@ -115,19 +177,12 @@ static __forceinline__ __device__ rays::Vec3 LiNEE(
             0,
             p0, p1
         );
-
-        if (prd.done) { break; }
-
-        const rays::Material &bounceMaterial = *prd.material;
-        if (intersection.isFront()) {
-            result += bounceMaterial.getEmit() * beta;
-        }
     }
 
     return result;
 }
 
-static __forceinline__ __device__ rays::Vec3 LiNaive(
+__forceinline__ __device__ static rays::Vec3 LiNaive(
     const rays::Ray &cameraRay,
     unsigned int &seed
 ) {
@@ -253,7 +308,7 @@ extern "C" __global__ void __closesthit__ch()
     prd->done = false;
 
     const int primitiveIndex = optixGetPrimitiveIndex();
-    const rays::Triangle &primitive = params.primitives[primitiveIndex];
+    const rays::Triangle &triangle = params.triangles[primitiveIndex];
 
     rays::HitGroupData* hitgroupData = reinterpret_cast<rays::HitGroupData *>(optixGetSbtDataPointer());
     const int materialIndex = hitgroupData->materialIndex;
@@ -263,8 +318,8 @@ extern "C" __global__ void __closesthit__ch()
     Intersection intersection;
     const float u = optixGetTriangleBarycentrics().x;
     const float v = optixGetTriangleBarycentrics().y;
-    intersection.point = primitive.interpolate(u, v);
-    intersection.normal = primitive.getNormal();
+    intersection.point = triangle.interpolate(u, v);
+    intersection.normal = triangle.getNormal();
     intersection.frame = rays::Frame(intersection.normal);
     intersection.woLocal = intersection.frame.toLocal(
         float3_to_vec3(-optixGetWorldRayDirection())
