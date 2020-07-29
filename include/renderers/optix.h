@@ -23,6 +23,7 @@ struct Params
     bool useNextEventEstimation;
     Material *materials;
     Triangle *primitives;
+    int *lightIndices;
     OptixTraversableHandle handle;
 };
 
