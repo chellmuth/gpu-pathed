@@ -79,7 +79,7 @@ __device__ static Vec3 direct(
     return directSampleLights(hitRecord, world, randState);
 }
 
-__device__ static Vec3 calculateLi(
+__device__ static Vec3 calculateLiNEE(
     const Ray& ray,
     const PrimitiveList *world,
     int maxDepth,
@@ -117,12 +117,56 @@ __device__ static Vec3 calculateLi(
 
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
+        if (!hit) {
+            return result;
+        }
+    }
+
+    return result;
+}
+
+__device__ static Vec3 calculateLiNaive(
+    const Ray& ray,
+    const PrimitiveList *world,
+    int maxDepth,
+    curandState &randState
+) {
+    if (maxDepth == 0) { return Vec3(0.f); }
+
+    Vec3 beta = Vec3(1.f);
+    Vec3 result = Vec3(0.f);
+
+    HitRecord record;
+    bool hit = world->hit(ray, 0.f, FLT_MAX, record);
+    if (hit) {
+        const Material &emitMaterial = world->getMaterial(record.materialIndex);
+        const Vec3 emit = emitMaterial.getEmit(record);
+
+        if (!emit.isZero()) {
+            result += emit * beta;
+        }
+    } else {
+        return Vec3(0.f);
+    }
+
+    for (int path = 1; path < maxDepth; path++) {
+        const Frame intersection(record.normal);
+        const Material &material = world->getMaterial(record.materialIndex);
+        float pdf;
+
+        const Vec3 wi = material.sample(record, &pdf, randState);
+        const Vec3 bounceDirection = intersection.toWorld(wi);
+
+        beta *= material.f(record.wo, wi) * intersection.cosTheta(wi) / pdf;
+
+        const Ray bounceRay(record.point, bounceDirection);
+        hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
         if (hit) {
-            // const Material &emitMaterial = world->getMaterial(record.materialIndex);
-            // const Vec3 emit = emitMaterial.getEmit(record);
-            // if (!emit.isZero()) {
-            //     result += emit * beta;
-            // }
+            const Material &emitMaterial = world->getMaterial(record.materialIndex);
+            const Vec3 emit = emitMaterial.getEmit(record);
+            if (!emit.isZero()) {
+                result += emit * beta;
+            }
         } else {
             return result;
         }
@@ -133,12 +177,13 @@ __device__ static Vec3 calculateLi(
 
 __global__ static void renderKernel(
     Vec3 *passRadiances,
+    int width, int height,
+    curandState *randState,
+    PrimitiveList *world,
     Camera *camera,
     int maxDepth,
     int spp,
-    int width, int height,
-    PrimitiveList *world,
-    curandState *randState
+    bool useNextEventEstimation
 ) {
     const int row = threadIdx.y + blockIdx.y * blockDim.y;
     const int col = threadIdx.x + blockIdx.x * blockDim.x;
@@ -148,7 +193,10 @@ __global__ static void renderKernel(
     curandState &localRand = randState[pixelIndex];
     for (int sample = 1; sample <= spp; sample++) {
         const Ray cameraRay = camera->generateRay(row, col, localRand);
-        const Vec3 Li = calculateLi(cameraRay, world, maxDepth, localRand);
+        const Vec3 Li = useNextEventEstimation
+            ? calculateLiNEE(cameraRay, world, maxDepth, localRand)
+            : calculateLiNaive(cameraRay, world, maxDepth, localRand)
+        ;
 
         if (sample == 1) {
             passRadiances[pixelIndex] = Li;
@@ -206,12 +254,13 @@ RenderRecord PathTracer::renderAsync(
 
     renderKernel<<<blocks, threads>>>(
         dev_passRadiances,
+        m_width, m_height,
+        dev_randState,
+        cudaGlobals.d_world,
         cudaGlobals.d_camera,
         scene.getMaxDepth(),
         samplesPerPass,
-        m_width, m_height,
-        cudaGlobals.d_world,
-        dev_randState
+        scene.getNextEventEstimation()
     );
 
     updateFramebuffer(
