@@ -21,6 +21,8 @@
 
 namespace rays {
 
+constexpr int samplesPerPass = 1;
+
 template <typename T>
 struct SbtRecord
 {
@@ -406,6 +408,11 @@ void Optix::updateMaxDepth(const Scene &scene)
     m_params.maxDepth = scene.getMaxDepth();
 }
 
+void Optix::updateNextEventEstimation(const Scene &scene)
+{
+    m_params.useNextEventEstimation = scene.getNextEventEstimation();
+}
+
 void Optix::init(int width, int height, const Scene &scene)
 {
     char log[2048];
@@ -469,7 +476,7 @@ void Optix::init(int width, int height, const Scene &scene)
         width * height * sizeof(uchar4)
     ));
 
-   const size_t materialsSizeInBytes = scene.getMaterialsSize();
+    const size_t materialsSizeInBytes = scene.getMaterialsSize();
     checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_materials), materialsSizeInBytes));
     updateMaterials(scene);
 
@@ -484,15 +491,30 @@ void Optix::init(int width, int height, const Scene &scene)
         cudaMemcpyHostToDevice
     ));
 
+    const std::vector<int> &lightIndices = scene.getSceneData().lightIndices;
+    int *d_lightIndices = 0;
+    const size_t lightIndicesSizeInBytes = lightIndices.size() * sizeof(int);
+    checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_lightIndices), lightIndicesSizeInBytes));
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(d_lightIndices),
+        lightIndices.data(),
+        lightIndicesSizeInBytes,
+        cudaMemcpyHostToDevice
+    ));
+
     m_params.passRadiances = d_passRadiances;
     m_params.launchCount = 0;
+    m_params.samplesPerPass = samplesPerPass;
     m_params.width = width;
     m_params.height = height;
     m_params.camera = scene.getCamera();
     m_params.materials = d_materials;
-    m_params.primitives = d_triangles;
+    m_params.triangles = d_triangles;
+    m_params.lightIndices = d_lightIndices;
+    m_params.lightIndexSize = lightIndices.size();
     m_params.handle = gasHandle;
     updateMaxDepth(scene);
+    updateNextEventEstimation(scene);
 
     checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_param), sizeof(Params)));
 

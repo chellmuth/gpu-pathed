@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
+    QCheckBox,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -27,6 +28,13 @@ class SettingsWidget(QGroupBox):
             self
         )
         layout.addWidget(self.renderer)
+
+        self.nee = NextEventEstimationWidget(
+            self.model.getNextEventEstimation,
+            self.model.setNextEventEstimation,
+            self
+        )
+        layout.addWidget(self.nee)
 
         self.maxDepth = MaxDepthWidget(
             self.model.getMaxDepth,
@@ -111,6 +119,40 @@ class MaxDepthWidget(QWidget):
     def update(self):
         maxDepth = self.getter()
         self.maxDepth.setValue(maxDepth)
+
+
+class NextEventEstimationWidget(QWidget):
+    def __init__(self, getter, setter, parent=None):
+        super().__init__(parent)
+
+        self.getter = getter
+        self.setter = setter
+
+        layout = QHBoxLayout()
+
+        self.text = QLabel("Next Event Estimation: ", self)
+        layout.addWidget(self.text)
+
+        self.nee = QCheckBox(self)
+        self.nee.setChecked(self.getter())
+        self.nee.stateChanged.connect(self.handleStateChanged)
+        layout.addWidget(self.nee)
+
+        self.setLayout(layout)
+
+    def handleStateChanged(self, state):
+        # 0 == Qt.Unchecked
+        # 2 == Qt.Checked
+
+        self.setter(bool(state))
+        self.update()
+
+    def update(self):
+        state = self.getter()
+        if state == self.nee.isChecked():
+            return
+
+        self.nee.setChecked(state)
 
 
 class LightSlider(QWidget):

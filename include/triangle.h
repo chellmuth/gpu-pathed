@@ -1,7 +1,10 @@
 #pragma once
 
+#include <curand_kernel.h>
+
 #include "material.h"
 #include "ray.h"
+#include "surface_sample.h"
 #include "vec3.h"
 
 namespace rays {
@@ -29,7 +32,10 @@ public:
     Vec3 p0() const { return m_p0; }
     Vec3 p1() const { return m_p1; }
     Vec3 p2() const { return m_p2; }
-    size_t materialIndex() const { return m_materialIndex; }
+
+    __host__ __device__ size_t materialIndex() const { return m_materialIndex; }
+
+    __device__ SurfaceSample sample(curandState &randState) const;
 
     __device__ Vec3 interpolate(const float u, const float v) const {
         return (1.f - u - v) * m_p0
@@ -44,6 +50,35 @@ public:
         return normalized(cross(e1, e2));
     }
 
+    __device__ float area() const {
+        const Vec3 e1 = m_p1 - m_p0;
+        const Vec3 e2 = m_p2 - m_p0;
+
+        const Vec3 crossed = cross(e1, e2);
+        return fabsf(crossed.length() / 2.f);
+    }
+
+    __device__ SurfaceSample sample(float xi1, float xi2) const {
+        const float r1 = xi1;
+        const float r2 = xi2;
+
+        const float a = 1 - sqrt(r1);
+        const float b = sqrt(r1) * (1 - r2);
+        const float c = 1 - a - b;
+
+        const Vec3 point = m_p0 * a + m_p1 * b + m_p2 * c;
+
+        const Vec3 e1 = m_p1 - m_p0;
+        const Vec3 e2 = m_p2 - m_p0;
+        const Vec3 normal = normalized(cross(e1, e2));
+
+        SurfaceSample sample = {
+            .point = point,
+            .normal = normal,
+            .pdf = 1.f / area(),
+        };
+        return sample;
+    }
 
 private:
     Vec3 m_p0, m_p1, m_p2;

@@ -15,12 +15,16 @@ struct Params
 {
     Vec3 *passRadiances;
     int launchCount;
+    int samplesPerPass;
     unsigned int width;
     unsigned int height;
     Camera camera;
     int maxDepth;
+    bool useNextEventEstimation;
     Material *materials;
-    Triangle *primitives;
+    Triangle *triangles;
+    int *lightIndices;
+    int lightIndexSize;
     OptixTraversableHandle handle;
 };
 
@@ -38,6 +42,7 @@ public:
     void updateCamera(const Scene &scene);
     void updateMaterials(const Scene &scene);
     void updateMaxDepth(const Scene &scene);
+    void updateNextEventEstimation(const Scene &scene);
 
 private:
     int m_width;

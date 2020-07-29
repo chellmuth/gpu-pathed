@@ -45,4 +45,12 @@ __device__ bool Triangle::hit(
     return true;
 }
 
+__device__ SurfaceSample Triangle::sample(curandState &randState) const
+{
+    const float xi1 = curand_uniform(&randState);
+    const float xi2 = curand_uniform(&randState);
+
+    return sample(xi1, xi2);
+}
+
 }

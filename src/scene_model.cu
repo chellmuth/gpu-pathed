@@ -30,7 +30,8 @@ void SceneModel::setRendererType(RendererType rendererType)
         getEmit(),
         m_scene->getCamera(),
         m_rendererType,
-        getMaxDepth()
+        getMaxDepth(),
+        getNextEventEstimation()
     });
 }
 
@@ -41,7 +42,8 @@ void SceneModel::setColor(float r, float g, float b)
         getEmit(),
         m_scene->getCamera(),
         m_rendererType,
-        getMaxDepth()
+        getMaxDepth(),
+        getNextEventEstimation()
     });
 }
 
@@ -59,7 +61,8 @@ void SceneModel::setEmit(float r, float g, float b)
         Vec3(r, g, b),
         m_scene->getCamera(),
         m_rendererType,
-        getMaxDepth()
+        getMaxDepth(),
+        getNextEventEstimation()
     });
 }
 
@@ -88,7 +91,8 @@ void SceneModel::setLightPosition(float lightPosition)
         getEmit(),
         m_scene->getCamera(),
         m_rendererType,
-        getMaxDepth()
+        getMaxDepth(),
+        getNextEventEstimation()
     });
 }
 
@@ -129,7 +133,8 @@ void SceneModel::setCameraOrigin(float originX, float originY, float originZ)
         getEmit(),
         updated,
         m_rendererType,
-        getMaxDepth()
+        getMaxDepth(),
+        getNextEventEstimation()
     });
 }
 
@@ -155,7 +160,8 @@ void SceneModel::setCameraTarget(float targetX, float targetY, float targetZ)
         getEmit(),
         updated,
         m_rendererType,
-        getMaxDepth()
+        getMaxDepth(),
+        getNextEventEstimation()
     });
 }
 
@@ -181,7 +187,8 @@ void SceneModel::setCameraUp(float upX, float upY, float upZ)
         getEmit(),
         updated,
         m_rendererType,
-        getMaxDepth()
+        getMaxDepth(),
+        getNextEventEstimation()
     });
 }
 
@@ -202,7 +209,8 @@ void SceneModel::zoomCamera(float ticks)
         getEmit(),
         updated,
         m_rendererType,
-        getMaxDepth()
+        getMaxDepth(),
+        getNextEventEstimation()
     });
 }
 
@@ -218,7 +226,25 @@ void SceneModel::setMaxDepth(int maxDepth)
         getEmit(),
         m_scene->getCamera(),
         m_rendererType,
-        maxDepth
+        maxDepth,
+        getNextEventEstimation()
+    });
+}
+
+bool SceneModel::getNextEventEstimation() const
+{
+    return m_scene->getNextEventEstimation();
+}
+
+void SceneModel::setNextEventEstimation(bool nextEventEstimation)
+{
+    m_callback({
+        getColor(),
+        getEmit(),
+        m_scene->getCamera(),
+        m_rendererType,
+        getMaxDepth(),
+        nextEventEstimation
     });
 }
 

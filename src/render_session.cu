@@ -85,6 +85,7 @@ RenderSession::RenderSession(int width, int height)
         }
 
         m_scene->setMaxDepth(attributes.maxDepth);
+        m_scene->setNextEventEstimation(attributes.nextEventEstimation);
         m_scene->setColor(m_sceneModel->getMaterialIndex(), attributes.albedo);
         m_scene->setEmit(m_sceneModel->getMaterialIndex(), attributes.emitted);
 
