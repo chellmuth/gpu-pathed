@@ -16,10 +16,25 @@ class RenderWidget(QOpenGLWidget):
         origin = Point3.from_vec3(self.model.getCameraOrigin())
         target = Point3.from_vec3(self.model.getCameraTarget())
         self.trackball = Trackball(origin, target)
+        self.tracking = False
         self.setMouseTracking(False)
+
+    def update(self):
+        super().update()
+
+        if self.tracking: return
+
+        origin = Point3.from_vec3(self.model.getCameraOrigin())
+        target = Point3.from_vec3(self.model.getCameraTarget())
+        self.trackball.reset(origin, target)
+
+    def mouseReleaseEvent(self, event):
+        self.tracking = False
 
     def mousePressEvent(self, event):
         self.pt.hitTest(event.x(), self.height() - event.y() - 1)
+
+        self.tracking = True
         q_position = event.localPos()
         self.trackball.set_anchor(Point2(q_position.x(), q_position.y()))
 
@@ -153,6 +168,9 @@ class Trackball:
     def __init__(self, origin, target):
         self.anchor = Point2(0, 0)
 
+        self.reset(origin, target)
+
+    def reset(self, origin, target):
         self.origin = origin
         self.target = target
         self.radius = (self.target - self.origin).length()
