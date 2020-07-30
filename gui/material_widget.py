@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget
 
-from color_button import ColorButton
+from gui.color_button import ColorButton
 
 class MaterialWidget(QGroupBox):
     def __init__(self, model, parent=None):
