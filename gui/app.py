@@ -11,10 +11,10 @@ from PyQt5.QtWidgets import (
 )
 
 import path_tracer
-from gui.camera_widget import CameraWidget
-from gui.material_widget import MaterialWidget
-from gui.render_widget import RenderWidget
-from gui.settings_widget import SettingsWidget
+from gui.widget.camera import CameraWidget
+from gui.widget.material import MaterialWidget
+from gui.widget.render import RenderWidget
+from gui.widget.settings import SettingsWidget
 
 class App(QWidget):
     def __init__(self, pt, parent=None):
