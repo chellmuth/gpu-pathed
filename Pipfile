@@ -5,10 +5,12 @@ verify_ssl = true
 
 [dev-packages]
 ipython = "*"
+pytest = "*"
 
 [packages]
 pyqt5 = "*"
 pyopengl = "*"
+numpy = "*"
 
 [requires]
 python_version = "3.7"
