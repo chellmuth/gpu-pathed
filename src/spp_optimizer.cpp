@@ -15,7 +15,17 @@ void SppOptimizer::track(int spp, float milliseconds)
 
 int SppOptimizer::estimateSpp()
 {
+    if (m_reset) {
+        m_reset = false;
+        return 1;
+    }
+
     return m_nextEstimate;
+}
+
+void SppOptimizer::reset()
+{
+    m_reset = true;
 }
 
 }

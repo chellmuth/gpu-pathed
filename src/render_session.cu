@@ -93,6 +93,7 @@ RenderSession::RenderSession(int width, int height)
         m_cudaGlobals->copyCamera(m_scene->getCamera());
 
         m_pathTracer->reset();
+        m_sppOptimizer.reset();
 
         checkCudaErrors(cudaMemcpy(
             m_cudaGlobals->d_materials,

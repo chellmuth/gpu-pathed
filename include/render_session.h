@@ -87,6 +87,7 @@ public:
                     m_pathTracer.reset(new OptixTracer());
                 }
                 m_pathTracer->init(m_width, m_height, *m_scene);
+                m_sppOptimizer.reset();
                 m_resetRenderer = false;
             }
         }
