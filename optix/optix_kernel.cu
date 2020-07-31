@@ -282,9 +282,8 @@ extern "C" __global__ void __raygen__rg()
 
     for (int i = 0; i < params.samplesPerPass; i++) {
         const rays::Ray cameraRay = params.camera.generateRay(
-            row,
-            col,
-            make_float2(0.5f, 0.5f)
+            row, col,
+            sample_float2(seed)
         );
         if (params.useNextEventEstimation) {
             result += LiNEE(cameraRay, seed);

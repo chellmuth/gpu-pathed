@@ -1,7 +1,15 @@
 #pragma once
 
+#include "renderers/random.h"
 #include "vec3.h"
 
+
+__forceinline__ __device__ float2 sample_float2(unsigned int &seed)
+{
+    const float xi1 = rnd(seed);
+    const float xi2 = rnd(seed);
+    return make_float2(xi1, xi2);
+}
 
 __forceinline__ __device__ float3 operator-(const float3& a)
 {
