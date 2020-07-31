@@ -13,7 +13,7 @@ SceneData createSceneData(ObjParser &objParser)
     // Process materials
     if (result.mtls.empty()) {
         sceneData.materials.push_back(
-            Material(Vec3(1.f), Vec3(0.1f))
+            Material(Vec3(1.f), Vec3(0.f))
         );
     }
 
