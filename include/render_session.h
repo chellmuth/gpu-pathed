@@ -10,6 +10,7 @@
 #include "scene.h"
 #include "scene_model.h"
 #include "sphere.h"
+#include "spp_optimizer.h"
 #include "triangle.h"
 
 namespace rays {
@@ -53,7 +54,13 @@ public:
 
     RenderState renderAsync() {
         cudaGraphicsResource *pboResource = m_pboManager.getRenderResource();
-        m_currentRecord = m_pathTracer->renderAsync(pboResource, *m_scene, *m_cudaGlobals);
+        const int spp = m_sppOptimizer.estimateSpp();
+        m_currentRecord = m_pathTracer->renderAsync(
+            spp,
+            pboResource,
+            *m_scene,
+            *m_cudaGlobals
+        );
         return RenderState{true, m_pboManager.getDisplayPBO()};
     }
 
@@ -61,6 +68,15 @@ public:
         cudaGraphicsResource *pboResource = m_pboManager.getRenderResource();
         bool finished = m_pathTracer->pollRender(pboResource, m_currentRecord);
         if (finished) {
+            float milliseconds = 0;
+            cudaEventElapsedTime(
+                &milliseconds,
+                m_currentRecord.beginEvent,
+                m_currentRecord.endEvent
+            );
+
+            m_sppOptimizer.track(m_currentRecord.spp, milliseconds);
+
             m_pboManager.swapPBOs();
             m_sceneModel->updateSpp(m_pathTracer->getSpp());
 
@@ -80,6 +96,7 @@ public:
 
 private:
     RenderRecord m_currentRecord;
+    SppOptimizer m_sppOptimizer;
 
     std::unique_ptr<Renderer> m_pathTracer;
     PBOManager m_pboManager;

@@ -21,8 +21,6 @@
 
 namespace rays {
 
-constexpr int samplesPerPass = 1;
-
 template <typename T>
 struct SbtRecord
 {
@@ -504,7 +502,7 @@ void Optix::init(int width, int height, const Scene &scene)
 
     m_params.passRadiances = d_passRadiances;
     m_params.launchCount = 0;
-    m_params.samplesPerPass = samplesPerPass;
+    m_params.samplesPerPass = 0;
     m_params.width = width;
     m_params.height = height;
     m_params.camera = scene.getCamera();
@@ -528,6 +526,7 @@ void Optix::init(int width, int height, const Scene &scene)
 static uchar4 *launchOptix(
     Params &params,
     int width, int height,
+    int spp,
     int currentSamples,
     OptixTraversableHandle &gasHandle,
     OptixPipeline &pipeline,
@@ -539,6 +538,8 @@ static uchar4 *launchOptix(
 ) {
     CUstream stream;
     checkCUDA(cudaStreamCreate(&stream));
+
+    params.samplesPerPass = spp;
 
     checkCUDA(cudaMemcpy(
         reinterpret_cast<void *>(d_param),
@@ -562,7 +563,7 @@ static uchar4 *launchOptix(
         d_image,
         d_passRadiances,
         d_radiances,
-        1,
+        spp,
         currentSamples,
         width,
         height,
@@ -586,12 +587,13 @@ static uchar4 *launchOptix(
     return image;
 }
 
-uchar4 *Optix::launch(int currentSamples)
+uchar4 *Optix::launch(int spp, int currentSamples)
 {
     uchar4 *image = launchOptix(
         m_params,
         m_width,
         m_height,
+        spp,
         currentSamples,
         m_gasHandle,
         m_pipeline,

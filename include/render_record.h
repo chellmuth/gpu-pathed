@@ -7,6 +7,7 @@ namespace rays {
 struct RenderRecord {
     cudaEvent_t beginEvent;
     cudaEvent_t endEvent;
+    int spp;
 };
 
 }

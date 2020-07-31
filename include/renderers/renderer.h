@@ -13,6 +13,7 @@ class Renderer {
 public:
     virtual void init(int width, int height, const Scene &scene) = 0;
     virtual RenderRecord renderAsync(
+        int spp,
         cudaGraphicsResource *pboResource,
         const Scene &scene,
         const CUDAGlobals &cudaGlobals

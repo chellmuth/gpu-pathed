@@ -48,6 +48,7 @@ add_library(rays STATIC
   src/scene_data.cu
   src/scene_model.cu
   src/sphere.cu
+  src/spp_optimizer.cpp
   src/transform.cu
   src/triangle.cu
 

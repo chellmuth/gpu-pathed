@@ -226,8 +226,8 @@ void PathTracer::init(
     checkCudaErrors(cudaDeviceSynchronize());
 }
 
-static constexpr int samplesPerPass = 1;
 RenderRecord PathTracer::renderAsync(
+    int spp,
     cudaGraphicsResource *pboResource,
     const Scene &scene,
     const CUDAGlobals &cudaGlobals
@@ -259,7 +259,7 @@ RenderRecord PathTracer::renderAsync(
         cudaGlobals.d_world,
         cudaGlobals.d_camera,
         scene.getMaxDepth(),
-        samplesPerPass,
+        spp,
         scene.getNextEventEstimation()
     );
 
@@ -267,7 +267,7 @@ RenderRecord PathTracer::renderAsync(
         dev_map,
         dev_passRadiances,
         dev_radiances,
-        samplesPerPass,
+        spp,
         m_currentSamples,
         m_width,
         m_height,
@@ -276,7 +276,7 @@ RenderRecord PathTracer::renderAsync(
 
     cudaEventRecord(endEvent);
 
-    return RenderRecord{beginEvent, endEvent};
+    return RenderRecord{beginEvent, endEvent, spp};
 }
 
 bool PathTracer::pollRender(cudaGraphicsResource *pboResource, RenderRecord record)
@@ -295,7 +295,7 @@ bool PathTracer::pollRender(cudaGraphicsResource *pboResource, RenderRecord reco
         std::cout << "CUDA Frame: " << milliseconds << "ms" << std::endl;
     }
 
-    m_currentSamples += samplesPerPass;
+    m_currentSamples += record.spp;
     return true;
 }
 

@@ -20,6 +20,7 @@ public:
 
     void init(int width, int height, const Scene &scene) override;
     RenderRecord renderAsync(
+        int spp,
         cudaGraphicsResource *pboResource,
         const Scene &scene,
         const CUDAGlobals &cudaGlobals

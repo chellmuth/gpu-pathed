@@ -37,7 +37,7 @@ struct HitGroupData {
 class Optix {
 public:
     void init(int width, int height, const Scene &scene);
-    uchar4 *launch(int currentSamples);
+    uchar4 *launch(int spp, int currentSamples);
 
     void updateCamera(const Scene &scene);
     void updateMaterials(const Scene &scene);
