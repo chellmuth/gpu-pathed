@@ -1,5 +1,7 @@
 #include "scene.h"
 
+#include <iostream>
+
 #include "material.h"
 
 namespace rays {
@@ -46,7 +48,8 @@ SceneData getSceneData(int index)
         ObjParser objParser(sceneFilename);
         return SceneAdapter::createSceneData(objParser);
     } else {
-        return SceneAdapter::createSceneData(defaultLightPosition);
+        std::cerr << "Invalid scene index: " << index << std::endl;
+        exit(1);
     }
 }
 
@@ -69,13 +72,8 @@ Camera getCamera(int index, Resolution resolution)
             resolution
         );
     } else {
-        return Camera(
-            Vec3(0.f, 0.3f, 5.f),
-            Vec3(0.f),
-            Vec3(0.f, 1.f, 0.f),
-            30.f / 180.f * M_PI,
-            resolution
-        );
+        std::cerr << "Invalid scene index: " << index << std::endl;
+        exit(1);
     }
 }
 

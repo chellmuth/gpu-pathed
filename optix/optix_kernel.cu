@@ -318,7 +318,7 @@ extern "C" __global__ void __closesthit__ch()
     const float u = optixGetTriangleBarycentrics().x;
     const float v = optixGetTriangleBarycentrics().y;
     intersection.point = triangle.interpolate(u, v);
-    intersection.normal = triangle.getNormal();
+    intersection.normal = triangle.interpolateNormal(u, v);
     intersection.frame = rays::Frame(intersection.normal);
     intersection.woLocal = intersection.frame.toLocal(
         float3_to_vec3(-optixGetWorldRayDirection())

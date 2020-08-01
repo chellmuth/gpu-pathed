@@ -27,6 +27,5 @@ struct ParseRequest {
 
 SceneData createSceneData(ParseRequest &request);
 SceneData createSceneData(ObjParser &objParser);
-SceneData createSceneData(float lightPosition);
 
 } }

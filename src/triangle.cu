@@ -33,12 +33,12 @@ __device__ bool Triangle::hit(
 
     const Vec3 hitPoint = m_p0 * (1.f - b1 - b2) + (m_p1 * b1) + (m_p2 * b2);
 
-    const Vec3 normal = normalized(cross(e1, e2));
-    const Frame frame(normal);
+    const Vec3 shadingNormal = interpolateNormal(b1, b2);
+    const Frame frame(shadingNormal);
 
     record.t = t;
     record.point = hitPoint;
-    record.normal = normal;
+    record.normal = m_n0;
     record.wo = normalized(frame.toLocal(-ray.direction()));
     record.materialIndex = m_materialIndex;
 

@@ -15,10 +15,16 @@ public:
         const Vec3 &p0,
         const Vec3 &p1,
         const Vec3 &p2,
+        const Vec3 &n0,
+        const Vec3 &n1,
+        const Vec3 &n2,
         size_t materialIndex
     ) : m_p0(p0),
         m_p1(p1),
         m_p2(p2),
+        m_n0(n0),
+        m_n1(n1),
+        m_n2(n2),
         m_materialIndex(materialIndex)
     {}
 
@@ -43,11 +49,10 @@ public:
             + v * m_p2;
     }
 
-    __device__ Vec3 getNormal() const {
-        const Vec3 e1 = m_p1 - m_p0;
-        const Vec3 e2 = m_p2 - m_p0;
-
-        return normalized(cross(e1, e2));
+    __device__ Vec3 interpolateNormal(float u, float v) const {
+        return (1.f - u - v) * m_n0
+            + u * m_n1
+            + v * m_n2;
     }
 
     __device__ float area() const {
@@ -82,6 +87,7 @@ public:
 
 private:
     Vec3 m_p0, m_p1, m_p2;
+    Vec3 m_n0, m_n1, m_n2;
 
     size_t m_materialIndex;
 };

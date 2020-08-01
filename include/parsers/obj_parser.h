@@ -25,6 +25,7 @@ private:
     void parseLine(std::string &line);
 
     void processVertex(std::string &vertexArgs);
+    void processNormal(std::string &normalArgs);
     void processFace(std::string &faceArgs);
     void processMaterialLibrary(std::string &libraryArgs);
 
@@ -52,6 +53,7 @@ private:
     std::string m_objFilename;
 
     std::vector<Vertex> m_vertices;
+    std::vector<Vertex> m_normals;
     std::vector<Face> m_faces;
 
     int m_currentMtlIndex;
