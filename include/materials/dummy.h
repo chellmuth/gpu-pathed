@@ -1,0 +1,55 @@
+#pragma once
+
+#include <curand_kernel.h>
+
+#include "frame.h"
+#include "hit_record.h"
+#include "vec3.h"
+
+namespace rays {
+
+struct Dummy  {
+public:
+    __host__ __device__ Dummy() {}
+
+    __host__ __device__ Dummy(const Vec3 &albedo)
+    {}
+
+    __host__ __device__ Dummy(const Vec3 &albedo, const Vec3 &emit)
+    {}
+
+    __device__ Vec3 sample(HitRecord &record, float *pdf, curandState &randState) const;
+
+    __device__ Vec3 getEmit(const HitRecord &hit) const;
+    __host__ __device__ Vec3 getEmit() const { return Vec3(0.f); }
+
+    __host__ void setEmit(const Vec3 &emit);
+    __host__ __device__ Vec3 getAlbedo() const {
+        return Vec3(0.f);
+    }
+
+    __host__ void setAlbedo(const Vec3 &albedo);
+
+    __device__ Vec3 f(const Vec3 &wo, const Vec3 &wi) const {
+        if (wo.z() < 0.f || wi.z() < 0.f) {
+            return Vec3(0.f);
+        }
+
+        return Vec3(1.f, 0.f, 0.f) / M_PI;
+    }
+
+    __device__ Vec3 sample(float *pdf, const float xi1, const float xi2) const {
+        const float z = xi1;
+        const float r = sqrtf(fmaxf(0.f, 1.f - z * z));
+
+        const float phi = 2 * M_PI * xi2;
+        const float x = r * cos(phi);
+        const float y = r * sin(phi);
+
+        *pdf = 1 / (2.f * M_PI);
+
+        return Vec3(x, y, z);
+    }
+};
+
+}
