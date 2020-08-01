@@ -38,7 +38,7 @@ __device__ bool Triangle::hit(
 
     record.t = t;
     record.point = hitPoint;
-    record.normal = m_n0;
+    record.normal = shadingNormal;
     record.wo = normalized(frame.toLocal(-ray.direction()));
     record.materialIndex = m_materialIndex;
 

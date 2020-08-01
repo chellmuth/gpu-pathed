@@ -79,14 +79,4 @@ SceneData createSceneData(ObjParser &objParser)
     return createSceneData(request);
 }
 
-static Vec3 rotateY(Vec3 vector, float theta)
-{
-    return Vec3(
-        cos(theta) * vector.x() - sin(theta) * vector.z(),
-        vector.y(),
-        sin(theta) * vector.x() + cos(theta) * vector.z()
-    );
-}
-
-
 } }

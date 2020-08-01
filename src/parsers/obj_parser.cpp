@@ -170,11 +170,38 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
 
 void ObjParser::processTriangle(
     int vertexIndex0, int vertexIndex1, int vertexIndex2,
+    int normalIndex0, int normalIndex1, int normalIndex2
+) {
+    correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
+    correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
+
+    const Vertex v0(m_vertices[vertexIndex0]);
+    const Vertex v1(m_vertices[vertexIndex1]);
+    const Vertex v2(m_vertices[vertexIndex2]);
+
+    const Vertex n0(m_normals[normalIndex0]);
+    const Vertex n1(m_normals[normalIndex1]);
+    const Vertex n2(m_normals[normalIndex2]);
+
+    const Face face(v0, v1, v2, n0, n1, n2);
+    m_faces.push_back(face);
+    m_mtlIndices.push_back(m_currentMtlIndex);
+}
+
+void ObjParser::processTriangle(
+    int vertexIndex0, int vertexIndex1, int vertexIndex2,
     int normalIndex0, int normalIndex1, int normalIndex2,
     int UVIndex0, int UVIndex1, int UVIndex2
 ) {
-    // TODO: Handle normals and UVs
-    processTriangle(vertexIndex0, vertexIndex1, vertexIndex2);
+    // TODO: Handle UVs
+    processTriangle(
+        vertexIndex0,
+        vertexIndex1,
+        vertexIndex2,
+        normalIndex0,
+        normalIndex1,
+        normalIndex2
+    );
 }
 
 template <class T>
