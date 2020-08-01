@@ -1,21 +1,27 @@
 #include "scene_data.h"
 
+#include <assert.h>
+
 #include "vec3.h"
 
 namespace rays { namespace SceneAdapter {
 
-SceneData createSceneData(std::vector<ObjParser> objParsers)
+SceneData createSceneData(ParseRequest &request)
 {
-    SceneData sceneData;
+    assert(request.objParsers.size() == request.defaultMaterials.size());
 
+    SceneData sceneData;
     int materialOffset = 0;
-    for (ObjParser &objParser : objParsers) {
+
+    const int requestSize = request.objParsers.size();
+    for (int i = 0; i < requestSize; i++) {
+        ObjParser &objParser = request.objParsers[i];
         ObjResult result = objParser.parse();
 
         // Process materials
         if (result.mtls.empty()) {
             sceneData.materials.push_back(
-                Material(Vec3(1.f), Vec3(0.f))
+                request.defaultMaterials[i]
             );
         }
 
@@ -60,10 +66,14 @@ SceneData createSceneData(std::vector<ObjParser> objParsers)
 
 SceneData createSceneData(ObjParser &objParser)
 {
-    std::vector<ObjParser> parsers;
-    parsers.push_back(objParser);
+    ParseRequest request;
 
-    return createSceneData(parsers);
+    request.objParsers.push_back(objParser);
+
+    Material dummyMaterial(Vec3(0.f), Vec3(100.f, 0.f, 0.f));
+    request.defaultMaterials.push_back(dummyMaterial);
+
+    return createSceneData(request);
 }
 
 static Vec3 rotateY(Vec3 vector, float theta)

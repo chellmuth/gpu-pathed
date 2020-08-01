@@ -20,7 +20,12 @@ struct SceneData {
 
 namespace rays { namespace SceneAdapter {
 
-SceneData createSceneData(std::vector<ObjParser> objParsers);
+struct ParseRequest {
+    std::vector<ObjParser> objParsers;
+    std::vector<Material> defaultMaterials;
+};
+
+SceneData createSceneData(ParseRequest &request);
 SceneData createSceneData(ObjParser &objParser);
 SceneData createSceneData(float lightPosition);
 

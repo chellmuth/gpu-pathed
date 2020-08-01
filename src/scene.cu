@@ -1,31 +1,46 @@
 #include "scene.h"
 
+#include "material.h"
+
 namespace rays {
 
 namespace SceneParameters {
 
 SceneData getSceneData(int index)
 {
+    Material dummyMaterial(Vec3(0.f), Vec3(100.f, 0.f, 0.f));
+
     if (index == 0) {
-        std::vector<ObjParser> objParsers;
+        SceneAdapter::ParseRequest request;
 
         {
             std::string sceneFilename("../scenes/cornell-glossy/CornellBox-Glossy.obj");
             ObjParser objParser(sceneFilename);
-            objParsers.push_back(objParser);
+            request.objParsers.push_back(objParser);
+            request.defaultMaterials.push_back(dummyMaterial);
         }
         {
+            Material defaultMaterial(
+                Vec3(1.f, 0.f, 0.f),
+                Vec3(0.f)
+            );
             std::string sceneFilename("../scenes/cornell-glossy/box.obj");
             ObjParser objParser(sceneFilename);
-            objParsers.push_back(objParser);
+            request.objParsers.push_back(objParser);
+
+            Material boxMaterial(Vec3(1.f, 0.f, 0.f), Vec3(0.f));
+            request.defaultMaterials.push_back(boxMaterial);
         }
         {
             std::string sceneFilename("../scenes/cornell-glossy/ball.obj");
             ObjParser objParser(sceneFilename);
-            objParsers.push_back(objParser);
+            request.objParsers.push_back(objParser);
+
+            Material sphereMaterial(Vec3(1.f, 1.f, 0.f), Vec3(0.f));
+            request.defaultMaterials.push_back(sphereMaterial);
         }
 
-        return SceneAdapter::createSceneData(objParsers);
+        return SceneAdapter::createSceneData(request);
     } else if (index == 1) {
         std::string sceneFilename("../scenes/bunny/bunny.obj");
         ObjParser objParser(sceneFilename);
