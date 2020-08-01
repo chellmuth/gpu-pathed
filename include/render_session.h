@@ -2,7 +2,7 @@
 
 #include "cuda_globals.h"
 #include "hit_test.h"
-#include "material.h"
+#include "materials/material.h"
 #include "path_tracer.h"
 #include "render_record.h"
 #include "renderers/g_buffer.h"

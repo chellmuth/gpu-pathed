@@ -4,7 +4,7 @@
 #include <curand_kernel.h>
 
 #include "hit_record.h"
-#include "material.h"
+#include "materials/material.h"
 #include "ray.h"
 #include "sampler.h"
 #include "sphere.h"

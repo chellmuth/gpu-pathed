@@ -3,7 +3,7 @@
 #include <functional>
 #include <iostream>
 
-#include "material.h"
+#include "materials/material.h"
 #include "path_tracer.h"
 #include "scene.h"
 #include "vec3.h"

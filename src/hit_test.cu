@@ -6,7 +6,7 @@
 
 #include "camera.h"
 #include "macro_helper.h"
-#include "material.h"
+#include "materials/material.h"
 #include "primitive.h"
 #include "scene.h"
 #include "vec3.h"

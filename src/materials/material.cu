@@ -1,4 +1,4 @@
-#include "material.h"
+#include "materials/material.h"
 
 namespace rays {
 

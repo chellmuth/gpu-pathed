@@ -40,7 +40,6 @@ add_library(rays STATIC
   src/cuda_globals.cu
   src/framebuffer.cu
   src/hit_test.cu
-  src/material.cu
   src/path_tracer.cu
   src/primitive.cu
   src/render_session.cu
@@ -51,6 +50,8 @@ add_library(rays STATIC
   src/spp_optimizer.cpp
   src/transform.cu
   src/triangle.cu
+
+  src/materials/material.cu
 
   src/renderers/g_buffer.cu
   src/renderers/optix.cpp

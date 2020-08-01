@@ -1,7 +1,7 @@
 #include <optix.h>
 
 #include "frame.h"
-#include "material.h"
+#include "materials/material.h"
 #include "ray.h"
 #include "renderers/float3_helpers.h"
 #include "renderers/optix.h"

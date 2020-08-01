@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "camera.h"
-#include "material.h"
+#include "materials/material.h"
 #include "primitive.h"
 #include "scene_data.h"
 #include "sphere.h"

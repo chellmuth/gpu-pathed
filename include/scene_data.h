@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "material.h"
+#include "materials/material.h"
 #include "parsers/obj_parser.h"
 #include "sphere.h"
 #include "triangle.h"

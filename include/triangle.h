@@ -2,7 +2,7 @@
 
 #include <curand_kernel.h>
 
-#include "material.h"
+#include "materials/material.h"
 #include "ray.h"
 #include "surface_sample.h"
 #include "vec3.h"
