@@ -52,6 +52,7 @@ add_library(rays STATIC
   src/transform.cu
   src/triangle.cu
 
+  src/renderers/g_buffer.cu
   src/renderers/optix.cpp
   src/renderers/optix_tracer.cu
 

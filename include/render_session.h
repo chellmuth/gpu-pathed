@@ -5,6 +5,7 @@
 #include "material.h"
 #include "path_tracer.h"
 #include "render_record.h"
+#include "renderers/g_buffer.h"
 #include "renderers/optix_tracer.h"
 #include "renderers/renderer.h"
 #include "scene.h"
@@ -85,6 +86,8 @@ public:
                     m_pathTracer.reset(new PathTracer());
                 } else if (m_rendererType == RendererType::Optix) {
                     m_pathTracer.reset(new OptixTracer());
+                } else if (m_rendererType == RendererType::Normals) {
+                    m_pathTracer.reset(new GBuffer(BufferType::Normals));
                 }
                 m_pathTracer->init(m_width, m_height, *m_scene);
                 m_sppOptimizer.reset();

@@ -14,7 +14,8 @@ class OptixTracer;
 
 enum class RendererType {
     CUDA,
-    Optix
+    Optix,
+    Normals
 };
 
 struct SceneModelAttributes {

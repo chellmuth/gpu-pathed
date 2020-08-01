@@ -61,6 +61,8 @@ RenderSession::RenderSession(int width, int height)
         m_pathTracer = std::make_unique<PathTracer>();
     } else if (m_rendererType == RendererType::Optix) {
         m_pathTracer = std::make_unique<OptixTracer>();
+    } else if (m_rendererType == RendererType::Normals) {
+        m_pathTracer = std::make_unique<GBuffer>(BufferType::Normals);
     }
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
 

@@ -40,6 +40,7 @@ PYBIND11_MODULE(path_tracer, m) {
     py::enum_<RendererType>(m, "RendererType")
         .value("CUDA", RendererType::CUDA)
         .value("Optix", RendererType::Optix)
+        .value("Normals", RendererType::Normals)
         .export_values();
 
     py::class_<SceneModel>(m, "SceneModel")
