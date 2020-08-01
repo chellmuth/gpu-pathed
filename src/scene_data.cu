@@ -4,53 +4,66 @@
 
 namespace rays { namespace SceneAdapter {
 
-SceneData createSceneData(ObjParser &objParser)
+SceneData createSceneData(std::vector<ObjParser> objParsers)
 {
-    ObjResult result = objParser.parse();
-
     SceneData sceneData;
 
-    // Process materials
-    if (result.mtls.empty()) {
-        sceneData.materials.push_back(
-            Material(Vec3(1.f), Vec3(0.f))
-        );
+    int materialOffset = 0;
+    for (ObjParser &objParser : objParsers) {
+        ObjResult result = objParser.parse();
+
+        // Process materials
+        if (result.mtls.empty()) {
+            sceneData.materials.push_back(
+                Material(Vec3(1.f), Vec3(0.f))
+            );
+        }
+
+        for (auto &mtl : result.mtls) {
+            sceneData.materials.push_back(
+                Material(
+                    Vec3(mtl.r, mtl.g, mtl.b),
+                    Vec3(mtl.emitR, mtl.emitG, mtl.emitB)
+                )
+            );
+        }
+
+        // Process geometry
+        size_t faceCount = result.faces.size();
+        for (size_t i = 0; i < faceCount; i++) {
+            Face &face = result.faces[i];
+            int materialIndex = result.mtlIndices[i];
+
+            sceneData.triangles.push_back(
+                Triangle(
+                    Vec3(face.v0.x, face.v0.y, face.v0.z),
+                    Vec3(face.v1.x, face.v1.y, face.v1.z),
+                    Vec3(face.v2.x, face.v2.y, face.v2.z),
+                    materialOffset + materialIndex
+                )
+            );
+        }
+
+        materialOffset = sceneData.materials.size();
     }
 
-    for (auto &mtl : result.mtls) {
-        sceneData.materials.push_back(
-            Material(
-                Vec3(mtl.r, mtl.g, mtl.b),
-                Vec3(mtl.emitR, mtl.emitG, mtl.emitB)
-            )
-        );
-    }
-
-    // Process geometry
-    size_t faceCount = result.faces.size();
-    for (size_t i = 0; i < faceCount; i++) {
-        Face &face = result.faces[i];
-        int materialIndex = result.mtlIndices[i];
-
-        sceneData.triangles.push_back(
-            Triangle(
-                Vec3(face.v0.x, face.v0.y, face.v0.z),
-                Vec3(face.v1.x, face.v1.y, face.v1.z),
-                Vec3(face.v2.x, face.v2.y, face.v2.z),
-                materialIndex
-            )
-        );
-    }
-
-    // Process lights
-    for (size_t i = 0; i < faceCount; i++) {
+    // Post-process lights
+    size_t triangleCount = sceneData.triangles.size();
+    for (size_t i = 0; i < triangleCount; i++) {
         size_t materialIndex = sceneData.triangles[i].materialIndex();
         if (sceneData.materials[materialIndex].getEmit().isZero()) { continue; }
-
         sceneData.lightIndices.push_back(i);
     }
 
     return sceneData;
+}
+
+SceneData createSceneData(ObjParser &objParser)
+{
+    std::vector<ObjParser> parsers;
+    parsers.push_back(objParser);
+
+    return createSceneData(parsers);
 }
 
 static Vec3 rotateY(Vec3 vector, float theta)

@@ -1,4 +1,5 @@
 #include "scene.h"
+
 namespace rays {
 
 namespace SceneParameters {
@@ -6,9 +7,25 @@ namespace SceneParameters {
 SceneData getSceneData(int index)
 {
     if (index == 0) {
-        std::string sceneFilename("../scenes/cornell-glossy/CornellBox-Glossy.obj");
-        ObjParser objParser(sceneFilename);
-        return SceneAdapter::createSceneData(objParser);
+        std::vector<ObjParser> objParsers;
+
+        {
+            std::string sceneFilename("../scenes/cornell-glossy/CornellBox-Glossy.obj");
+            ObjParser objParser(sceneFilename);
+            objParsers.push_back(objParser);
+        }
+        {
+            std::string sceneFilename("../scenes/cornell-glossy/box.obj");
+            ObjParser objParser(sceneFilename);
+            objParsers.push_back(objParser);
+        }
+        {
+            std::string sceneFilename("../scenes/cornell-glossy/ball.obj");
+            ObjParser objParser(sceneFilename);
+            objParsers.push_back(objParser);
+        }
+
+        return SceneAdapter::createSceneData(objParsers);
     } else if (index == 1) {
         std::string sceneFilename("../scenes/bunny/bunny.obj");
         ObjParser objParser(sceneFilename);

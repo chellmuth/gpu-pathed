@@ -49,7 +49,7 @@ private:
         int *index2
     );
 
-    std::string &m_objFilename;
+    std::string m_objFilename;
 
     std::vector<Vertex> m_vertices;
     std::vector<Face> m_faces;
