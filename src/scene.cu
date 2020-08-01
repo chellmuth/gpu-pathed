@@ -6,7 +6,7 @@ namespace SceneParameters {
 SceneData getSceneData(int index)
 {
     if (index == 0) {
-        std::string sceneFilename("../scenes/cornell-box/CornellBox-Original.obj");
+        std::string sceneFilename("../scenes/cornell-glossy/CornellBox-Glossy.obj");
         ObjParser objParser(sceneFilename);
         return SceneAdapter::createSceneData(objParser);
     } else if (index == 1) {
