@@ -88,7 +88,7 @@ __forceinline__ __device__ static rays::Vec3 direct(
     if (!isHit) {
         const rays::Vec3 wi = intersection.frame.toLocal(wiWorld);
         const float pdf = lightSample.solidAnglePDF(intersection.point);
-        const rays::Material &emitMaterial = params.materials[lightSample.materialIndex];
+        const rays::Material &emitMaterial = params.materials[lightSample.materialIndex.index]; // fixme
         const rays::Vec3 lightContribution = rays::Vec3(1.f)
             * emitMaterial.getEmit()
             * hitMaterial.f(intersection.woLocal, wi)

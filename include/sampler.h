@@ -2,6 +2,7 @@
 
 #include <cuda_runtime.h>
 
+#include "materials/material_table.h"
 #include "surface_sample.h"
 #include "triangle.h"
 #include "vec3.h"
@@ -13,7 +14,7 @@ struct LightSample {
     Vec3 point;
     Vec3 normal;
     float pdf;
-    size_t materialIndex;
+    MaterialIndex materialIndex;
 
     __device__ float solidAnglePDF(const Vec3 &referencePoint) const
     {

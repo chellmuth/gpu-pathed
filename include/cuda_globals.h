@@ -1,6 +1,8 @@
 #pragma once
 
 #include "camera.h"
+#include "materials/dummy.h"
+#include "materials/material.h"
 #include "primitive.h"
 #include "scene_data.h"
 #include "sphere.h"
@@ -20,6 +22,10 @@ public:
     PrimitiveList *d_world;
 
     Material *d_materials;
+
+    Material *d_lambertians;
+    Dummy *d_dummies;
+
     Triangle *d_triangles;
     Sphere *d_spheres;
     int *d_lightIndices;

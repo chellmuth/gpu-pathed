@@ -8,10 +8,11 @@ namespace rays { namespace SceneAdapter {
 
 SceneData createSceneData(ParseRequest &request)
 {
-    assert(request.objParsers.size() == request.defaultMaterials.size());
+    // assert(request.objParsers.size() == request.defaultMaterials.size());
 
     SceneData sceneData;
     int materialOffset = 0;
+    MaterialTableOffsets tableOffsets = request.materialTable.getOffsets();
 
     const int requestSize = request.objParsers.size();
     for (int i = 0; i < requestSize; i++) {
@@ -24,21 +25,38 @@ SceneData createSceneData(ParseRequest &request)
                 request.defaultMaterials[i]
             );
         }
+        const bool useDefaultMaterial = result.mtls.empty();
 
         for (auto &mtl : result.mtls) {
+            Material objMaterial(
+                Vec3(mtl.r, mtl.g, mtl.b),
+                Vec3(mtl.emitR, mtl.emitG, mtl.emitB)
+            );
+
+            request.materialTable.addMaterial(
+                objMaterial
+            );
+
             sceneData.materials.push_back(
-                Material(
-                    Vec3(mtl.r, mtl.g, mtl.b),
-                    Vec3(mtl.emitR, mtl.emitG, mtl.emitB)
-                )
+                objMaterial
             );
         }
 
         // Process geometry
         size_t faceCount = result.faces.size();
-        for (size_t i = 0; i < faceCount; i++) {
-            Face &face = result.faces[i];
-            int materialIndex = result.mtlIndices[i];
+        for (size_t j = 0; j < faceCount; j++) {
+            Face &face = result.faces[j];
+            int materialIndex = result.mtlIndices[j];
+
+            MaterialIndex index;
+            if (useDefaultMaterial) {
+                index = request.defaultMaterialIndices[i];
+            } else {
+                index = {
+                    MaterialType::Lambertian,
+                    tableOffsets.getOffset(MaterialType::Lambertian) + materialIndex
+                };
+            }
 
             sceneData.triangles.push_back(
                 Triangle(
@@ -48,20 +66,27 @@ SceneData createSceneData(ParseRequest &request)
                     Vec3(face.n0.x, face.n0.y, face.n0.z),
                     Vec3(face.n1.x, face.n1.y, face.n1.z),
                     Vec3(face.n2.x, face.n2.y, face.n2.z),
-                    materialOffset + materialIndex
+                    materialOffset + materialIndex,
+                    index
                 )
             );
         }
 
         materialOffset = sceneData.materials.size();
+        tableOffsets = request.materialTable.getOffsets();
+
+        const auto lambertians = request.materialTable.getLambertians();
+        sceneData.lambertians = lambertians;
     }
+
 
     // Post-process lights
     size_t triangleCount = sceneData.triangles.size();
     for (size_t i = 0; i < triangleCount; i++) {
-        size_t materialIndex = sceneData.triangles[i].materialIndex();
-        if (sceneData.materials[materialIndex].getEmit().isZero()) { continue; }
-        sceneData.lightIndices.push_back(i);
+        MaterialIndex materialIndex = sceneData.triangles[i].materialIndex();
+        if (sceneData.isEmitter(materialIndex)) {
+            sceneData.lightIndices.push_back(i);
+        }
     }
 
     return sceneData;

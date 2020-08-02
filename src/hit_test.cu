@@ -39,7 +39,7 @@ __global__ static void hitTestKernel(
     bool isHit = world->hit(cameraRay, 0.f, FLT_MAX, record);
     if (isHit) {
         hitTest->isHit = true;
-        hitTest->materialIndex = record.materialIndex;
+        hitTest->materialIndex = record.materialIndex.index; // fixme
     } else {
         hitTest->isHit = false;
     }

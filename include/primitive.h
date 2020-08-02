@@ -5,6 +5,7 @@
 
 #include "hit_record.h"
 #include "materials/material.h"
+#include "materials/material_table.h"
 #include "ray.h"
 #include "sampler.h"
 #include "sphere.h"
@@ -23,7 +24,9 @@ public:
         int *lightIndices,
         size_t lightIndexSize,
         Material *materials,
-        size_t materialSize
+        size_t materialSize,
+        Material *lambertians,
+        size_t lambertianSize
     ) : m_triangles(triangles),
         m_triangleSize(triangleSize),
         m_spheres(spheres),
@@ -31,7 +34,9 @@ public:
         m_lightIndices(lightIndices),
         m_lightIndexSize(lightIndexSize),
         m_materials(materials),
-        m_materialSize(materialSize)
+        m_materialSize(materialSize),
+        m_lambertians(lambertians),
+        m_lambertianSize(lambertianSize)
     {}
 
     __device__ bool hit(
@@ -55,8 +60,8 @@ public:
         );
     }
 
-    __device__ Material &getMaterial(size_t index) const {
-        return m_materials[index];
+    __device__ Material &getMaterial(MaterialIndex index) const {
+        return m_lambertians[index.index]; // fixme
     }
 
 private:
@@ -71,6 +76,9 @@ private:
 
     Material *m_materials;
     size_t m_materialSize;
+
+    Material *m_lambertians;
+    size_t m_lambertianSize;
 };
 
 }

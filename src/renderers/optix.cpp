@@ -80,7 +80,7 @@ static void initAcceleration(
         vertices.push_back({ p1.x(), p1.y(), p1.z() });
         vertices.push_back({ p2.x(), p2.y(), p2.z() });
 
-        materialIndices.push_back(triangle.materialIndex());
+        materialIndices.push_back(triangle.materialIndex().index); //fixme
     }
 
     const size_t verticesSize = sizeof(float3) * vertices.size();

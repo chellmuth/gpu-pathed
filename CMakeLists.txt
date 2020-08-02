@@ -53,6 +53,7 @@ add_library(rays STATIC
 
   src/materials/dummy.cu
   src/materials/material.cu
+  src/materials/material_table.cpp
 
   src/renderers/g_buffer.cu
   src/renderers/optix.cpp

@@ -3,6 +3,7 @@
 #include <curand_kernel.h>
 
 #include "materials/material.h"
+#include "materials/material_table.h"
 #include "ray.h"
 #include "surface_sample.h"
 #include "vec3.h"
@@ -18,14 +19,16 @@ public:
         const Vec3 &n0,
         const Vec3 &n1,
         const Vec3 &n2,
-        size_t materialIndex
+        size_t materialIndex,
+        MaterialIndex index
     ) : m_p0(p0),
         m_p1(p1),
         m_p2(p2),
         m_n0(n0),
         m_n1(n1),
         m_n2(n2),
-        m_materialIndex(materialIndex)
+        m_materialIndex(materialIndex),
+        m_index(index)
     {}
 
     __device__ bool hit(
@@ -39,7 +42,7 @@ public:
     Vec3 p1() const { return m_p1; }
     Vec3 p2() const { return m_p2; }
 
-    __host__ __device__ size_t materialIndex() const { return m_materialIndex; }
+    __host__ __device__ MaterialIndex materialIndex() const { return m_index; }
 
     __device__ SurfaceSample sample(curandState &randState) const;
 
@@ -90,6 +93,7 @@ private:
     Vec3 m_n0, m_n1, m_n2;
 
     size_t m_materialIndex;
+    MaterialIndex m_index;
 };
 
 }

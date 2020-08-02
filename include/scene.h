@@ -39,6 +39,9 @@ public:
     const Material &getMaterial(int materialIndex) const { return m_materials[materialIndex]; }
     size_t getMaterialsSize() const { return m_materials.size() * sizeof(Material); }
 
+    const Material *getLambertiansData() const { return m_lambertians.data(); }
+    size_t getLambertiansSize() const { return m_lambertians.size() * sizeof(Material); }
+
     void setColor(int materialIndex, Vec3 color) {
         m_materials[materialIndex].setAlbedo(color);
     }
@@ -64,6 +67,7 @@ private:
     Camera m_camera;
     SceneData m_sceneData;
     std::vector<Material> m_materials;
+    std::vector<Material> m_lambertians;
     int m_maxDepth;
     bool m_nextEventEstimation;
 };

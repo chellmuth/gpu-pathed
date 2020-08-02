@@ -1,6 +1,7 @@
 #pragma once
 
 #include <curand_kernel.h>
+#include <ostream>
 
 #include "frame.h"
 #include "hit_record.h"
@@ -51,6 +52,15 @@ public:
         *pdf = 1 / (2.f * M_PI);
 
         return Vec3(x, y, z);
+    }
+
+    void writeStream(std::ostream &os) const {
+        os << "[Lambertian: diffuse=" << m_albedo << " emit=" << m_emit << "]";
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const Material &m) {
+        m.writeStream(os);
+        return os;
     }
 
 private:

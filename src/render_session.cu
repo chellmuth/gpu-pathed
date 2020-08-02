@@ -55,7 +55,7 @@ void PBOManager::swapPBOs()
 RenderSession::RenderSession(int width, int height)
     : m_width(width),
       m_height(height),
-      m_rendererType(RendererType::Optix)
+      m_rendererType(RendererType::CUDA)
 {
     if (m_rendererType == RendererType::CUDA) {
         m_pathTracer = std::make_unique<PathTracer>();
@@ -104,6 +104,13 @@ RenderSession::RenderSession(int width, int height)
             cudaMemcpyHostToDevice
         ));
 
+        checkCudaErrors(cudaMemcpy(
+            m_cudaGlobals->d_lambertians,
+            m_scene->getLambertiansData(),
+            m_scene->getLambertiansSize(),
+            cudaMemcpyHostToDevice
+        ));
+
         m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
         checkCudaErrors(cudaGetLastError());
@@ -125,6 +132,13 @@ RenderState RenderSession::init(GLuint pbo1, GLuint pbo2)
         m_cudaGlobals->d_materials,
         m_scene->getMaterialsData(),
         m_scene->getMaterialsSize(),
+        cudaMemcpyHostToDevice
+    ));
+
+    checkCudaErrors(cudaMemcpy(
+        m_cudaGlobals->d_lambertians,
+        m_scene->getLambertiansData(),
+        m_scene->getLambertiansSize(),
         cudaMemcpyHostToDevice
     ));
 

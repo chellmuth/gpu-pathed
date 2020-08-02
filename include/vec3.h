@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <ostream>
 
 namespace rays {
 
@@ -103,6 +104,11 @@ __host__ __device__ inline Vec3 operator/(Vec3 v, float t)
 __host__ __device__ inline Vec3 normalized(Vec3 v)
 {
     return v / v.length();
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Vec3 &v)
+{
+    return os << "Vec3: " << v.x() << " " << v.y() << " " << v.z();
 }
 
 }

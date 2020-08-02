@@ -40,7 +40,7 @@ __device__ bool Triangle::hit(
     record.point = hitPoint;
     record.normal = shadingNormal;
     record.wo = normalized(frame.toLocal(-ray.direction()));
-    record.materialIndex = m_materialIndex;
+    record.materialIndex = m_index;
 
     return true;
 }
