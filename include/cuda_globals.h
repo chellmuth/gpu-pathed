@@ -3,6 +3,8 @@
 #include "camera.h"
 #include "materials/dummy.h"
 #include "materials/material.h"
+#include "materials/material_table.h"
+#include "materials/types.h"
 #include "primitive.h"
 #include "scene_data.h"
 #include "sphere.h"
@@ -23,6 +25,7 @@ public:
 
     Material *d_materials;
 
+    MaterialLookup *d_materialLookup;
     Material *d_lambertians;
     Dummy *d_dummies;
 

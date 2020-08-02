@@ -8,6 +8,11 @@
 
 namespace rays {
 
+struct MaterialLookup {
+    Material *lambertians;
+    size_t lambertianSize;
+};
+
 struct MaterialTableOffsets {
     size_t getOffset(MaterialType type) {
         switch(type) {

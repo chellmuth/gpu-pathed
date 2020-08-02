@@ -98,13 +98,6 @@ RenderSession::RenderSession(int width, int height)
         m_sppOptimizer.reset();
 
         checkCudaErrors(cudaMemcpy(
-            m_cudaGlobals->d_materials,
-            m_scene->getMaterialsData(),
-            m_scene->getMaterialsSize(),
-            cudaMemcpyHostToDevice
-        ));
-
-        checkCudaErrors(cudaMemcpy(
             m_cudaGlobals->d_lambertians,
             m_scene->getLambertiansData(),
             m_scene->getLambertiansSize(),
@@ -128,12 +121,6 @@ RenderState RenderSession::init(GLuint pbo1, GLuint pbo2)
     m_cudaGlobals->mallocWorld(m_scene->getSceneData());
 
     m_scene->init();
-    checkCudaErrors(cudaMemcpy(
-        m_cudaGlobals->d_materials,
-        m_scene->getMaterialsData(),
-        m_scene->getMaterialsSize(),
-        cudaMemcpyHostToDevice
-    ));
 
     checkCudaErrors(cudaMemcpy(
         m_cudaGlobals->d_lambertians,
