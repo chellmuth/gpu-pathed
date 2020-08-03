@@ -90,21 +90,27 @@ public:
         return Vec3(0.f);
     }
 
-    __device__ Vec3 sample(
+    __device__ BSDFSample sample(
         const MaterialIndex index,
         HitRecord &record,
-        float *pdf,
         curandState &randState
     ) const {
+        Vec3 wi;
+        float pdf;
+
         switch(index.materialType) {
         case MaterialType::Lambertian: {
-            return m_materialLookup->lambertians[index.index].sample(record, pdf, randState);
+            wi = m_materialLookup->lambertians[index.index].sample(record, &pdf, randState);
         }
         case MaterialType::Dummy: {
-            return m_materialLookup->dummies[index.index].sample(record, pdf, randState);
+            wi = m_materialLookup->dummies[index.index].sample(record, &pdf, randState);
         }
         }
-        return Vec3(0.f);
+        return BSDFSample{
+            wi,
+            pdf,
+            f(index, record.wo, wi)
+        };
     }
 
 private:

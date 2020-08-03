@@ -106,13 +106,12 @@ __device__ static Vec3 calculateLiNEE(
 
         const Frame intersection(record.normal);
 
-        float pdf;
-        const Vec3 wi = world->sample(record.materialIndex, record, &pdf, randState);
-        const Vec3 bounceDirection = intersection.toWorld(wi);
+        const BSDFSample bsdfSample = world->sample(record.materialIndex, record, randState);
+        const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
 
-        beta *= world->f(record.materialIndex, record.wo, wi)
-            * intersection.cosTheta(wi)
-            / pdf;
+        beta *= world->f(record.materialIndex, record.wo, bsdfSample.wiLocal)
+            * intersection.cosTheta(bsdfSample.wiLocal)
+            / bsdfSample.pdf;
 
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
@@ -150,13 +149,12 @@ __device__ static Vec3 calculateLiNaive(
     for (int path = 1; path < maxDepth; path++) {
         const Frame intersection(record.normal);
 
-        float pdf;
-        const Vec3 wi = world->sample(record.materialIndex, record, &pdf, randState);
-        const Vec3 bounceDirection = intersection.toWorld(wi);
+        const BSDFSample bsdfSample = world->sample(record.materialIndex, record, randState);
+        const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
 
-        beta *= world->f(record.materialIndex, record.wo, wi)
-            * intersection.cosTheta(wi)
-            / pdf;
+        beta *= world->f(record.materialIndex, record.wo, bsdfSample.wiLocal)
+            * intersection.cosTheta(bsdfSample.wiLocal)
+            / bsdfSample.pdf;
 
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
