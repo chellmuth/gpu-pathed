@@ -11,6 +11,9 @@ namespace rays {
 struct MaterialLookup {
     Material *lambertians;
     size_t lambertianSize;
+
+    Dummy *dummies;
+    size_t dummySize;
 };
 
 struct MaterialTableOffsets {
@@ -33,6 +36,7 @@ struct MaterialTableOffsets {
 class MaterialTable {
 public:
     MaterialIndex addMaterial(const Material &material);
+    MaterialIndex addMaterial(const Dummy &material);
 
     const std::vector<Material> getLambertians() const {
         return m_lambertians;

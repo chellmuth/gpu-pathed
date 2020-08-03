@@ -104,6 +104,13 @@ RenderSession::RenderSession(int width, int height)
             cudaMemcpyHostToDevice
         ));
 
+        checkCudaErrors(cudaMemcpy(
+            m_cudaGlobals->d_dummies,
+            m_scene->getDummiesData(),
+            m_scene->getDummiesSize(),
+            cudaMemcpyHostToDevice
+        ));
+
         m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
         checkCudaErrors(cudaGetLastError());
@@ -126,6 +133,13 @@ RenderState RenderSession::init(GLuint pbo1, GLuint pbo2)
         m_cudaGlobals->d_lambertians,
         m_scene->getLambertiansData(),
         m_scene->getLambertiansSize(),
+        cudaMemcpyHostToDevice
+    ));
+
+    checkCudaErrors(cudaMemcpy(
+        m_cudaGlobals->d_dummies,
+        m_scene->getDummiesData(),
+        m_scene->getDummiesSize(),
         cudaMemcpyHostToDevice
     ));
 

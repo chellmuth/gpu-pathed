@@ -32,6 +32,8 @@ __global__ static void initWorldKernel(
     int lightIndexSize,
     Material *lambertians,
     int lambertianSize,
+    Dummy *dummies,
+    int dummySize,
     MaterialLookup *materialLookup
 ) {
     if (blockIdx.x != 0 || blockIdx.y != 0) { return; }
@@ -39,6 +41,9 @@ __global__ static void initWorldKernel(
 
     materialLookup->lambertians = lambertians;
     materialLookup->lambertianSize = lambertianSize;
+
+    materialLookup->dummies = dummies;
+    materialLookup->dummySize = dummySize;
 
     *world = PrimitiveList(
         triangles,
@@ -54,14 +59,14 @@ __global__ static void initWorldKernel(
 void CUDAGlobals::mallocWorld(const SceneData &sceneData)
 {
     const int lambertianSize = sceneData.lambertians.size();
+    const int dummySize = sceneData.dummies.size();
     const int triangleSize = sceneData.triangles.size();
     const int sphereSize = sceneData.spheres.size();
     const int lightIndexSize = sceneData.lightIndices.size();
 
-    checkCudaErrors(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Material)));
-    checkCudaErrors(cudaMalloc((void **)&d_dummies, 1 * sizeof(Dummy)));
-
     checkCudaErrors(cudaMalloc((void **)&d_materialLookup, sizeof(MaterialLookup)));
+    checkCudaErrors(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Material)));
+    checkCudaErrors(cudaMalloc((void **)&d_dummies, dummySize * sizeof(Dummy)));
 
     checkCudaErrors(cudaMalloc((void **)&d_triangles, triangleSize * sizeof(Triangle)));
     checkCudaErrors(cudaMalloc((void **)&d_spheres, sphereSize * sizeof(Sphere)));
@@ -79,6 +84,8 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
         lightIndexSize,
         d_lambertians,
         lambertianSize,
+        d_dummies,
+        dummySize,
         d_materialLookup
     );
     checkCudaErrors(cudaDeviceSynchronize());

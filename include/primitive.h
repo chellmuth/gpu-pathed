@@ -54,8 +54,57 @@ public:
         );
     }
 
-    __device__ Material &getMaterial(MaterialIndex index) const {
-        return m_materialLookup->lambertians[index.index]; // fixme
+    __device__ Vec3 getEmit(const MaterialIndex index) const {
+        switch(index.materialType) {
+        case MaterialType::Lambertian: {
+            return m_materialLookup->lambertians[index.index].getEmit();
+        }
+        case MaterialType::Dummy: {
+            return m_materialLookup->dummies[index.index].getEmit();
+        }
+        }
+        return Vec3(0.f);
+    }
+
+    __device__ Vec3 getEmit(const MaterialIndex index, const HitRecord &record) const {
+        switch(index.materialType) {
+        case MaterialType::Lambertian: {
+            return m_materialLookup->lambertians[index.index].getEmit(record);
+        }
+        case MaterialType::Dummy: {
+            return m_materialLookup->dummies[index.index].getEmit(record);
+        }
+        }
+        return Vec3(0.f);
+    }
+
+    __device__ Vec3 f(const MaterialIndex index, const Vec3 &wo, const Vec3 &wi) const {
+        switch(index.materialType) {
+        case MaterialType::Lambertian: {
+            return m_materialLookup->lambertians[index.index].f(wo, wi);
+        }
+        case MaterialType::Dummy: {
+            return m_materialLookup->dummies[index.index].f(wo, wi);
+        }
+        }
+        return Vec3(0.f);
+    }
+
+    __device__ Vec3 sample(
+        const MaterialIndex index,
+        HitRecord &record,
+        float *pdf,
+        curandState &randState
+    ) const {
+        switch(index.materialType) {
+        case MaterialType::Lambertian: {
+            return m_materialLookup->lambertians[index.index].sample(record, pdf, randState);
+        }
+        case MaterialType::Dummy: {
+            return m_materialLookup->dummies[index.index].sample(record, pdf, randState);
+        }
+        }
+        return Vec3(0.f);
     }
 
 private:

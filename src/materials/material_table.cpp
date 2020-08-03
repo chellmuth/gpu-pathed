@@ -11,4 +11,13 @@ MaterialIndex MaterialTable::addMaterial(const Material &material)
     };
 }
 
+MaterialIndex MaterialTable::addMaterial(const Dummy &material)
+{
+    m_dummies.push_back(material);
+    return MaterialIndex{
+        MaterialType::Dummy,
+        m_dummies.size() - 1
+    };
+}
+
 }

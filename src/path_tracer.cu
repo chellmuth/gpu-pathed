@@ -56,11 +56,10 @@ __device__ static Vec3 directSampleLights(
     if (!occluded) {
         const Vec3 wi = Frame(hitRecord.normal).toLocal(wiWorld);
         const float pdf = lightSample.solidAnglePDF(hitRecord.point);
-        const Material &emitMaterial = world->getMaterial(lightSample.materialIndex);
-        const Material &hitMaterial = world->getMaterial(hitRecord.materialIndex);
+        const Vec3 emit = world->getEmit(lightSample.materialIndex);
         const Vec3 lightContribution = Vec3(1.f)
-            * emitMaterial.getEmit()
-            * hitMaterial.f(hitRecord.wo, wi)
+            * emit
+            * world->f(hitRecord.materialIndex, hitRecord.wo, wi)
             * WorldFrame::absCosTheta(hitRecord.normal, wiWorld)
             / pdf;
 
@@ -93,8 +92,7 @@ __device__ static Vec3 calculateLiNEE(
     HitRecord record;
     bool hit = world->hit(ray, 0.f, FLT_MAX, record);
     if (hit) {
-        const Material &emitMaterial = world->getMaterial(record.materialIndex);
-        const Vec3 emit = emitMaterial.getEmit(record);
+        const Vec3 emit = world->getEmit(record.materialIndex, record);
 
         if (!emit.isZero()) {
             result += emit * beta;
@@ -107,13 +105,14 @@ __device__ static Vec3 calculateLiNEE(
         result += direct(record, world, randState) * beta;
 
         const Frame intersection(record.normal);
-        const Material &material = world->getMaterial(record.materialIndex);
-        float pdf;
 
-        const Vec3 wi = material.sample(record, &pdf, randState);
+        float pdf;
+        const Vec3 wi = world->sample(record.materialIndex, record, &pdf, randState);
         const Vec3 bounceDirection = intersection.toWorld(wi);
 
-        beta *= material.f(record.wo, wi) * intersection.cosTheta(wi) / pdf;
+        beta *= world->f(record.materialIndex, record.wo, wi)
+            * intersection.cosTheta(wi)
+            / pdf;
 
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
@@ -139,8 +138,7 @@ __device__ static Vec3 calculateLiNaive(
     HitRecord record;
     bool hit = world->hit(ray, 0.f, FLT_MAX, record);
     if (hit) {
-        const Material &emitMaterial = world->getMaterial(record.materialIndex);
-        const Vec3 emit = emitMaterial.getEmit(record);
+       const Vec3 emit = world->getEmit(record.materialIndex, record);
 
         if (!emit.isZero()) {
             result += emit * beta;
@@ -151,19 +149,19 @@ __device__ static Vec3 calculateLiNaive(
 
     for (int path = 1; path < maxDepth; path++) {
         const Frame intersection(record.normal);
-        const Material &material = world->getMaterial(record.materialIndex);
-        float pdf;
 
-        const Vec3 wi = material.sample(record, &pdf, randState);
+        float pdf;
+        const Vec3 wi = world->sample(record.materialIndex, record, &pdf, randState);
         const Vec3 bounceDirection = intersection.toWorld(wi);
 
-        beta *= material.f(record.wo, wi) * intersection.cosTheta(wi) / pdf;
+        beta *= world->f(record.materialIndex, record.wo, wi)
+            * intersection.cosTheta(wi)
+            / pdf;
 
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
         if (hit) {
-            const Material &emitMaterial = world->getMaterial(record.materialIndex);
-            const Vec3 emit = emitMaterial.getEmit(record);
+            const Vec3 emit = world->getEmit(record.materialIndex, record);
             if (!emit.isZero()) {
                 result += emit * beta;
             }

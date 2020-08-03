@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "materials/dummy.h"
 #include "materials/material.h"
 #include "materials/material_table.h"
 #include "parsers/obj_parser.h"
@@ -15,6 +16,7 @@ struct SceneData {
     std::vector<Sphere> spheres;
     std::vector<Material> materials;
     std::vector<Material> lambertians;
+    std::vector<Dummy> dummies;
     std::vector<int> lightIndices;
 
     bool isEmitter(MaterialIndex materialIndex) const {

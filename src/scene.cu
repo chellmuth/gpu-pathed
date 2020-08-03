@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "materials/dummy.h"
 #include "materials/material.h"
 
 namespace rays {
@@ -40,8 +41,9 @@ SceneData getSceneData(int index)
             ObjParser objParser(sceneFilename);
             request.objParsers.push_back(objParser);
 
-            Material ballMaterial(Vec3(1.f, 1.f, 0.f), Vec3(0.f));
-            request.defaultMaterials.push_back(ballMaterial);
+            Dummy ballMaterial;
+            Material fakeDefault(Vec3(1.f), Vec3(10.f));
+            request.defaultMaterials.push_back(fakeDefault);
 
             const MaterialIndex index = request.materialTable.addMaterial(ballMaterial);
             request.defaultMaterialIndices.push_back(index);
@@ -93,6 +95,7 @@ void Scene::update()
 {
     m_materials = m_sceneData.materials;
     m_lambertians = m_sceneData.lambertians;
+    m_dummies = m_sceneData.dummies;
 }
 
 }

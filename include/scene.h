@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "camera.h"
+#include "materials/dummy.h"
 #include "materials/material.h"
 #include "primitive.h"
 #include "scene_data.h"
@@ -42,6 +43,9 @@ public:
     const Material *getLambertiansData() const { return m_lambertians.data(); }
     size_t getLambertiansSize() const { return m_lambertians.size() * sizeof(Material); }
 
+    const Dummy *getDummiesData() const { return m_dummies.data(); }
+    size_t getDummiesSize() const { return m_dummies.size() * sizeof(Dummy); }
+
     void setColor(int materialIndex, Vec3 color) {
         m_materials[materialIndex].setAlbedo(color);
     }
@@ -68,6 +72,7 @@ private:
     SceneData m_sceneData;
     std::vector<Material> m_materials;
     std::vector<Material> m_lambertians;
+    std::vector<Dummy> m_dummies;
     int m_maxDepth;
     bool m_nextEventEstimation;
 };
