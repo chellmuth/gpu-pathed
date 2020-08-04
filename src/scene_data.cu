@@ -98,8 +98,8 @@ SceneData createSceneData(ObjParser &objParser)
 
     request.objParsers.push_back(objParser);
 
-    Material dummyMaterial(Vec3(0.f), Vec3(100.f, 0.f, 0.f));
-    request.defaultMaterials.push_back(dummyMaterial);
+    Material mirrorMaterial(Vec3(0.f), Vec3(100.f, 0.f, 0.f));
+    request.defaultMaterials.push_back(mirrorMaterial);
 
     return createSceneData(request);
 }

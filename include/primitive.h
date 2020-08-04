@@ -60,8 +60,8 @@ public:
         case MaterialType::Lambertian: {
             return m_materialLookup->lambertians[index.index].getEmit();
         }
-        case MaterialType::Dummy: {
-            return m_materialLookup->dummies[index.index].getEmit();
+        case MaterialType::Mirror: {
+            return m_materialLookup->mirrors[index.index].getEmit();
         }
         }
         return Vec3(0.f);
@@ -72,8 +72,8 @@ public:
         case MaterialType::Lambertian: {
             return m_materialLookup->lambertians[index.index].getEmit(record);
         }
-        case MaterialType::Dummy: {
-            return m_materialLookup->dummies[index.index].getEmit(record);
+        case MaterialType::Mirror: {
+            return m_materialLookup->mirrors[index.index].getEmit(record);
         }
         }
         return Vec3(0.f);
@@ -84,8 +84,8 @@ public:
         case MaterialType::Lambertian: {
             return m_materialLookup->lambertians[index.index].f(wo, wi);
         }
-        case MaterialType::Dummy: {
-            return m_materialLookup->dummies[index.index].f(wo, wi);
+        case MaterialType::Mirror: {
+            return m_materialLookup->mirrors[index.index].f(wo, wi);
         }
         }
         return Vec3(0.f);
@@ -107,8 +107,8 @@ public:
             };
 
         }
-        case MaterialType::Dummy: {
-            return m_materialLookup->dummies[index.index].sample(record, randState);
+        case MaterialType::Mirror: {
+            return m_materialLookup->mirrors[index.index].sample(record, randState);
         }
         }
 

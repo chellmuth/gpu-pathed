@@ -105,9 +105,9 @@ RenderSession::RenderSession(int width, int height)
         ));
 
         checkCudaErrors(cudaMemcpy(
-            m_cudaGlobals->d_dummies,
-            m_scene->getDummiesData(),
-            m_scene->getDummiesSize(),
+            m_cudaGlobals->d_mirrors,
+            m_scene->getMirrorsData(),
+            m_scene->getMirrorsSize(),
             cudaMemcpyHostToDevice
         ));
 
@@ -137,9 +137,9 @@ RenderState RenderSession::init(GLuint pbo1, GLuint pbo2)
     ));
 
     checkCudaErrors(cudaMemcpy(
-        m_cudaGlobals->d_dummies,
-        m_scene->getDummiesData(),
-        m_scene->getDummiesSize(),
+        m_cudaGlobals->d_mirrors,
+        m_scene->getMirrorsData(),
+        m_scene->getMirrorsSize(),
         cudaMemcpyHostToDevice
     ));
 

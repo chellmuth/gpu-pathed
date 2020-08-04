@@ -51,9 +51,9 @@ add_library(rays STATIC
   src/transform.cu
   src/triangle.cu
 
-  src/materials/dummy.cu
   src/materials/material.cu
   src/materials/material_table.cpp
+  src/materials/mirror.cu
 
   src/renderers/g_buffer.cu
   src/renderers/optix.cpp

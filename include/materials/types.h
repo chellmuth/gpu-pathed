@@ -4,7 +4,7 @@ namespace rays {
 
 enum class MaterialType {
     Lambertian,
-    Dummy
+    Mirror
 };
 
 struct MaterialIndex {

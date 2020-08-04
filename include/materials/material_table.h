@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "materials/material.h"
-#include "materials/dummy.h"
+#include "materials/mirror.h"
 #include "materials/types.h"
 
 namespace rays {
@@ -12,8 +12,8 @@ struct MaterialLookup {
     Material *lambertians;
     size_t lambertianSize;
 
-    Dummy *dummies;
-    size_t dummySize;
+    Mirror *mirrors;
+    size_t mirrorSize;
 };
 
 struct MaterialTableOffsets {
@@ -22,21 +22,21 @@ struct MaterialTableOffsets {
         case MaterialType::Lambertian: {
             return lambertian;
         }
-        case MaterialType::Dummy: {
-            return dummy;
+        case MaterialType::Mirror: {
+            return mirror;
         }
         }
         return 0;
     }
 
     size_t lambertian;
-    size_t dummy;
+    size_t mirror;
 };
 
 class MaterialTable {
 public:
     MaterialIndex addMaterial(const Material &material);
-    MaterialIndex addMaterial(const Dummy &material);
+    MaterialIndex addMaterial(const Mirror &material);
 
     const std::vector<Material> getLambertians() const {
         return m_lambertians;
@@ -45,13 +45,13 @@ public:
     MaterialTableOffsets getOffsets() {
         return MaterialTableOffsets {
             m_lambertians.size(),
-            m_dummies.size()
+            m_mirrors.size()
         };
     }
 
 private:
     std::vector<Material> m_lambertians;
-    std::vector<Dummy> m_dummies;
+    std::vector<Mirror> m_mirrors;
 };
 
 }

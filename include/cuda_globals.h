@@ -1,7 +1,7 @@
 #pragma once
 
 #include "camera.h"
-#include "materials/dummy.h"
+#include "materials/mirror.h"
 #include "materials/material.h"
 #include "materials/material_table.h"
 #include "materials/types.h"
@@ -27,7 +27,7 @@ public:
 
     MaterialLookup *d_materialLookup;
     Material *d_lambertians;
-    Dummy *d_dummies;
+    Mirror *d_mirrors;
 
     Triangle *d_triangles;
     Sphere *d_spheres;

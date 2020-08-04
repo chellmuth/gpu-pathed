@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "materials/dummy.h"
+#include "materials/mirror.h"
 #include "materials/material.h"
 
 namespace rays {
@@ -11,7 +11,7 @@ namespace SceneParameters {
 
 SceneData getSceneData(int index)
 {
-    Material dummyMaterial(Vec3(0.f), Vec3(0.f, 0.f, 0.f));
+    Material mirrorMaterial(Vec3(0.f), Vec3(0.f, 0.f, 0.f));
 
     if (index == 0) {
         SceneAdapter::ParseRequest request;
@@ -20,9 +20,9 @@ SceneData getSceneData(int index)
             std::string sceneFilename("../scenes/cornell-glossy/CornellBox-Glossy.obj");
             ObjParser objParser(sceneFilename);
             request.objParsers.push_back(objParser);
-            request.defaultMaterials.push_back(dummyMaterial);
+            request.defaultMaterials.push_back(mirrorMaterial);
 
-            const MaterialIndex index = request.materialTable.addMaterial(dummyMaterial);
+            const MaterialIndex index = request.materialTable.addMaterial(mirrorMaterial);
             request.defaultMaterialIndices.push_back(index);
         }
         {
@@ -41,7 +41,7 @@ SceneData getSceneData(int index)
             ObjParser objParser(sceneFilename);
             request.objParsers.push_back(objParser);
 
-            Dummy ballMaterial;
+            Mirror ballMaterial;
             Material fakeDefault(Vec3(1.f), Vec3(10.f));
             request.defaultMaterials.push_back(fakeDefault);
 
@@ -95,7 +95,7 @@ void Scene::update()
 {
     m_materials = m_sceneData.materials;
     m_lambertians = m_sceneData.lambertians;
-    m_dummies = m_sceneData.dummies;
+    m_mirrors = m_sceneData.mirrors;
 }
 
 }

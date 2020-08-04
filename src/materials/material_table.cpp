@@ -11,12 +11,12 @@ MaterialIndex MaterialTable::addMaterial(const Material &material)
     };
 }
 
-MaterialIndex MaterialTable::addMaterial(const Dummy &material)
+MaterialIndex MaterialTable::addMaterial(const Mirror &material)
 {
-    m_dummies.push_back(material);
+    m_mirrors.push_back(material);
     return MaterialIndex{
-        MaterialType::Dummy,
-        m_dummies.size() - 1
+        MaterialType::Mirror,
+        m_mirrors.size() - 1
     };
 }
 
