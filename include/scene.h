@@ -62,18 +62,24 @@ public:
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
         if (materialIndex.materialType == materialType) { return; }
 
+        MaterialStore &store = m_sceneData.materialStore;
+
+        int newID = -1;
         switch (materialType) {
         case MaterialType::Lambertian: {
+            Material newMaterial;
+            newID = store.addMaterial(newMaterial);
+            break;
         }
-        case MaterialType:: Mirror: {
+        case MaterialType::Mirror: {
             Mirror newMaterial;
+            newID = store.addMaterial(newMaterial);
+            break;
+        }
+        }
 
-            MaterialStore &store = m_sceneData.materialStore;
-            int newID = store.addMaterial(newMaterial);
-            MaterialIndex newIndex = store.indexAt(newID);
-            store.updateIndex(materialID, newIndex);
-        }
-        }
+        MaterialIndex newIndex = store.indexAt(newID);
+        store.updateIndex(materialID, newIndex);
     }
 
     Vec3 getColor(int materialID) const {
