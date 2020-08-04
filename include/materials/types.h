@@ -3,8 +3,8 @@
 namespace rays {
 
 enum class MaterialType {
-    Lambertian,
-    Mirror
+    Lambertian = 0,
+    Mirror = 1
 };
 
 struct MaterialIndex {

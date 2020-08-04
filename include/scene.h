@@ -47,9 +47,11 @@ public:
     size_t getMirrorsSize() const { return m_mirrors.size() * sizeof(Mirror); }
 
     void setColor(MaterialIndex materialIndex, Vec3 color) {
+        return; // fixme
         m_materials[materialIndex.index].setAlbedo(color);
     }
     void setEmit(MaterialIndex materialIndex, Vec3 color) {
+        return; // fixme
         m_materials[materialIndex.index].setEmit(color);
     }
 
