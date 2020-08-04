@@ -18,6 +18,10 @@ struct SceneData {
     MaterialStore materialStore;
     std::vector<int> lightIndices;
 
+    int totalMaterialCount() const {
+        return materialStore.totalMaterialCount();
+    }
+
     bool isEmitter(MaterialIndex materialIndex) const {
         switch (materialIndex.materialType) {
         case MaterialType::Lambertian: {

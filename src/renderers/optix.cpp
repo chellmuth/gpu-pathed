@@ -103,13 +103,12 @@ static void initAcceleration(
         cudaMemcpyHostToDevice
     ));
 
-    // fixme
-    // const std::vector<Material> &materials = sceneData.materials;
+    const int materialCount = sceneData.totalMaterialCount();
     std::vector<uint32_t> triangleInputFlags;
-    // triangleInputFlags.reserve(vertices.size());
-    // for (const auto &material : materials) {
-    //     triangleInputFlags.push_back(OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT);
-    // }
+    triangleInputFlags.reserve(materialCount);
+    for (int i = 0; i < materialCount; i++) {
+        triangleInputFlags.push_back(OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT);
+    }
 
     // Build input is list of non-indexed triangle vertices
     OptixBuildInput triangleInput = {};
@@ -118,8 +117,7 @@ static void initAcceleration(
     triangleInput.triangleArray.numVertices = static_cast<uint32_t>(vertices.size());
     triangleInput.triangleArray.vertexBuffers = &d_vertices;
     triangleInput.triangleArray.flags = triangleInputFlags.data();
-    // fixme
-    // triangleInput.triangleArray.numSbtRecords = materials.size();
+    triangleInput.triangleArray.numSbtRecords = materialCount;
     triangleInput.triangleArray.sbtIndexOffsetBuffer = d_materialIndices;
     triangleInput.triangleArray.sbtIndexOffsetSizeInBytes = sizeof(int);
     triangleInput.triangleArray.sbtIndexOffsetStrideInBytes = 0;
