@@ -25,7 +25,7 @@ class MaterialWidget(QGroupBox):
         layout.addWidget(self.materialIDLabel)
 
         self.typeButton = MaterialTypeWidget(
-            lambda: self.model.getMaterialIndex().materialType,
+            lambda: self.model.getMaterialType(),
             lambda x: (),
             self
         )

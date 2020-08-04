@@ -10,7 +10,6 @@ SceneModel::SceneModel(
     m_lightPosition(lightPosition),
     m_rendererType(rendererType),
     m_spp(0),
-    m_materialIndex({MaterialType::Lambertian, INT_MAX}),
     m_materialID(-1)
 {}
 
@@ -82,14 +81,9 @@ void SceneModel::setMaterialID(int materialID)
     m_materialID = materialID;
 }
 
-MaterialIndex SceneModel::getMaterialIndex() const
+MaterialType SceneModel::getMaterialType() const
 {
-    return m_materialIndex;
-}
-
-void SceneModel::setMaterialIndex(MaterialIndex materialIndex)
-{
-    m_materialIndex = materialIndex;
+    return m_scene->getMaterialType(m_materialID);
 }
 
 void SceneModel::setLightPosition(float lightPosition)

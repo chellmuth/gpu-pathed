@@ -50,10 +50,10 @@ public:
     void setEmit(float r, float g, float b);
     Vec3 getEmit() const;
 
-    MaterialIndex getMaterialIndex() const;
-    void setMaterialIndex(MaterialIndex materialIndex);
     int getMaterialID() const;
     void setMaterialID(int materialID);
+
+    MaterialType getMaterialType() const;
 
     void setLightPosition(float lightPosition);
     float getLightPosition() const;
@@ -80,7 +80,6 @@ private:
     const Scene *m_scene;
 
     RendererType m_rendererType;
-    MaterialIndex m_materialIndex;
     int m_materialID;
 
     int m_spp;

@@ -76,6 +76,11 @@ public:
         }
     }
 
+    MaterialType getMaterialType(int materialID) const {
+        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
+        return materialIndex.materialType;
+    }
+
     int getMaxDepth() const {
         return m_maxDepth;
     }
