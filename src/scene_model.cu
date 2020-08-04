@@ -10,7 +10,7 @@ SceneModel::SceneModel(
     m_lightPosition(lightPosition),
     m_rendererType(rendererType),
     m_spp(0),
-    m_materialIndex(-1)
+    m_materialIndex({MaterialType::Lambertian, INT_MAX})
 {}
 
 void SceneModel::subscribe(std::function<void(const SceneModelAttributes &attributes)> callback)
@@ -49,9 +49,9 @@ void SceneModel::setColor(float r, float g, float b)
 
 Vec3 SceneModel::getColor() const
 {
-    if (m_materialIndex == -1) { return Vec3(0.f); }
+    if (m_materialIndex.index == INT_MAX) { return Vec3(0.f); }
 
-    return m_scene->getMaterial(m_materialIndex).getAlbedo();
+    return m_scene->getMaterial(m_materialIndex.index).getAlbedo();
 }
 
 void SceneModel::setEmit(float r, float g, float b)
@@ -68,17 +68,17 @@ void SceneModel::setEmit(float r, float g, float b)
 
 Vec3 SceneModel::getEmit() const
 {
-    if (m_materialIndex == -1) { return Vec3(0.f); }
+    if (m_materialIndex.index == INT_MAX) { return Vec3(0.f); }
 
-    return m_scene->getMaterial(m_materialIndex).getEmit();
+    return m_scene->getMaterial(m_materialIndex.index).getEmit();
 }
 
-int SceneModel::getMaterialIndex() const
+MaterialIndex SceneModel::getMaterialIndex() const
 {
     return m_materialIndex;
 }
 
-void SceneModel::setMaterialIndex(int materialIndex)
+void SceneModel::setMaterialIndex(MaterialIndex materialIndex)
 {
     m_materialIndex = materialIndex;
 }

@@ -48,7 +48,7 @@ class MaterialWidget(QGroupBox):
         self.update()
 
     def _materialIDText(self):
-        return f"Material ID: {self.model.getMaterialIndex()}"
+        return f"Material ID: {self.model.getMaterialIndex().index}"
 
     def update(self):
         self.materialIDLabel.setText(self._materialIDText())

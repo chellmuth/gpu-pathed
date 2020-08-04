@@ -37,7 +37,7 @@ public:
     const SceneData &getSceneData() const { return m_sceneData; }
 
     const Material *getMaterialsData() const { return m_materials.data(); }
-    const Material &getMaterial(int materialIndex) const { return m_materials[materialIndex]; }
+    const Material &getMaterial(int materialIndex) const { return m_lambertians[materialIndex]; }
     size_t getMaterialsSize() const { return m_materials.size() * sizeof(Material); }
 
     const Material *getLambertiansData() const { return m_lambertians.data(); }
@@ -46,11 +46,11 @@ public:
     const Mirror *getMirrorsData() const { return m_mirrors.data(); }
     size_t getMirrorsSize() const { return m_mirrors.size() * sizeof(Mirror); }
 
-    void setColor(int materialIndex, Vec3 color) {
-        m_materials[materialIndex].setAlbedo(color);
+    void setColor(MaterialIndex materialIndex, Vec3 color) {
+        m_materials[materialIndex.index].setAlbedo(color);
     }
-    void setEmit(int materialIndex, Vec3 color) {
-        m_materials[materialIndex].setEmit(color);
+    void setEmit(MaterialIndex materialIndex, Vec3 color) {
+        m_materials[materialIndex.index].setEmit(color);
     }
 
     int getMaxDepth() const {

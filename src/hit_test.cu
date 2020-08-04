@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "macro_helper.h"
 #include "materials/material.h"
+#include "materials/types.h"
 #include "primitive.h"
 #include "scene.h"
 #include "vec3.h"
@@ -17,7 +18,7 @@ namespace rays {
 
 
 struct HitTest {
-    int materialIndex;
+    MaterialIndex materialIndex;
     bool isHit;
 };
 
@@ -39,7 +40,7 @@ __global__ static void hitTestKernel(
     bool isHit = world->hit(cameraRay, 0.f, FLT_MAX, record);
     if (isHit) {
         hitTest->isHit = true;
-        hitTest->materialIndex = record.materialIndex.index; // fixme
+        hitTest->materialIndex = record.materialIndex;
     } else {
         hitTest->isHit = false;
     }
@@ -74,7 +75,7 @@ void hitTest(
     if (hitTest.isHit) {
         sceneModel.setMaterialIndex(hitTest.materialIndex);
     } else {
-        sceneModel.setMaterialIndex(-1);
+        sceneModel.setMaterialIndex(MaterialIndex{MaterialType::Lambertian, INT_MAX});
     }
 
     checkCudaErrors(cudaFree(dev_hitTest));

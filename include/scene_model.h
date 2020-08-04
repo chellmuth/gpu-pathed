@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "materials/material.h"
+#include "materials/types.h"
 #include "path_tracer.h"
 #include "scene.h"
 #include "vec3.h"
@@ -49,8 +50,8 @@ public:
     void setEmit(float r, float g, float b);
     Vec3 getEmit() const;
 
-    int getMaterialIndex() const;
-    void setMaterialIndex(int materialIndex);
+    MaterialIndex getMaterialIndex() const;
+    void setMaterialIndex(MaterialIndex materialIndex);
 
     void setLightPosition(float lightPosition);
     float getLightPosition() const;
@@ -77,7 +78,7 @@ private:
     const Scene *m_scene;
 
     RendererType m_rendererType;
-    int m_materialIndex;
+    MaterialIndex m_materialIndex;
 
     int m_spp;
     float m_lightPosition;

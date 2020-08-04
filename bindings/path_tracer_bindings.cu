@@ -49,6 +49,10 @@ PYBIND11_MODULE(path_tracer, m) {
         .value("Mirror", MaterialType::Mirror)
         .export_values();
 
+    py::class_<MaterialIndex>(m, "MaterialIndex")
+        .def_readonly("materialType", &MaterialIndex::materialType)
+        .def_readonly("index", &MaterialIndex::index);
+
     py::class_<SceneModel>(m, "SceneModel")
         .def("getRendererType", &SceneModel::getRendererType)
         .def("setRendererType", &SceneModel::setRendererType)
