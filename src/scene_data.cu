@@ -11,8 +11,8 @@ SceneData createSceneData(ParseRequest &request)
     // assert(request.objParsers.size() == request.defaultMaterials.size());
 
     SceneData sceneData;
-    int materialOffset = 0;
     MaterialTableOffsets tableOffsets = request.materialTable.getOffsets();
+    std::vector<int> materialIDs;
 
     const int requestSize = request.objParsers.size();
     for (int i = 0; i < requestSize; i++) {
@@ -37,6 +37,9 @@ SceneData createSceneData(ParseRequest &request)
                 objMaterial
             );
 
+            const int materialID = request.materialStore.addMaterial(objMaterial);
+            materialIDs.push_back(materialID);
+
             sceneData.materials.push_back(
                 objMaterial
             );
@@ -46,16 +49,19 @@ SceneData createSceneData(ParseRequest &request)
         size_t faceCount = result.faces.size();
         for (size_t j = 0; j < faceCount; j++) {
             Face &face = result.faces[j];
-            int materialIndex = result.mtlIndices[j];
+            int mtlIndex = result.mtlIndices[j];
 
             MaterialIndex index;
+            int materialID;
             if (useDefaultMaterial) {
                 index = request.defaultMaterialIndices[i];
+                materialID = request.defaultMaterialIDs[i];
             } else {
                 index = {
                     MaterialType::Lambertian,
-                    tableOffsets.getOffset(MaterialType::Lambertian) + materialIndex
+                    tableOffsets.getOffset(MaterialType::Lambertian) + mtlIndex
                 };
+                materialID = materialIDs[mtlIndex];
             }
 
             sceneData.triangles.push_back(
@@ -66,13 +72,12 @@ SceneData createSceneData(ParseRequest &request)
                     Vec3(face.n0.x, face.n0.y, face.n0.z),
                     Vec3(face.n1.x, face.n1.y, face.n1.z),
                     Vec3(face.n2.x, face.n2.y, face.n2.z),
-                    materialOffset + materialIndex,
+                    materialID,
                     index
                 )
             );
         }
 
-        materialOffset = sceneData.materials.size();
         tableOffsets = request.materialTable.getOffsets();
 
         const auto lambertians = request.materialTable.getLambertians();
