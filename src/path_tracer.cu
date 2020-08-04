@@ -91,7 +91,7 @@ __device__ static Vec3 directSampleLights(
         const Vec3 emit = world->getEmit(lightSample.materialID);
         const Vec3 lightContribution = Vec3(1.f)
             * emit
-            * world->f(hitRecord.materialIndex, hitRecord.wo, wi)
+            * world->f(hitRecord.materialID, hitRecord.wo, wi)
             * WorldFrame::absCosTheta(hitRecord.normal, wiWorld)
             / pdf;
 
@@ -140,7 +140,7 @@ __device__ static Vec3 calculateLiNEE(
 
     for (int path = 1; path < maxDepth; path++) {
         const Frame intersection(record.normal);
-        const BSDFSample bsdfSample = world->sample(record.materialIndex, record, randState);
+        const BSDFSample bsdfSample = world->sample(record.materialID, record, randState);
 
         result += direct(record, bsdfSample, world, randState) * beta;
 
@@ -185,7 +185,7 @@ __device__ static Vec3 calculateLiNaive(
     for (int path = 1; path < maxDepth; path++) {
         const Frame intersection(record.normal);
 
-        const BSDFSample bsdfSample = world->sample(record.materialIndex, record, randState);
+        const BSDFSample bsdfSample = world->sample(record.materialID, record, randState);
 
         beta *= Vec3(1.f)
             * bsdfSample.f

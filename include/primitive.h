@@ -92,6 +92,11 @@ public:
         return Vec3(0.f);
     }
 
+    __device__ Vec3 f(const int materialID, const Vec3 &wo, const Vec3 &wi) const {
+        const MaterialIndex index = m_materialIndices[materialID];
+        return f(index, wo, wi);
+    }
+
     __device__ Vec3 f(const MaterialIndex index, const Vec3 &wo, const Vec3 &wi) const {
         switch(index.materialType) {
         case MaterialType::Lambertian: {
@@ -105,10 +110,12 @@ public:
     }
 
     __device__ BSDFSample sample(
-        const MaterialIndex index,
+        int materialID,
         HitRecord &record,
         curandState &randState
     ) const {
+        const MaterialIndex index = m_materialIndices[materialID];
+
         switch(index.materialType) {
         case MaterialType::Lambertian: {
             float pdf;
