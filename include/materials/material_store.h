@@ -14,7 +14,7 @@ public:
     int addMaterial(const Material &material);
     int addMaterial(const Mirror &material);
 
-    MaterialIndex indexAt(int materialID) {
+    MaterialIndex indexAt(int materialID) const {
         return m_indices[materialID];
     }
 

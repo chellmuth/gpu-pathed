@@ -46,6 +46,16 @@ public:
     const Mirror *getMirrorsData() const { return m_mirrors.data(); }
     size_t getMirrorsSize() const { return m_mirrors.size() * sizeof(Mirror); }
 
+    Vec3 getColor(int materialID) const {
+        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
+
+        if (materialIndex.materialType == MaterialType::Lambertian) {
+            return m_lambertians[materialIndex.index].getAlbedo();
+        } else {
+            return Vec3(0.f);
+        }
+    }
+
     void setColor(int materialID, Vec3 color) {
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 

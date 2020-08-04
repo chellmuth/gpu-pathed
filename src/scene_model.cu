@@ -50,9 +50,8 @@ void SceneModel::setColor(float r, float g, float b)
 
 Vec3 SceneModel::getColor() const
 {
-    if (m_materialIndex.index == INT_MAX) { return Vec3(0.f); }
-
-    return m_scene->getMaterial(m_materialIndex.index).getAlbedo();
+    if (m_materialID == -1) { return Vec3(0.f); }
+    return m_scene->getColor(m_materialID);
 }
 
 void SceneModel::setEmit(float r, float g, float b)
