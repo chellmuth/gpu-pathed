@@ -48,7 +48,7 @@ class MaterialWidget(QGroupBox):
         self.update()
 
     def _materialIDText(self):
-        return f"Material ID: {self.model.getMaterialIndex().index}"
+        return f"Material ID: {self.model.getMaterialID()}"
 
     def update(self):
         self.materialIDLabel.setText(self._materialIDText())
@@ -56,7 +56,7 @@ class MaterialWidget(QGroupBox):
         self.albedoButton.update()
         self.emitWidget.update()
 
-        if self.model.getMaterialIndex().index == 2**31 - 1:
+        if self.model.getMaterialID() == -1:
             self.materialIDLabel.hide()
             self.typeButton.hide()
             self.albedoButton.hide()

@@ -61,6 +61,7 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("setEmit", &SceneModel::setEmit)
         .def("getEmit", &SceneModel::getEmit)
         .def("getMaterialIndex", &SceneModel::getMaterialIndex)
+        .def("getMaterialID", &SceneModel::getMaterialID)
         .def("setLightPosition", &SceneModel::setLightPosition)
         .def("getLightPosition", &SceneModel::getLightPosition)
         .def("getCameraOrigin", &SceneModel::getCameraOrigin)
