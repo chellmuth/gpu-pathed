@@ -1,7 +1,17 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QMenu,
+    QPushButton,
+    QSlider,
+    QVBoxLayout,
+    QWidget
+)
 
 from gui.widget.color import ColorButton
+from path_tracer import MaterialType
 
 class MaterialWidget(QGroupBox):
     def __init__(self, model, parent=None):
@@ -13,6 +23,13 @@ class MaterialWidget(QGroupBox):
 
         self.materialIDLabel = QLabel(self._materialIDText(), self)
         layout.addWidget(self.materialIDLabel)
+
+        self.typeButton = MaterialTypeWidget(
+            lambda: MaterialType.Lambertian,
+            lambda x: (),
+            self
+        )
+        layout.addWidget(self.typeButton)
 
         self.albedoButton = ColorButton(
             "Albedo",
@@ -35,17 +52,57 @@ class MaterialWidget(QGroupBox):
 
     def update(self):
         self.materialIDLabel.setText(self._materialIDText())
+        self.typeButton.update()
         self.albedoButton.update()
         self.emitWidget.update()
 
         if self.model.getMaterialIndex() == -1:
             self.materialIDLabel.hide()
+            self.typeButton.hide()
             self.albedoButton.hide()
             self.emitWidget.hide()
         else:
             self.materialIDLabel.show()
+            self.typeButton.show()
             self.albedoButton.show()
             self.emitWidget.show()
+
+class MaterialTypeWidget(QWidget):
+    def __init__(self, getter, setter, parent=None):
+        super().__init__(parent)
+
+        self.getter = getter
+        self.setter = setter
+
+        layout = QHBoxLayout()
+
+        self.materialLabel = QLabel("Type:")
+        layout.addWidget(self.materialLabel)
+
+        self.materialButton = QPushButton("")
+        menu = QMenu(self)
+        menu.addAction("Lambertian", lambda: self.handleStateChanged(MaterialType.Lambertian))
+        menu.addAction("Mirror", lambda: self.handleStateChanged(MaterialType.Mirror))
+        self.materialButton.setMenu(menu)
+
+        layout.addWidget(self.materialButton)
+        layout.addStretch()
+
+        self.setLayout(layout)
+
+    def update(self):
+        material_type = self.getter()
+        if material_type == MaterialType.Lambertian:
+            self.materialButton.setText("Lambertian")
+        elif material_type == MaterialType.Mirror:
+            self.materialButton.setText("Mirror")
+        else:
+            print("Error, unsupported material type")
+            exit(1)
+
+    def handleStateChanged(self, material_type):
+        self.setter(material_type)
+        self.update()
 
 class EmitWidget(QWidget):
     def __init__(self, model, parent=None):

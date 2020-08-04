@@ -1,3 +1,4 @@
+#include "materials/types.h"
 #include "path_tracer.h"
 #include "render_session.h"
 #include "scene_model.h"
@@ -41,6 +42,11 @@ PYBIND11_MODULE(path_tracer, m) {
         .value("CUDA", RendererType::CUDA)
         .value("Optix", RendererType::Optix)
         .value("Normals", RendererType::Normals)
+        .export_values();
+
+    py::enum_<MaterialType>(m, "MaterialType")
+        .value("Lambertian", MaterialType::Lambertian)
+        .value("Mirror", MaterialType::Mirror)
         .export_values();
 
     py::class_<SceneModel>(m, "SceneModel")
