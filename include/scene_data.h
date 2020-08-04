@@ -15,14 +15,20 @@ namespace rays {
 struct SceneData {
     std::vector<Triangle> triangles;
     std::vector<Sphere> spheres;
-    std::vector<Material> materials;
     std::vector<Material> lambertians;
-    std::vector<Mirror> mirrors;
     MaterialStore materialStore;
     std::vector<int> lightIndices;
 
     bool isEmitter(MaterialIndex materialIndex) const {
-        return !(lambertians[materialIndex.index].getEmit().isZero());
+        switch (materialIndex.materialType) {
+        case MaterialType::Lambertian: {
+            return !materialStore.getLambertians()[materialIndex.index].getEmit().isZero();
+        }
+        case MaterialType::Mirror: {
+            return !materialStore.getMirrors()[materialIndex.index].getEmit().isZero();
+        }
+        }
+        return false;
     }
 };
 
@@ -32,11 +38,6 @@ namespace rays { namespace SceneAdapter {
 
 struct ParseRequest {
     std::vector<ObjParser> objParsers;
-    std::vector<Material> defaultMaterials;
-
-    MaterialTable materialTable;
-    std::vector<MaterialIndex> defaultMaterialIndices;
-
     MaterialStore materialStore;
     std::vector<int> defaultMaterialIDs;
 };

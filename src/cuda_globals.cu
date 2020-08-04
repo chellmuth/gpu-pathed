@@ -60,8 +60,8 @@ __global__ static void initWorldKernel(
 
 void CUDAGlobals::mallocWorld(const SceneData &sceneData)
 {
-    const int lambertianSize = sceneData.lambertians.size();
-    const int mirrorSize = sceneData.mirrors.size();
+    const int lambertianSize = sceneData.materialStore.getLambertians().size();
+    const int mirrorSize = sceneData.materialStore.getMirrors().size();
     const int triangleSize = sceneData.triangles.size();
     const int sphereSize = sceneData.spheres.size();
     const int lightIndexSize = sceneData.lightIndices.size();

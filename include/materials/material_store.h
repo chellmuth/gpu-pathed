@@ -26,6 +26,14 @@ public:
         return m_indices;
     }
 
+    const std::vector<Material> &getLambertians() const {
+        return m_table.getLambertians();
+    }
+
+    const std::vector<Mirror> &getMirrors() const {
+        return m_table.getMirrors();
+    }
+
 private:
     std::vector<MaterialIndex> m_indices;
     MaterialTable m_table;

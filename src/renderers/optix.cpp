@@ -80,7 +80,7 @@ static void initAcceleration(
         vertices.push_back({ p1.x(), p1.y(), p1.z() });
         vertices.push_back({ p2.x(), p2.y(), p2.z() });
 
-        materialIndices.push_back(triangle.materialIndex().index); //fixme
+        materialIndices.push_back(triangle.materialID()); //fixme
     }
 
     const size_t verticesSize = sizeof(float3) * vertices.size();
@@ -103,12 +103,13 @@ static void initAcceleration(
         cudaMemcpyHostToDevice
     ));
 
-    const std::vector<Material> &materials = sceneData.materials;
+    // fixme
+    // const std::vector<Material> &materials = sceneData.materials;
     std::vector<uint32_t> triangleInputFlags;
-    triangleInputFlags.reserve(vertices.size());
-    for (const auto &material : materials) {
-        triangleInputFlags.push_back(OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT);
-    }
+    // triangleInputFlags.reserve(vertices.size());
+    // for (const auto &material : materials) {
+    //     triangleInputFlags.push_back(OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT);
+    // }
 
     // Build input is list of non-indexed triangle vertices
     OptixBuildInput triangleInput = {};
@@ -117,7 +118,8 @@ static void initAcceleration(
     triangleInput.triangleArray.numVertices = static_cast<uint32_t>(vertices.size());
     triangleInput.triangleArray.vertexBuffers = &d_vertices;
     triangleInput.triangleArray.flags = triangleInputFlags.data();
-    triangleInput.triangleArray.numSbtRecords = materials.size();
+    // fixme
+    // triangleInput.triangleArray.numSbtRecords = materials.size();
     triangleInput.triangleArray.sbtIndexOffsetBuffer = d_materialIndices;
     triangleInput.triangleArray.sbtIndexOffsetSizeInBytes = sizeof(int);
     triangleInput.triangleArray.sbtIndexOffsetStrideInBytes = 0;
@@ -345,35 +347,36 @@ static void setupShaderBindingTable(
         cudaMemcpyHostToDevice
     ));
 
-    const std::vector<Material> &materials = sceneData.materials;
-    std::vector<HitGroupSbtRecord> hitgroupRecords;
-    hitgroupRecords.reserve(materials.size());
-    int i = 0;
-    for (const auto &material : materials) {
-        HitGroupSbtRecord record;
-        checkOptix(optixSbtRecordPackHeader(
-            hitgroupProgramGroup,
-            &record
-        ));
+    // fixme
+    // const std::vector<Material> &materials = sceneData.materials;
+    // std::vector<HitGroupSbtRecord> hitgroupRecords;
+    // hitgroupRecords.reserve(materials.size());
+    // int i = 0;
+    // for (const auto &material : materials) {
+    //     HitGroupSbtRecord record;
+    //     checkOptix(optixSbtRecordPackHeader(
+    //         hitgroupProgramGroup,
+    //         &record
+    //     ));
 
-        record.data.materialIndex = i++;
+    //     record.data.materialIndex = i++;
 
-        hitgroupRecords.push_back(record);
-    }
+    //     hitgroupRecords.push_back(record);
+    // }
 
     CUdeviceptr d_hitgroupRecords;
-    size_t hitgroupRecordSize = sizeof(HitGroupSbtRecord);
-    checkCUDA(cudaMalloc(
-        reinterpret_cast<void **>(&d_hitgroupRecords),
-        hitgroupRecordSize * materials.size()
-    ));
+    // size_t hitgroupRecordSize = sizeof(HitGroupSbtRecord);
+    // checkCUDA(cudaMalloc(
+    //     reinterpret_cast<void **>(&d_hitgroupRecords),
+    //     hitgroupRecordSize * materials.size()
+    // ));
 
-    checkCUDA(cudaMemcpy(
-        reinterpret_cast<void *>(d_hitgroupRecords),
-        hitgroupRecords.data(),
-        hitgroupRecordSize * materials.size(),
-        cudaMemcpyHostToDevice
-    ));
+    // checkCUDA(cudaMemcpy(
+    //     reinterpret_cast<void *>(d_hitgroupRecords),
+    //     hitgroupRecords.data(),
+    //     hitgroupRecordSize * materials.size(),
+    //     cudaMemcpyHostToDevice
+    // ));
 
     sbt.raygenRecord = raygenRecord;
     sbt.missRecordBase = missRecord;
@@ -381,7 +384,8 @@ static void setupShaderBindingTable(
     sbt.missRecordCount = 1;
     sbt.hitgroupRecordBase = d_hitgroupRecords;
     sbt.hitgroupRecordStrideInBytes = sizeof(HitGroupSbtRecord);
-    sbt.hitgroupRecordCount = materials.size();
+    // fixme
+    // sbt.hitgroupRecordCount = materials.size();
 }
 
 void Optix::updateMaterials(const Scene &scene)

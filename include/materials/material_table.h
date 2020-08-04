@@ -38,8 +38,12 @@ public:
     MaterialIndex addMaterial(const Material &material);
     MaterialIndex addMaterial(const Mirror &material);
 
-    const std::vector<Material> getLambertians() const {
+    const std::vector<Material> &getLambertians() const {
         return m_lambertians;
+    }
+
+    const std::vector<Mirror> &getMirrors() const {
+        return m_mirrors;
     }
 
     MaterialTableOffsets getOffsets() {

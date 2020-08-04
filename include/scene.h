@@ -36,14 +36,32 @@ public:
 
     const SceneData &getSceneData() const { return m_sceneData; }
 
-    const Material *getLambertiansData() const { return m_lambertians.data(); }
-    size_t getLambertiansSize() const { return m_lambertians.size() * sizeof(Material); }
+    const std::vector<Material> &getLambertians() const {
+        return m_sceneData.materialStore.getLambertians();
+    }
 
-    const Mirror *getMirrorsData() const { return m_mirrors.data(); }
-    size_t getMirrorsSize() const { return m_mirrors.size() * sizeof(Mirror); }
+    const std::vector<Mirror> &getMirrors() const {
+        return m_sceneData.materialStore.getMirrors();
+    }
+
+    const Material *getLambertiansData() const {
+        return getLambertians().data();
+    }
+
+    size_t getLambertiansSize() const {
+        return getLambertians().size() * sizeof(Material);
+    }
+
+    const Mirror *getMirrorsData() const {
+        return getMirrors().data();
+    }
+    size_t getMirrorsSize() const {
+        return getMirrors().size() * sizeof(Mirror);
+    }
 
     void setMaterialType(int materialID, MaterialType materialType) {
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
+        if (materialIndex.materialType == materialType) { return; }
 
         switch (materialType) {
         case MaterialType::Lambertian: {
@@ -63,7 +81,7 @@ public:
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
         if (materialIndex.materialType == MaterialType::Lambertian) {
-            return m_lambertians[materialIndex.index].getAlbedo();
+            return getLambertians()[materialIndex.index].getAlbedo();
         } else {
             return Vec3(0.f);
         }
@@ -72,7 +90,7 @@ public:
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
         if (materialIndex.materialType == MaterialType::Lambertian) {
-            return m_lambertians[materialIndex.index].getEmit();
+            return getLambertians()[materialIndex.index].getEmit();
         } else {
             return Vec3(0.f);
         }
@@ -82,14 +100,16 @@ public:
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
         if (materialIndex.materialType == MaterialType::Lambertian) {
-            m_lambertians[materialIndex.index].setAlbedo(color);
+            // fixme
+            // getLambertians()[materialIndex.index].setAlbedo(color);
         }
     }
     void setEmit(int materialID, Vec3 color) {
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
         if (materialIndex.materialType == MaterialType::Lambertian) {
-            m_lambertians[materialIndex.index].setEmit(color);
+            // fixme
+            // getLambertians()[materialIndex.index].setEmit(color);
         }
     }
 
@@ -115,8 +135,6 @@ public:
 private:
     Camera m_camera;
     SceneData m_sceneData;
-    std::vector<Material> m_lambertians;
-    std::vector<Mirror> m_mirrors;
     int m_maxDepth;
     bool m_nextEventEstimation;
 };

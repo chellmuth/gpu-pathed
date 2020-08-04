@@ -89,7 +89,6 @@ RenderSession::RenderSession(int width, int height)
         m_scene->setMaxDepth(attributes.maxDepth);
         m_scene->setNextEventEstimation(attributes.nextEventEstimation);
 
-
         const int materialID = m_sceneModel->getMaterialID();
         m_scene->setMaterialType(materialID, attributes.materialType);
         m_scene->setColor(materialID, attributes.albedo);
