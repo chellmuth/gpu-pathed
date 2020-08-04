@@ -102,17 +102,16 @@ __device__ static Vec3 calculateLiNEE(
     }
 
     for (int path = 1; path < maxDepth; path++) {
+        const Frame intersection(record.normal);
+        const BSDFSample bsdfSample = world->sample(record.materialIndex, record, randState);
+
         result += direct(record, world, randState) * beta;
 
-        const Frame intersection(record.normal);
-
-        const BSDFSample bsdfSample = world->sample(record.materialIndex, record, randState);
-        const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
-
-        beta *= world->f(record.materialIndex, record.wo, bsdfSample.wiLocal)
+        beta *= bsdfSample.f
             * intersection.cosTheta(bsdfSample.wiLocal)
             / bsdfSample.pdf;
 
+        const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
         if (!hit) {

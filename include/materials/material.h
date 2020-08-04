@@ -54,6 +54,8 @@ public:
         return Vec3(x, y, z);
     }
 
+    __device__ bool isDelta() const { return false; }
+
     void writeStream(std::ostream &os) const {
         os << "[Lambertian: diffuse=" << m_albedo << " emit=" << m_emit << "]";
     }

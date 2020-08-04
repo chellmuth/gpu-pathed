@@ -115,6 +115,18 @@ public:
         return BSDFSample{};
     }
 
+    __device__ bool isDelta(const MaterialIndex index) {
+        switch(index.materialType) {
+        case MaterialType::Lambertian: {
+            return m_materialLookup->lambertians[index.index].isDelta();
+        }
+        case MaterialType::Mirror: {
+            return m_materialLookup->mirrors[index.index].isDelta();
+        }
+        }
+        return false;
+    }
+
 private:
     Triangle *m_triangles;
     size_t m_triangleSize;

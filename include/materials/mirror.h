@@ -41,6 +41,8 @@ public:
             Vec3(fmaxf(0.f, 1.f / wi.z()))
         };
     }
+
+    __device__ bool isDelta() const { return true; }
 };
 
 }
