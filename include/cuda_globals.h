@@ -26,6 +26,7 @@ public:
     Material *d_materials;
 
     MaterialLookup *d_materialLookup;
+    MaterialIndex *d_materialIndices;
     Material *d_lambertians;
     Mirror *d_mirrors;
 

@@ -14,6 +14,10 @@ public:
     int addMaterial(const Material &material);
     int addMaterial(const Mirror &material);
 
+    const std::vector<MaterialIndex> &getIndices() const {
+        return m_indices;
+    }
+
 private:
     std::vector<MaterialIndex> m_indices;
     MaterialTable m_table;

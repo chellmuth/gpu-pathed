@@ -18,6 +18,7 @@ struct SceneData {
     std::vector<Material> materials;
     std::vector<Material> lambertians;
     std::vector<Mirror> mirrors;
+    MaterialStore materialStore;
     std::vector<int> lightIndices;
 
     bool isEmitter(MaterialIndex materialIndex) const {

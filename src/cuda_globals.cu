@@ -34,7 +34,8 @@ __global__ static void initWorldKernel(
     int lambertianSize,
     Mirror *mirrors,
     int mirrorSize,
-    MaterialLookup *materialLookup
+    MaterialLookup *materialLookup,
+    MaterialIndex *materialIndices
 ) {
     if (blockIdx.x != 0 || blockIdx.y != 0) { return; }
     if (threadIdx.x != 0 || threadIdx.y != 0) { return; }
@@ -52,7 +53,8 @@ __global__ static void initWorldKernel(
         sphereSize,
         lightIndices,
         lightIndexSize,
-        materialLookup
+        materialLookup,
+        materialIndices
     );
 }
 
@@ -64,6 +66,9 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
     const int sphereSize = sceneData.spheres.size();
     const int lightIndexSize = sceneData.lightIndices.size();
 
+    const std::vector<MaterialIndex> &indices = sceneData.materialStore.getIndices();
+
+    checkCudaErrors(cudaMalloc((void **)&d_materialIndices, indices.size() * sizeof(MaterialIndex)));
     checkCudaErrors(cudaMalloc((void **)&d_materialLookup, sizeof(MaterialLookup)));
     checkCudaErrors(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Material)));
     checkCudaErrors(cudaMalloc((void **)&d_mirrors, mirrorSize * sizeof(Mirror)));
@@ -86,7 +91,8 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
         lambertianSize,
         d_mirrors,
         mirrorSize,
-        d_materialLookup
+        d_materialLookup,
+        d_materialIndices
     );
     checkCudaErrors(cudaDeviceSynchronize());
 }

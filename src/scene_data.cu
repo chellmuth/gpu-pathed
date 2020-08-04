@@ -82,6 +82,7 @@ SceneData createSceneData(ParseRequest &request)
 
         const auto lambertians = request.materialTable.getLambertians();
         sceneData.lambertians = lambertians;
+        sceneData.materialStore = request.materialStore;
     }
 
 

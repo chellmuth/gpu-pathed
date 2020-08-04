@@ -11,6 +11,7 @@ struct HitRecord {
     Vec3 normal;
     Vec3 wo;
     MaterialIndex materialIndex;
+    int materialID;
 
     __device__ bool isFront() const {
         return wo.z() >= 0.f;

@@ -50,7 +50,7 @@ __device__ static Vec3 directSampleBSDF(
     HitRecord brdfRecord;
     const bool hit = world->hit(bounceRay, 1e-3, FLT_MAX, brdfRecord);
     if (!hit) { return Vec3(0.f); }
-    const Vec3 emit = world->getEmit(brdfRecord.materialIndex, brdfRecord);
+    const Vec3 emit = world->getEmit(brdfRecord.materialID, brdfRecord);
     if (emit.isZero()) { return Vec3(0.f); }
 
     const float brdfWeight = 1.f;
@@ -88,7 +88,7 @@ __device__ static Vec3 directSampleLights(
     if (!occluded) {
         const Vec3 wi = Frame(hitRecord.normal).toLocal(wiWorld);
         const float pdf = lightSample.solidAnglePDF(hitRecord.point);
-        const Vec3 emit = world->getEmit(lightSample.materialIndex);
+        const Vec3 emit = world->getEmit(lightSample.materialID);
         const Vec3 lightContribution = Vec3(1.f)
             * emit
             * world->f(hitRecord.materialIndex, hitRecord.wo, wi)
@@ -129,7 +129,7 @@ __device__ static Vec3 calculateLiNEE(
     HitRecord record;
     bool hit = world->hit(ray, 0.f, FLT_MAX, record);
     if (hit) {
-        const Vec3 emit = world->getEmit(record.materialIndex, record);
+        const Vec3 emit = world->getEmit(record.materialID, record);
 
         if (!emit.isZero()) {
             result += emit * beta;
@@ -173,7 +173,7 @@ __device__ static Vec3 calculateLiNaive(
     HitRecord record;
     bool hit = world->hit(ray, 0.f, FLT_MAX, record);
     if (hit) {
-       const Vec3 emit = world->getEmit(record.materialIndex, record);
+       const Vec3 emit = world->getEmit(record.materialID, record);
 
         if (!emit.isZero()) {
             result += emit * beta;
@@ -196,7 +196,7 @@ __device__ static Vec3 calculateLiNaive(
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
         if (hit) {
-            const Vec3 emit = world->getEmit(record.materialIndex, record);
+            const Vec3 emit = world->getEmit(record.materialID, record);
             if (!emit.isZero()) {
                 result += emit * beta;
             }

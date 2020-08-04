@@ -24,14 +24,16 @@ public:
         size_t sphereSize,
         int *lightIndices,
         size_t lightIndexSize,
-        MaterialLookup *materialLookup
+        MaterialLookup *materialLookup,
+        MaterialIndex *materialIndices
     ) : m_triangles(triangles),
         m_triangleSize(triangleSize),
         m_spheres(spheres),
         m_sphereSize(sphereSize),
         m_lightIndices(lightIndices),
         m_lightIndexSize(lightIndexSize),
-        m_materialLookup(materialLookup)
+        m_materialLookup(materialLookup),
+        m_materialIndices(materialIndices)
     {}
 
     __device__ bool hit(
@@ -53,6 +55,17 @@ public:
             m_lightIndexSize,
             m_triangles
         );
+    }
+
+    __device__ Vec3 getEmit(const int materialID) const {
+        MaterialIndex index = m_materialIndices[materialID];
+        return getEmit(index);
+    }
+
+
+    __device__ Vec3 getEmit(const int materialID, const HitRecord &record) const {
+        MaterialIndex index = m_materialIndices[materialID];
+        return getEmit(index, record);
     }
 
     __device__ Vec3 getEmit(const MaterialIndex index) const {
@@ -128,6 +141,7 @@ private:
     size_t m_lightIndexSize;
 
     MaterialLookup *m_materialLookup;
+    MaterialIndex *m_materialIndices;
 };
 
 }

@@ -111,6 +111,15 @@ RenderSession::RenderSession(int width, int height)
             cudaMemcpyHostToDevice
         ));
 
+        const SceneData &sceneData = m_scene->getSceneData();
+        const std::vector<MaterialIndex> materialIndices = sceneData.materialStore.getIndices();
+        checkCudaErrors(cudaMemcpy(
+            m_cudaGlobals->d_materialIndices,
+            materialIndices.data(),
+            materialIndices.size() * sizeof(MaterialIndex),
+            cudaMemcpyHostToDevice
+        ));
+
         m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
         checkCudaErrors(cudaGetLastError());
@@ -140,6 +149,16 @@ RenderState RenderSession::init(GLuint pbo1, GLuint pbo2)
         m_cudaGlobals->d_mirrors,
         m_scene->getMirrorsData(),
         m_scene->getMirrorsSize(),
+        cudaMemcpyHostToDevice
+    ));
+
+    // fixme: better home
+    const SceneData &sceneData = m_scene->getSceneData();
+    const std::vector<MaterialIndex> materialIndices = sceneData.materialStore.getIndices();
+    checkCudaErrors(cudaMemcpy(
+        m_cudaGlobals->d_materialIndices,
+        materialIndices.data(),
+        materialIndices.size() * sizeof(MaterialIndex),
         cudaMemcpyHostToDevice
     ));
 
