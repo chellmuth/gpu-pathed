@@ -18,6 +18,10 @@ public:
         return m_indices[materialID];
     }
 
+    void updateIndex(int materialID, MaterialIndex newIndex) {
+        m_indices[materialID] = newIndex;
+    }
+
     const std::vector<MaterialIndex> &getIndices() const {
         return m_indices;
     }

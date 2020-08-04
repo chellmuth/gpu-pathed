@@ -88,8 +88,12 @@ RenderSession::RenderSession(int width, int height)
 
         m_scene->setMaxDepth(attributes.maxDepth);
         m_scene->setNextEventEstimation(attributes.nextEventEstimation);
-        m_scene->setColor(m_sceneModel->getMaterialID(), attributes.albedo);
-        m_scene->setEmit(m_sceneModel->getMaterialID(), attributes.emitted);
+
+
+        const int materialID = m_sceneModel->getMaterialID();
+        m_scene->setMaterialType(materialID, attributes.materialType);
+        m_scene->setColor(materialID, attributes.albedo);
+        m_scene->setEmit(materialID, attributes.emitted);
 
         m_scene->setCamera(attributes.camera);
         m_cudaGlobals->copyCamera(m_scene->getCamera());

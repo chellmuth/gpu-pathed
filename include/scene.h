@@ -42,6 +42,23 @@ public:
     const Mirror *getMirrorsData() const { return m_mirrors.data(); }
     size_t getMirrorsSize() const { return m_mirrors.size() * sizeof(Mirror); }
 
+    void setMaterialType(int materialID, MaterialType materialType) {
+        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
+
+        switch (materialType) {
+        case MaterialType::Lambertian: {
+        }
+        case MaterialType:: Mirror: {
+            Mirror newMaterial;
+
+            MaterialStore &store = m_sceneData.materialStore;
+            int newID = store.addMaterial(newMaterial);
+            MaterialIndex newIndex = store.indexAt(newID);
+            store.updateIndex(materialID, newIndex);
+        }
+        }
+    }
+
     Vec3 getColor(int materialID) const {
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 

@@ -26,6 +26,7 @@ struct SceneModelAttributes {
     RendererType rendererType;
     int maxDepth;
     bool nextEventEstimation;
+    MaterialType materialType;
 };
 
 class SceneModel {
@@ -54,6 +55,7 @@ public:
     void setMaterialID(int materialID);
 
     MaterialType getMaterialType() const;
+    void setMaterialType(MaterialType materialType);
 
     void setLightPosition(float lightPosition);
     float getLightPosition() const;
