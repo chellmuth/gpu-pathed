@@ -46,13 +46,19 @@ public:
     const Mirror *getMirrorsData() const { return m_mirrors.data(); }
     size_t getMirrorsSize() const { return m_mirrors.size() * sizeof(Mirror); }
 
-    void setColor(MaterialIndex materialIndex, Vec3 color) {
-        return; // fixme
-        m_materials[materialIndex.index].setAlbedo(color);
+    void setColor(int materialID, Vec3 color) {
+        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
+
+        if (materialIndex.materialType == MaterialType::Lambertian) {
+            m_materials[materialIndex.index].setAlbedo(color);
+        }
     }
-    void setEmit(MaterialIndex materialIndex, Vec3 color) {
-        return; // fixme
-        m_materials[materialIndex.index].setEmit(color);
+    void setEmit(int materialID, Vec3 color) {
+        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
+
+        if (materialIndex.materialType == MaterialType::Lambertian) {
+            m_materials[materialIndex.index].setEmit(color);
+        }
     }
 
     int getMaxDepth() const {

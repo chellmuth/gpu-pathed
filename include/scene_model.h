@@ -52,6 +52,8 @@ public:
 
     MaterialIndex getMaterialIndex() const;
     void setMaterialIndex(MaterialIndex materialIndex);
+    int getMaterialID() const;
+    void setMaterialID(int materialID);
 
     void setLightPosition(float lightPosition);
     float getLightPosition() const;
@@ -79,6 +81,7 @@ private:
 
     RendererType m_rendererType;
     MaterialIndex m_materialIndex;
+    int m_materialID;
 
     int m_spp;
     float m_lightPosition;

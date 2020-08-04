@@ -10,7 +10,8 @@ SceneModel::SceneModel(
     m_lightPosition(lightPosition),
     m_rendererType(rendererType),
     m_spp(0),
-    m_materialIndex({MaterialType::Lambertian, INT_MAX})
+    m_materialIndex({MaterialType::Lambertian, INT_MAX}),
+    m_materialID(-1)
 {}
 
 void SceneModel::subscribe(std::function<void(const SceneModelAttributes &attributes)> callback)
@@ -71,6 +72,16 @@ Vec3 SceneModel::getEmit() const
     if (m_materialIndex.index == INT_MAX) { return Vec3(0.f); }
 
     return m_scene->getMaterial(m_materialIndex.index).getEmit();
+}
+
+int SceneModel::getMaterialID() const
+{
+    return m_materialID;
+}
+
+void SceneModel::setMaterialID(int materialID)
+{
+    m_materialID = materialID;
 }
 
 MaterialIndex SceneModel::getMaterialIndex() const
