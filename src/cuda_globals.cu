@@ -40,6 +40,8 @@ __global__ static void initWorldKernel(
     if (blockIdx.x != 0 || blockIdx.y != 0) { return; }
     if (threadIdx.x != 0 || threadIdx.y != 0) { return; }
 
+    materialLookup->indices = materialIndices;
+
     materialLookup->lambertians = lambertians;
     materialLookup->lambertianSize = lambertianSize;
 
@@ -53,8 +55,7 @@ __global__ static void initWorldKernel(
         sphereSize,
         lightIndices,
         lightIndexSize,
-        materialLookup,
-        materialIndices
+        materialLookup
     );
 }
 

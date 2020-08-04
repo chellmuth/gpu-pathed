@@ -9,6 +9,8 @@
 namespace rays {
 
 struct MaterialLookup {
+    MaterialIndex *indices;
+
     Material *lambertians;
     size_t lambertianSize;
 

@@ -24,16 +24,14 @@ public:
         size_t sphereSize,
         int *lightIndices,
         size_t lightIndexSize,
-        MaterialLookup *materialLookup,
-        MaterialIndex *materialIndices
+        MaterialLookup *materialLookup
     ) : m_triangles(triangles),
         m_triangleSize(triangleSize),
         m_spheres(spheres),
         m_sphereSize(sphereSize),
         m_lightIndices(lightIndices),
         m_lightIndexSize(lightIndexSize),
-        m_materialLookup(materialLookup),
-        m_materialIndices(materialIndices)
+        m_materialLookup(materialLookup)
     {}
 
     __device__ bool hit(
@@ -58,13 +56,13 @@ public:
     }
 
     __device__ Vec3 getEmit(const int materialID) const {
-        MaterialIndex index = m_materialIndices[materialID];
+        MaterialIndex index = m_materialLookup->indices[materialID];
         return getEmit(index);
     }
 
 
     __device__ Vec3 getEmit(const int materialID, const HitRecord &record) const {
-        MaterialIndex index = m_materialIndices[materialID];
+        MaterialIndex index = m_materialLookup->indices[materialID];
         return getEmit(index, record);
     }
 
@@ -93,7 +91,7 @@ public:
     }
 
     __device__ Vec3 f(const int materialID, const Vec3 &wo, const Vec3 &wi) const {
-        const MaterialIndex index = m_materialIndices[materialID];
+        const MaterialIndex index = m_materialLookup->indices[materialID];
         return f(index, wo, wi);
     }
 
@@ -114,7 +112,7 @@ public:
         HitRecord &record,
         curandState &randState
     ) const {
-        const MaterialIndex index = m_materialIndices[materialID];
+        const MaterialIndex index = m_materialLookup->indices[materialID];
 
         switch(index.materialType) {
         case MaterialType::Lambertian: {
@@ -148,7 +146,6 @@ private:
     size_t m_lightIndexSize;
 
     MaterialLookup *m_materialLookup;
-    MaterialIndex *m_materialIndices;
 };
 
 }
