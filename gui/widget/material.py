@@ -25,7 +25,7 @@ class MaterialWidget(QGroupBox):
         layout.addWidget(self.materialIDLabel)
 
         self.typeButton = MaterialTypeWidget(
-            lambda: MaterialType.Lambertian,
+            lambda: self.model.getMaterialIndex().materialType,
             lambda x: (),
             self
         )
@@ -56,7 +56,7 @@ class MaterialWidget(QGroupBox):
         self.albedoButton.update()
         self.emitWidget.update()
 
-        if self.model.getMaterialIndex() == -1:
+        if self.model.getMaterialIndex().index == 2**31 - 1:
             self.materialIDLabel.hide()
             self.typeButton.hide()
             self.albedoButton.hide()
