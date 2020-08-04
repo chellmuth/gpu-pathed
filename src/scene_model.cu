@@ -68,9 +68,8 @@ void SceneModel::setEmit(float r, float g, float b)
 
 Vec3 SceneModel::getEmit() const
 {
-    if (m_materialIndex.index == INT_MAX) { return Vec3(0.f); }
-
-    return m_scene->getMaterial(m_materialIndex.index).getEmit();
+    if (m_materialID == -1) { return Vec3(0.f); }
+    return m_scene->getEmit(m_materialID);
 }
 
 int SceneModel::getMaterialID() const

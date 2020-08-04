@@ -36,10 +36,6 @@ public:
 
     const SceneData &getSceneData() const { return m_sceneData; }
 
-    const Material *getMaterialsData() const { return m_materials.data(); }
-    const Material &getMaterial(int materialIndex) const { return m_lambertians[materialIndex]; }
-    size_t getMaterialsSize() const { return m_materials.size() * sizeof(Material); }
-
     const Material *getLambertiansData() const { return m_lambertians.data(); }
     size_t getLambertiansSize() const { return m_lambertians.size() * sizeof(Material); }
 
@@ -51,6 +47,15 @@ public:
 
         if (materialIndex.materialType == MaterialType::Lambertian) {
             return m_lambertians[materialIndex.index].getAlbedo();
+        } else {
+            return Vec3(0.f);
+        }
+    }
+    Vec3 getEmit(int materialID) const {
+        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
+
+        if (materialIndex.materialType == MaterialType::Lambertian) {
+            return m_lambertians[materialIndex.index].getEmit();
         } else {
             return Vec3(0.f);
         }

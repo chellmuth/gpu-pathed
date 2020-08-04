@@ -386,14 +386,15 @@ static void setupShaderBindingTable(
 
 void Optix::updateMaterials(const Scene &scene)
 {
-    const Material *materials = scene.getMaterialsData();
-    const size_t materialsSizeInBytes = scene.getMaterialsSize();
-    checkCUDA(cudaMemcpy(
-        reinterpret_cast<void *>(d_materials),
-        materials,
-        materialsSizeInBytes,
-        cudaMemcpyHostToDevice
-    ));
+    // fixme
+    // const Material *materials = scene.getMaterialsData();
+    // const size_t materialsSizeInBytes = scene.getMaterialsSize();
+    // checkCUDA(cudaMemcpy(
+    //     reinterpret_cast<void *>(d_materials),
+    //     materials,
+    //     materialsSizeInBytes,
+    //     cudaMemcpyHostToDevice
+    // ));
 }
 
 void Optix::updateCamera(const Scene &scene)
@@ -474,9 +475,10 @@ void Optix::init(int width, int height, const Scene &scene)
         width * height * sizeof(uchar4)
     ));
 
-    const size_t materialsSizeInBytes = scene.getMaterialsSize();
-    checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_materials), materialsSizeInBytes));
-    updateMaterials(scene);
+    // fixme
+    // const size_t materialsSizeInBytes = scene.getMaterialsSize();
+    // checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_materials), materialsSizeInBytes));
+    // updateMaterials(scene);
 
     const std::vector<Triangle> &triangles = scene.getSceneData().triangles;
     Triangle *d_triangles = 0;
