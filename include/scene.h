@@ -65,14 +65,14 @@ public:
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
         if (materialIndex.materialType == MaterialType::Lambertian) {
-            m_materials[materialIndex.index].setAlbedo(color);
+            m_lambertians[materialIndex.index].setAlbedo(color);
         }
     }
     void setEmit(int materialID, Vec3 color) {
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
         if (materialIndex.materialType == MaterialType::Lambertian) {
-            m_materials[materialIndex.index].setEmit(color);
+            m_lambertians[materialIndex.index].setEmit(color);
         }
     }
 
