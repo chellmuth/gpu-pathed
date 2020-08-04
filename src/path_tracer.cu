@@ -35,11 +35,43 @@ __global__ static void renderInit(int width, int height, curandState *randState)
     curand_init(seed, pixelIndex, 0, &randState[pixelIndex]);
 }
 
-__device__ static Vec3 directSampleLights(
+__device__ static Vec3 directSampleBSDF(
     const HitRecord &hitRecord,
+    const BSDFSample &bsdfSample,
     const PrimitiveList *world,
     curandState &randState
 ) {
+    if (!bsdfSample.isDelta) { return Vec3(0.f); }
+
+    const Frame intersection(hitRecord.normal);
+    const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
+    const Ray bounceRay(hitRecord.point, bounceDirection);
+
+    HitRecord brdfRecord;
+    const bool hit = world->hit(bounceRay, 1e-3, FLT_MAX, brdfRecord);
+    if (!hit) { return Vec3(0.f); }
+    const Vec3 emit = world->getEmit(brdfRecord.materialIndex, brdfRecord);
+    if (emit.isZero()) { return Vec3(0.f); }
+
+    const float brdfWeight = 1.f;
+
+    const Vec3 brdfContribution = emit
+        * brdfWeight
+        * bsdfSample.f
+        * bsdfSample.wiLocal.z()
+        / bsdfSample.pdf;
+
+    return brdfContribution;
+}
+
+__device__ static Vec3 directSampleLights(
+    const HitRecord &hitRecord,
+    const BSDFSample &bsdfSample,
+    const PrimitiveList *world,
+    curandState &randState
+) {
+    if (bsdfSample.isDelta) { return 0.f; }
+
     const LightSample lightSample = world->sampleDirectLights(hitRecord.point, randState);
 
     const Vec3 wiWorld = normalized(lightSample.point - hitRecord.point);
@@ -71,11 +103,16 @@ __device__ static Vec3 directSampleLights(
 
 __device__ static Vec3 direct(
     const HitRecord &hitRecord,
-// todo bsdf sample
+    const BSDFSample &bsdfSample,
     const PrimitiveList *world,
     curandState &randState
 ) {
-    return directSampleLights(hitRecord, world, randState);
+    Vec3 result(0.f);
+
+    result += directSampleLights(hitRecord, bsdfSample, world, randState);
+    result += directSampleBSDF(hitRecord, bsdfSample, world, randState);
+
+    return result;
 }
 
 __device__ static Vec3 calculateLiNEE(
@@ -105,7 +142,7 @@ __device__ static Vec3 calculateLiNEE(
         const Frame intersection(record.normal);
         const BSDFSample bsdfSample = world->sample(record.materialIndex, record, randState);
 
-        result += direct(record, world, randState) * beta;
+        result += direct(record, bsdfSample, world, randState) * beta;
 
         beta *= bsdfSample.f
             * intersection.cosTheta(bsdfSample.wiLocal)

@@ -8,6 +8,7 @@ struct BSDFSample {
     Vec3 wiLocal;
     float pdf;
     Vec3 f;
+    bool isDelta;
 };
 
 }

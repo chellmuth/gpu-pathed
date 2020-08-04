@@ -38,7 +38,8 @@ public:
         return BSDFSample{
             wi,
             1.f,
-            Vec3(fmaxf(0.f, 1.f / wi.z()))
+            Vec3(fmaxf(0.f, 1.f / wi.z())),
+            isDelta()
         };
     }
 

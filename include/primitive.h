@@ -99,11 +99,13 @@ public:
         switch(index.materialType) {
         case MaterialType::Lambertian: {
             float pdf;
-            Vec3 wi = m_materialLookup->lambertians[index.index].sample(record, &pdf, randState);
+            Material material = m_materialLookup->lambertians[index.index];
+            Vec3 wi = material.sample(record, &pdf, randState);
             return BSDFSample{
                 wi,
                 pdf,
-                f(index, record.wo, wi)
+                f(index, record.wo, wi),
+                material.isDelta()
             };
 
         }
@@ -113,18 +115,6 @@ public:
         }
 
         return BSDFSample{};
-    }
-
-    __device__ bool isDelta(const MaterialIndex index) {
-        switch(index.materialType) {
-        case MaterialType::Lambertian: {
-            return m_materialLookup->lambertians[index.index].isDelta();
-        }
-        case MaterialType::Mirror: {
-            return m_materialLookup->mirrors[index.index].isDelta();
-        }
-        }
-        return false;
     }
 
 private:
