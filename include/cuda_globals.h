@@ -17,6 +17,10 @@ public:
     void mallocCamera();
     void copyCamera(const Camera &camera);
 
+    void mallocMaterials(const SceneData &sceneData);
+    void copyMaterials(const SceneData &sceneData);
+    void freeMaterials();
+
     void copySceneData(const SceneData &sceneData);
     void mallocWorld(const SceneData &sceneData);
 

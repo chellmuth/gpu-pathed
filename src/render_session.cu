@@ -100,28 +100,9 @@ RenderSession::RenderSession(int width, int height)
         m_pathTracer->reset();
         m_sppOptimizer.reset();
 
-        checkCudaErrors(cudaMemcpy(
-            m_cudaGlobals->d_lambertians,
-            m_scene->getLambertiansData(),
-            m_scene->getLambertiansSize(),
-            cudaMemcpyHostToDevice
-        ));
-
-        checkCudaErrors(cudaMemcpy(
-            m_cudaGlobals->d_mirrors,
-            m_scene->getMirrorsData(),
-            m_scene->getMirrorsSize(),
-            cudaMemcpyHostToDevice
-        ));
-
-        const SceneData &sceneData = m_scene->getSceneData();
-        const std::vector<MaterialIndex> materialIndices = sceneData.materialStore.getIndices();
-        checkCudaErrors(cudaMemcpy(
-            m_cudaGlobals->d_materialIndices,
-            materialIndices.data(),
-            materialIndices.size() * sizeof(MaterialIndex),
-            cudaMemcpyHostToDevice
-        ));
+        m_cudaGlobals->freeMaterials();
+        m_cudaGlobals->mallocMaterials(m_scene->getSceneData());
+        m_cudaGlobals->copyMaterials(m_scene->getSceneData());
 
         m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
@@ -138,32 +119,10 @@ RenderState RenderSession::init(GLuint pbo1, GLuint pbo2)
     m_cudaGlobals->copyCamera(m_scene->getCamera());
 
     m_cudaGlobals->mallocWorld(m_scene->getSceneData());
+    m_cudaGlobals->mallocMaterials(m_scene->getSceneData());
+    m_cudaGlobals->copyMaterials(m_scene->getSceneData());
 
     m_scene->init();
-
-    checkCudaErrors(cudaMemcpy(
-        m_cudaGlobals->d_lambertians,
-        m_scene->getLambertiansData(),
-        m_scene->getLambertiansSize(),
-        cudaMemcpyHostToDevice
-    ));
-
-    checkCudaErrors(cudaMemcpy(
-        m_cudaGlobals->d_mirrors,
-        m_scene->getMirrorsData(),
-        m_scene->getMirrorsSize(),
-        cudaMemcpyHostToDevice
-    ));
-
-    // fixme: better home
-    const SceneData &sceneData = m_scene->getSceneData();
-    const std::vector<MaterialIndex> materialIndices = sceneData.materialStore.getIndices();
-    checkCudaErrors(cudaMemcpy(
-        m_cudaGlobals->d_materialIndices,
-        materialIndices.data(),
-        materialIndices.size() * sizeof(MaterialIndex),
-        cudaMemcpyHostToDevice
-    ));
 
     m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
