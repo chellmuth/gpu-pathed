@@ -4,6 +4,7 @@
 
 #include "materials/mirror.h"
 #include "materials/material.h"
+#include "materials/material_store.h"
 #include "materials/material_table.h"
 #include "parsers/obj_parser.h"
 #include "sphere.h"
@@ -34,6 +35,9 @@ struct ParseRequest {
 
     MaterialTable materialTable;
     std::vector<MaterialIndex> defaultMaterialIndices;
+
+    MaterialStore materialStore;
+    std::vector<int> defaultMaterialIDs;
 };
 
 SceneData createSceneData(ParseRequest &request);

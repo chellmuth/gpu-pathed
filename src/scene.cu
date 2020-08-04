@@ -4,6 +4,7 @@
 
 #include "materials/mirror.h"
 #include "materials/material.h"
+#include "materials/material_store.h"
 
 namespace rays {
 
@@ -15,6 +16,7 @@ SceneData getSceneData(int index)
 
     if (index == 0) {
         SceneAdapter::ParseRequest request;
+        MaterialStore store;
 
         {
             std::string sceneFilename("../scenes/cornell-glossy/CornellBox-Glossy.obj");
@@ -24,6 +26,9 @@ SceneData getSceneData(int index)
 
             const MaterialIndex index = request.materialTable.addMaterial(mirrorMaterial);
             request.defaultMaterialIndices.push_back(index);
+
+            const int materialID = request.materialStore.addMaterial(mirrorMaterial);
+            request.defaultMaterialIDs.push_back(materialID);
         }
         {
             std::string sceneFilename("../scenes/cornell-glossy/box.obj");
@@ -35,6 +40,9 @@ SceneData getSceneData(int index)
 
             const MaterialIndex index = request.materialTable.addMaterial(boxMaterial);
             request.defaultMaterialIndices.push_back(index);
+
+            const int materialID = request.materialStore.addMaterial(boxMaterial);
+            request.defaultMaterialIDs.push_back(materialID);
         }
         {
             std::string sceneFilename("../scenes/cornell-glossy/ball.obj");
@@ -47,6 +55,9 @@ SceneData getSceneData(int index)
 
             const MaterialIndex index = request.materialTable.addMaterial(ballMaterial);
             request.defaultMaterialIndices.push_back(index);
+
+            const int materialID = request.materialStore.addMaterial(ballMaterial);
+            request.defaultMaterialIDs.push_back(materialID);
         }
 
         return SceneAdapter::createSceneData(request);

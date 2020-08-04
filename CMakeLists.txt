@@ -52,6 +52,7 @@ add_library(rays STATIC
   src/triangle.cu
 
   src/materials/material.cu
+  src/materials/material_store.cpp
   src/materials/material_table.cpp
   src/materials/mirror.cu
 

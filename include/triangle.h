@@ -19,7 +19,7 @@ public:
         const Vec3 &n0,
         const Vec3 &n1,
         const Vec3 &n2,
-        size_t materialIndex,
+        int materialID,
         MaterialIndex index
     ) : m_p0(p0),
         m_p1(p1),
@@ -27,7 +27,7 @@ public:
         m_n0(n0),
         m_n1(n1),
         m_n2(n2),
-        m_materialIndex(materialIndex),
+        m_materialID(materialID),
         m_index(index)
     {}
 
@@ -43,6 +43,7 @@ public:
     Vec3 p2() const { return m_p2; }
 
     __host__ __device__ MaterialIndex materialIndex() const { return m_index; }
+    __host__ __device__ int materialID() const { return m_materialID; }
 
     __device__ SurfaceSample sample(curandState &randState) const;
 
@@ -92,7 +93,7 @@ private:
     Vec3 m_p0, m_p1, m_p2;
     Vec3 m_n0, m_n1, m_n2;
 
-    size_t m_materialIndex;
+    int m_materialID;
     MaterialIndex m_index;
 };
 
