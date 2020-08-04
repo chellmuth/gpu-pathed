@@ -15,7 +15,6 @@ namespace rays {
 struct SceneData {
     std::vector<Triangle> triangles;
     std::vector<Sphere> spheres;
-    std::vector<Material> lambertians;
     MaterialStore materialStore;
     std::vector<int> lightIndices;
 
