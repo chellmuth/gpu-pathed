@@ -40,6 +40,10 @@ public:
     MaterialIndex addMaterial(const Material &material);
     MaterialIndex addMaterial(const Mirror &material);
 
+    void updateMaterial(int materialIndex, Material material) {
+        m_lambertians[materialIndex] = material;
+    }
+
     const std::vector<Material> &getLambertians() const {
         return m_lambertians;
     }

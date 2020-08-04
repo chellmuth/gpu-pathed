@@ -22,6 +22,10 @@ public:
         m_indices[materialID] = newIndex;
     }
 
+    void updateMaterial(int materialIndex, Material material) {
+        m_table.updateMaterial(materialIndex, material);
+    }
+
     const std::vector<MaterialIndex> &getIndices() const {
         return m_indices;
     }
