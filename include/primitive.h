@@ -4,6 +4,7 @@
 #include <curand_kernel.h>
 
 #include "hit_record.h"
+#include "materials/bsdf_sample.h"
 #include "materials/material.h"
 #include "materials/material_table.h"
 #include "ray.h"
@@ -95,22 +96,23 @@ public:
         HitRecord &record,
         curandState &randState
     ) const {
-        Vec3 wi;
-        float pdf;
-
         switch(index.materialType) {
         case MaterialType::Lambertian: {
-            wi = m_materialLookup->lambertians[index.index].sample(record, &pdf, randState);
+            float pdf;
+            Vec3 wi = m_materialLookup->lambertians[index.index].sample(record, &pdf, randState);
+            return BSDFSample{
+                wi,
+                pdf,
+                f(index, record.wo, wi)
+            };
+
         }
         case MaterialType::Dummy: {
-            wi = m_materialLookup->dummies[index.index].sample(record, &pdf, randState);
+            return m_materialLookup->dummies[index.index].sample(record, randState);
         }
         }
-        return BSDFSample{
-            wi,
-            pdf,
-            f(index, record.wo, wi)
-        };
+
+        return BSDFSample{};
     }
 
 private:

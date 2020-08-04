@@ -30,12 +30,6 @@ struct LightSample {
 
 };
 
-struct BSDFSample {
-    Vec3 wiLocal;
-    float pdf;
-    Vec3 f;
-};
-
 }
 
 namespace rays { namespace Sampler {
