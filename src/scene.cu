@@ -104,7 +104,6 @@ void Scene::init()
 
 void Scene::update()
 {
-    m_materials = m_sceneData.materials;
     m_lambertians = m_sceneData.lambertians;
     m_mirrors = m_sceneData.mirrors;
 }

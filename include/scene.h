@@ -93,7 +93,6 @@ public:
 private:
     Camera m_camera;
     SceneData m_sceneData;
-    std::vector<Material> m_materials;
     std::vector<Material> m_lambertians;
     std::vector<Mirror> m_mirrors;
     int m_maxDepth;
