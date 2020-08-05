@@ -51,11 +51,6 @@ class MaterialWidget(QGroupBox):
         return f"Material ID: {self.model.getMaterialID()}"
 
     def update(self):
-        self.materialIDLabel.setText(self._materialIDText())
-        self.typeButton.update()
-        self.albedoButton.update()
-        self.emitWidget.update()
-
         if self.model.getMaterialID() == -1:
             self.materialIDLabel.hide()
             self.typeButton.hide()
@@ -66,6 +61,11 @@ class MaterialWidget(QGroupBox):
             self.typeButton.show()
             self.albedoButton.show()
             self.emitWidget.show()
+
+            self.materialIDLabel.setText(self._materialIDText())
+            self.typeButton.update()
+            self.albedoButton.update()
+            self.emitWidget.update()
 
 class MaterialTypeWidget(QWidget):
     def __init__(self, getter, setter, parent=None):
@@ -97,6 +97,7 @@ class MaterialTypeWidget(QWidget):
         elif material_type == MaterialType.Mirror:
             self.materialButton.setText("Mirror")
         else:
+            print(material_type)
             print("Error, unsupported material type")
             exit(1)
 
