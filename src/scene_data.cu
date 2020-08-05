@@ -76,11 +76,12 @@ SceneData createSceneData(ParseRequest &request)
 SceneData createSceneData(ObjParser &objParser)
 {
     ParseRequest request;
+    MaterialStore store;
 
     request.objParsers.push_back(objParser);
 
-    // fixme
-    // Material mirrorMaterial(Vec3(0.f), Vec3(100.f, 0.f, 0.f));
+    Material defaultMaterial(Vec3(0.f), Vec3(100.f, 0.f, 0.f));
+    const int defaultMaterialID = request.materialStore.addMaterial(defaultMaterial);
 
     return createSceneData(request);
 }
