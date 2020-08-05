@@ -103,11 +103,22 @@ __forceinline__ __device__ static PerRayData *getPRD()
     return reinterpret_cast<PerRayData *>(rays::unpackPointer(u0, u1));
 }
 
-__forceinline__ __device__ static rays::Vec3 direct(
+__forceinline__ __device__ static rays::Vec3 directSampleBSDF(
     const Intersection &intersection,
-    const int &materialID,
+    const rays::BSDFSample &bsdfSample,
     unsigned int &seed
 ) {
+    return rays::Vec3(0.f);
+}
+
+__forceinline__ __device__ static rays::Vec3 directSampleLights(
+    const Intersection &intersection,
+    int materialID,
+    const rays::BSDFSample &bsdfSample,
+    unsigned int &seed
+) {
+    if (bsdfSample.isDelta) { return 0.f; }
+
     const float xi1 = rnd(seed);
     const float xi2 = rnd(seed);
     const float xi3 = rnd(seed);
@@ -150,8 +161,7 @@ __forceinline__ __device__ static rays::Vec3 direct(
         const float pdf = lightSample.solidAnglePDF(intersection.point);
         const rays::Vec3 lightContribution = rays::Vec3(1.f)
             * getEmit(lightSample.materialID)
-            // fixme
-            // * bsdfSample.f
+            * f(materialID, intersection.woLocal, wi)
             * rays::WorldFrame::absCosTheta(intersection.normal, wiWorld)
             / pdf;
 
@@ -159,6 +169,20 @@ __forceinline__ __device__ static rays::Vec3 direct(
     } else {
         return rays::Vec3(0.f);
     }
+}
+
+__forceinline__ __device__ static rays::Vec3 direct(
+    const Intersection &intersection,
+    const rays::BSDFSample &bsdfSample,
+    const int &materialID,
+    unsigned int &seed
+) {
+    rays::Vec3 result(0.f);
+
+    result += directSampleLights(intersection, materialID, bsdfSample, seed);
+    result += directSampleBSDF(intersection, bsdfSample, seed);
+
+    return result;
 }
 
 __forceinline__ __device__ static rays::Vec3 LiNEE(
@@ -205,11 +229,12 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
         if (prd.done) { break; }
 
         const Intersection &intersection = prd.intersection;
-        result += direct(intersection, prd.materialID, seed) * beta;
 
         const float xi1 = rnd(seed);
         const float xi2 = rnd(seed);
         const rays::BSDFSample bsdfSample = sample(intersection, prd.materialID, xi1, xi2);
+
+        result += direct(intersection, bsdfSample, prd.materialID, seed) * beta;
 
         const rays::Frame &frame = intersection.frame;
         const rays::Vec3 bounceWorld = normalized(frame.toWorld(bsdfSample.wiLocal));
