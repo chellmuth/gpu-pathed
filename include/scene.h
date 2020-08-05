@@ -114,8 +114,9 @@ public:
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
         if (materialIndex.materialType == MaterialType::Lambertian) {
-            // fixme
-            // getLambertians()[materialIndex.index].setEmit(color);
+            Material material = getLambertians()[materialIndex.index];
+            material.setEmit(color);
+            m_sceneData.materialStore.updateMaterial(materialIndex.index, material);
         }
     }
 
