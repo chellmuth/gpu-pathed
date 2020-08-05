@@ -385,15 +385,58 @@ static void setupShaderBindingTable(
 
 void Optix::updateMaterials(const Scene &scene)
 {
-    // fixme
-    // const Material *materials = scene.getMaterialsData();
-    // const size_t materialsSizeInBytes = scene.getMaterialsSize();
-    // checkCUDA(cudaMemcpy(
-    //     reinterpret_cast<void *>(d_materials),
-    //     materials,
-    //     materialsSizeInBytes,
-    //     cudaMemcpyHostToDevice
-    // ));
+    const SceneData &sceneData = scene.getSceneData();
+
+    MaterialIndex *d_materialIndices = 0;
+    Material *d_lambertians = 0;
+    Mirror *d_mirrors = 0;
+
+    const int lambertianSize = sceneData.materialStore.getLambertians().size();
+    const int mirrorSize = sceneData.materialStore.getMirrors().size();
+
+    const std::vector<MaterialIndex> &indices = sceneData.materialStore.getIndices();
+
+    checkCUDA(cudaMalloc((void **)&d_materialIndices, indices.size() * sizeof(MaterialIndex)));
+    checkCUDA(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Material)));
+    checkCUDA(cudaMalloc((void **)&d_mirrors, mirrorSize * sizeof(Mirror)));
+
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(d_materialIndices),
+        indices.data(),
+        indices.size() * sizeof(MaterialIndex),
+        cudaMemcpyHostToDevice
+    ));
+
+    const std::vector<Material> &lambertians = sceneData.materialStore.getLambertians();
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(d_lambertians),
+        lambertians.data(),
+        lambertians.size() * sizeof(Material),
+        cudaMemcpyHostToDevice
+    ));
+
+    const std::vector<Mirror> &mirrors = sceneData.materialStore.getMirrors();
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(d_mirrors),
+        mirrors.data(),
+        mirrors.size() * sizeof(Mirror),
+        cudaMemcpyHostToDevice
+    ));
+
+    // checkCUDA(cudaMalloc((void **)&d_materialLookup, sizeof(MaterialLookup)));
+    MaterialLookup materialLookup;
+    materialLookup.indices = d_materialIndices;
+    materialLookup.lambertians = d_lambertians;
+    materialLookup.mirrors = d_mirrors;
+
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(d_materialLookup),
+        &materialLookup,
+        sizeof(MaterialLookup),
+        cudaMemcpyHostToDevice
+    ));
+
+    checkCUDA(cudaDeviceSynchronize());
 }
 
 void Optix::updateCamera(const Scene &scene)
