@@ -15,23 +15,6 @@ struct MaterialLookup {
     Mirror *mirrors;
 };
 
-struct MaterialTableOffsets {
-    size_t getOffset(MaterialType type) {
-        switch(type) {
-        case MaterialType::Lambertian: {
-            return lambertian;
-        }
-        case MaterialType::Mirror: {
-            return mirror;
-        }
-        }
-        return 0;
-    }
-
-    size_t lambertian;
-    size_t mirror;
-};
-
 class MaterialTable {
 public:
     MaterialIndex addMaterial(const Material &material);
@@ -47,13 +30,6 @@ public:
 
     const std::vector<Mirror> &getMirrors() const {
         return m_mirrors;
-    }
-
-    MaterialTableOffsets getOffsets() {
-        return MaterialTableOffsets {
-            m_lambertians.size(),
-            m_mirrors.size()
-        };
     }
 
 private:
