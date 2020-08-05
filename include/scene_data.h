@@ -18,8 +18,8 @@ struct SceneData {
     MaterialStore materialStore;
     std::vector<int> lightIndices;
 
-    int totalMaterialCount() const {
-        return materialStore.totalMaterialCount();
+    int materialIDsCount() const {
+        return materialStore.getIndices().size();
     }
 
     bool isEmitter(MaterialIndex materialIndex) const {

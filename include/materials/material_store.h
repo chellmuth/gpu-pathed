@@ -38,12 +38,6 @@ public:
         return m_table.getMirrors();
     }
 
-    int totalMaterialCount() const {
-        return 0
-            + m_table.getLambertians().size()
-            + m_table.getMirrors().size();
-    }
-
 private:
     std::vector<MaterialIndex> m_indices;
     MaterialTable m_table;

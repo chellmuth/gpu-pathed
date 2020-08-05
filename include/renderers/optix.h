@@ -21,7 +21,7 @@ struct Params
     Camera camera;
     int maxDepth;
     bool useNextEventEstimation;
-    Material *materials;
+    MaterialLookup *materialLookup;
     Triangle *triangles;
     int *lightIndices;
     int lightIndexSize;
@@ -31,7 +31,7 @@ struct Params
 struct RayGenData {};
 struct MissData {};
 struct HitGroupData {
-    int materialIndex;
+    int materialID;
 };
 
 class Optix {
@@ -53,6 +53,7 @@ private:
     Vec3 *d_passRadiances;
     Vec3 *d_radiances;
     Material *d_materials;
+    MaterialLookup *d_materialLookup;
     CUdeviceptr d_param;
 
     OptixTraversableHandle m_gasHandle;

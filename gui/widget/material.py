@@ -97,7 +97,6 @@ class MaterialTypeWidget(QWidget):
         elif material_type == MaterialType.Mirror:
             self.materialButton.setText("Mirror")
         else:
-            print(material_type)
             print("Error, unsupported material type")
             exit(1)
 

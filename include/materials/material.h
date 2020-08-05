@@ -41,11 +41,11 @@ public:
         return m_albedo / M_PI;
     }
 
-    __device__ Vec3 sample(float *pdf, const float xi1, const float xi2) const {
-        const float z = xi1;
+    __device__ Vec3 sample(float *pdf, const float2 xis) const {
+        const float z = xis.x;
         const float r = sqrtf(fmaxf(0.f, 1.f - z * z));
 
-        const float phi = 2 * M_PI * xi2;
+        const float phi = 2 * M_PI * xis.y;
         const float x = r * cos(phi);
         const float y = r * sin(phi);
 

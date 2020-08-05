@@ -12,10 +12,7 @@ struct MaterialLookup {
     MaterialIndex *indices;
 
     Material *lambertians;
-    size_t lambertianSize;
-
     Mirror *mirrors;
-    size_t mirrorSize;
 };
 
 struct MaterialTableOffsets {

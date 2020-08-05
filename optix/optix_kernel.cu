@@ -31,11 +31,61 @@ struct Intersection {
 struct PerRayData {
     bool done;
     float3 beta;
-    const rays::Material *material;
+    int materialID;
     float3 point;
     Intersection intersection;
     int pad;
 };
+
+__forceinline__ __device__ static rays::Vec3 sample(
+    const Intersection &intersection,
+    int materialID,
+    float *pdf,
+    float xi1,
+    float xi2
+) {
+    const rays::MaterialIndex index = params.materialLookup->indices[materialID];
+    switch(index.materialType) {
+    case rays::MaterialType::Lambertian: {
+        return params.materialLookup->lambertians[index.index].sample(pdf, make_float2(xi1, xi2));
+    }
+    case rays::MaterialType::Mirror: {
+        return params.materialLookup->mirrors[index.index].sample(intersection.woLocal, pdf);
+    }
+    }
+    return rays::Vec3(0.f);
+}
+
+__forceinline__ __device__ static rays::Vec3 f(
+    int materialID,
+    const rays::Vec3 &wo,
+    const rays::Vec3 &wi
+) {
+    const rays::MaterialIndex index = params.materialLookup->indices[materialID];
+    switch(index.materialType) {
+    case rays::MaterialType::Lambertian: {
+        return params.materialLookup->lambertians[index.index].f(wo, wi);
+    }
+    case rays::MaterialType::Mirror: {
+        return params.materialLookup->mirrors[index.index].f(wo, wi);
+    }
+    }
+    return rays::Vec3(0.f);
+}
+
+__forceinline__ __device__ static rays::Vec3 getEmit(int materialID)
+{
+    const rays::MaterialIndex index = params.materialLookup->indices[materialID];
+    switch(index.materialType) {
+    case rays::MaterialType::Lambertian: {
+        return params.materialLookup->lambertians[index.index].getEmit();
+    }
+    case rays::MaterialType::Mirror: {
+        return params.materialLookup->mirrors[index.index].getEmit();
+    }
+    }
+    return rays::Vec3(0.f);
+}
 
 __forceinline__ __device__ static PerRayData *getPRD()
 {
@@ -46,7 +96,7 @@ __forceinline__ __device__ static PerRayData *getPRD()
 
 __forceinline__ __device__ static rays::Vec3 direct(
     const Intersection &intersection,
-    const rays::Material &hitMaterial,
+    const int &materialID,
     unsigned int &seed
 ) {
     const float xi1 = rnd(seed);
@@ -89,10 +139,9 @@ __forceinline__ __device__ static rays::Vec3 direct(
     if (!isHit) {
         const rays::Vec3 wi = intersection.frame.toLocal(wiWorld);
         const float pdf = lightSample.solidAnglePDF(intersection.point);
-        const rays::Material &emitMaterial = params.materials[lightSample.materialID]; // fixme
         const rays::Vec3 lightContribution = rays::Vec3(1.f)
-            * emitMaterial.getEmit()
-            * hitMaterial.f(intersection.woLocal, wi)
+            * getEmit(lightSample.materialID)
+            * f(materialID, intersection.woLocal, wi)
             * rays::WorldFrame::absCosTheta(intersection.normal, wiWorld)
             / pdf;
 
@@ -137,10 +186,8 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
 
     if (!prd.done) {
         const Intersection &intersection = prd.intersection;
-        const rays::Material &material = *prd.material;
-
         if (intersection.isFront()) {
-            result += material.getEmit();
+            result += getEmit(prd.materialID);
         }
     }
 
@@ -148,20 +195,18 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
         if (prd.done) { break; }
 
         const Intersection &intersection = prd.intersection;
-        const rays::Material &material = *prd.material;
-
-        result += direct(intersection, material, seed) * beta;
+        result += direct(intersection, prd.materialID, seed) * beta;
 
         const float xi1 = rnd(seed);
         const float xi2 = rnd(seed);
         float pdf;
-        const rays::Vec3 sample = material.sample(&pdf, xi1, xi2);
+        const rays::Vec3 bounceLocal = sample(intersection, prd.materialID, &pdf, xi1, xi2);
 
         const rays::Frame &frame = intersection.frame;
-        const rays::Vec3 bounceWorld = normalized(frame.toWorld(sample));
+        const rays::Vec3 bounceWorld = normalized(frame.toWorld(bounceLocal));
 
         const float3 normal = vec3_to_float3(intersection.normal);
-        beta *= material.f(intersection.woLocal, sample) * sample.z() / pdf;
+        beta *= f(prd.materialID, intersection.woLocal, bounceLocal) * bounceLocal.z() / pdf;
 
         rays::packPointer(&prd, p0, p1);
         optixTrace(
@@ -218,10 +263,8 @@ __forceinline__ __device__ static rays::Vec3 LiNaive(
 
     if (!prd.done) {
         const Intersection &intersection = prd.intersection;
-        const rays::Material &material = *prd.material;
-
         if (intersection.isFront()) {
-            result += material.getEmit();
+            result += getEmit(prd.materialID);
         }
     }
 
@@ -229,18 +272,17 @@ __forceinline__ __device__ static rays::Vec3 LiNaive(
         if (prd.done) { break; }
 
         const Intersection &intersection = prd.intersection;
-        const rays::Material &material = *prd.material;
 
         const float xi1 = rnd(seed);
         const float xi2 = rnd(seed);
         float pdf;
-        const rays::Vec3 sample = material.sample(&pdf, xi1, xi2);
+        const rays::Vec3 bounceLocal = sample(intersection, prd.materialID, &pdf, xi1, xi2);
 
         const rays::Frame &frame = intersection.frame;
-        const rays::Vec3 bounceWorld = normalized(frame.toWorld(sample));
+        const rays::Vec3 bounceWorld = normalized(frame.toWorld(bounceLocal));
 
         const float3 normal = vec3_to_float3(intersection.normal);
-        beta *= material.f(intersection.woLocal, sample) * sample.z() / pdf;
+        beta *= f(prd.materialID, intersection.woLocal, bounceLocal) * bounceLocal.z() / pdf;
 
         rays::packPointer(&prd, p0, p1);
         optixTrace(
@@ -260,9 +302,8 @@ __forceinline__ __device__ static rays::Vec3 LiNaive(
 
         if (prd.done) { break; }
 
-        const rays::Material &bounceMaterial = *prd.material;
         if (intersection.isFront()) {
-            result += bounceMaterial.getEmit() * beta;
+            result += getEmit(prd.materialID) * beta;
         }
     }
 
@@ -311,9 +352,6 @@ extern "C" __global__ void __closesthit__ch()
     const rays::Triangle &triangle = params.triangles[primitiveIndex];
 
     rays::HitGroupData* hitgroupData = reinterpret_cast<rays::HitGroupData *>(optixGetSbtDataPointer());
-    const int materialIndex = hitgroupData->materialIndex;
-
-    const rays::Material &material = params.materials[materialIndex];
 
     Intersection intersection;
     const float u = optixGetTriangleBarycentrics().x;
@@ -326,5 +364,5 @@ extern "C" __global__ void __closesthit__ch()
     );
 
     prd->intersection = intersection;
-    prd->material = &material;
+    prd->materialID = hitgroupData->materialID;
 }
