@@ -22,8 +22,7 @@ __device__ bool Sphere::hit(const Ray& ray, float tMin, float tMax, HitRecord& r
             record.point = point;
             record.normal = normal;
             record.wo = normalized(f.toLocal(-ray.direction()));
-            // fixme
-            // record.materialIndex = m_materialIndex;
+            record.materialID = m_materialID;
             return true;
         }
         temp = (-b + sqrt(discriminant)) / a;
@@ -36,8 +35,7 @@ __device__ bool Sphere::hit(const Ray& ray, float tMin, float tMax, HitRecord& r
             record.point = point;
             record.normal = normal;
             record.wo = normalized(f.toLocal(-ray.direction()));
-            // fixme
-            // record.materialIndex = m_materialIndex;
+            record.materialID = m_materialID;
             return true;
         }
     }

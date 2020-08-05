@@ -11,11 +11,11 @@ public:
     __host__ __device__ Sphere(
         const Vec3 &center,
         float radius,
-        size_t materialIndex
+        int materialID
     )
         : m_center(center),
           m_radius(radius),
-          m_materialIndex(materialIndex)
+          m_materialID(materialID)
     {}
 
     __device__ bool hit(
@@ -28,7 +28,7 @@ public:
 private:
     Vec3 m_center;
     float m_radius;
-    size_t m_materialIndex;
+    int m_materialID;
 };
 
 }
