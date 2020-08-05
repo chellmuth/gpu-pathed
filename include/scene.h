@@ -67,7 +67,7 @@ public:
         int newID = -1;
         switch (materialType) {
         case MaterialType::Lambertian: {
-            Material newMaterial;
+            Material newMaterial(0.f);
             newID = store.addMaterial(newMaterial);
             break;
         }
