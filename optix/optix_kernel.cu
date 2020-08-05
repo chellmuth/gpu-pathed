@@ -1,6 +1,7 @@
 #include <optix.h>
 
 #include "frame.h"
+#include "materials/bsdf_sample.h"
 #include "materials/material.h"
 #include "materials/types.h"
 #include "ray.h"
@@ -37,25 +38,6 @@ struct PerRayData {
     int pad;
 };
 
-__forceinline__ __device__ static rays::Vec3 sample(
-    const Intersection &intersection,
-    int materialID,
-    float *pdf,
-    float xi1,
-    float xi2
-) {
-    const rays::MaterialIndex index = params.materialLookup->indices[materialID];
-    switch(index.materialType) {
-    case rays::MaterialType::Lambertian: {
-        return params.materialLookup->lambertians[index.index].sample(pdf, make_float2(xi1, xi2));
-    }
-    case rays::MaterialType::Mirror: {
-        return params.materialLookup->mirrors[index.index].sample(intersection.woLocal, pdf);
-    }
-    }
-    return rays::Vec3(0.f);
-}
-
 __forceinline__ __device__ static rays::Vec3 f(
     int materialID,
     const rays::Vec3 &wo,
@@ -71,6 +53,33 @@ __forceinline__ __device__ static rays::Vec3 f(
     }
     }
     return rays::Vec3(0.f);
+}
+
+__forceinline__ __device__ static rays::BSDFSample sample(
+    const Intersection &intersection,
+    int materialID,
+    float xi1,
+    float xi2
+) {
+    const rays::MaterialIndex index = params.materialLookup->indices[materialID];
+    switch(index.materialType) {
+    case rays::MaterialType::Lambertian: {
+        float pdf;
+        const rays::Vec3 wi = params.materialLookup->lambertians[index.index]
+            .sample(&pdf, make_float2(xi1, xi2));
+
+        return rays::BSDFSample{
+            wi,
+            pdf,
+            f(materialID, intersection.woLocal, wi),
+            false
+        };
+    }
+    case rays::MaterialType::Mirror: {
+        return params.materialLookup->mirrors[index.index].sample(intersection.woLocal);
+    }
+    }
+    return {};
 }
 
 __forceinline__ __device__ static rays::Vec3 getEmit(int materialID)
@@ -141,7 +150,8 @@ __forceinline__ __device__ static rays::Vec3 direct(
         const float pdf = lightSample.solidAnglePDF(intersection.point);
         const rays::Vec3 lightContribution = rays::Vec3(1.f)
             * getEmit(lightSample.materialID)
-            * f(materialID, intersection.woLocal, wi)
+            // fixme
+            // * bsdfSample.f
             * rays::WorldFrame::absCosTheta(intersection.normal, wiWorld)
             / pdf;
 
@@ -199,14 +209,15 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
 
         const float xi1 = rnd(seed);
         const float xi2 = rnd(seed);
-        float pdf;
-        const rays::Vec3 bounceLocal = sample(intersection, prd.materialID, &pdf, xi1, xi2);
+        const rays::BSDFSample bsdfSample = sample(intersection, prd.materialID, xi1, xi2);
 
         const rays::Frame &frame = intersection.frame;
-        const rays::Vec3 bounceWorld = normalized(frame.toWorld(bounceLocal));
+        const rays::Vec3 bounceWorld = normalized(frame.toWorld(bsdfSample.wiLocal));
 
         const float3 normal = vec3_to_float3(intersection.normal);
-        beta *= f(prd.materialID, intersection.woLocal, bounceLocal) * bounceLocal.z() / pdf;
+        beta *= bsdfSample.f
+            * bsdfSample.wiLocal.z()
+            / bsdfSample.pdf;
 
         rays::packPointer(&prd, p0, p1);
         optixTrace(
@@ -275,14 +286,13 @@ __forceinline__ __device__ static rays::Vec3 LiNaive(
 
         const float xi1 = rnd(seed);
         const float xi2 = rnd(seed);
-        float pdf;
-        const rays::Vec3 bounceLocal = sample(intersection, prd.materialID, &pdf, xi1, xi2);
+        const rays::BSDFSample bsdfSample = sample(intersection, prd.materialID, xi1, xi2);
 
         const rays::Frame &frame = intersection.frame;
-        const rays::Vec3 bounceWorld = normalized(frame.toWorld(bounceLocal));
+        const rays::Vec3 bounceWorld = normalized(frame.toWorld(bsdfSample.wiLocal));
 
         const float3 normal = vec3_to_float3(intersection.normal);
-        beta *= f(prd.materialID, intersection.woLocal, bounceLocal) * bounceLocal.z() / pdf;
+        beta *= bsdfSample.f * bsdfSample.wiLocal.z() / bsdfSample.pdf;
 
         rays::packPointer(&prd, p0, p1);
         optixTrace(
