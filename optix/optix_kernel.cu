@@ -108,7 +108,46 @@ __forceinline__ __device__ static rays::Vec3 directSampleBSDF(
     const rays::BSDFSample &bsdfSample,
     unsigned int &seed
 ) {
-    return rays::Vec3(0.f);
+    if (!bsdfSample.isDelta) { return rays::Vec3(0.f); }
+
+    const rays::Vec3 bounceDirection = intersection.frame.toWorld(bsdfSample.wiLocal);
+    const rays::Ray bounceRay(intersection.point, bounceDirection);
+
+    PerRayData prd;
+    prd.done = false;
+
+    unsigned int p0, p1;
+    rays::packPointer(&prd, p0, p1);
+    optixTrace(
+        params.handle,
+        vec3_to_float3(bounceRay.origin()),
+        vec3_to_float3(bounceRay.direction()),
+        1e-4,
+        1e16f,
+        0.0f,
+        OptixVisibilityMask(255),
+        OPTIX_RAY_FLAG_NONE,
+        0,                   // SBT offset   -- See SBT discussion
+        1,                   // SBT stride   -- See SBT discussion
+        0,                   // missSBTIndex -- See SBT discussion
+        p0, p1
+    );
+
+    const bool hit = !prd.done;
+    if (!hit) { return rays::Vec3(0.f); }
+
+    const rays::Vec3 emit = getEmit(prd.materialID);
+    if (emit.isZero()) { return rays::Vec3(0.f); }
+
+    const float bsdfWeight = 1.f;
+
+    const rays::Vec3 bsdfContribution = emit
+        * bsdfWeight
+        * bsdfSample.f
+        * bsdfSample.wiLocal.z()
+        / bsdfSample.pdf;
+
+    return bsdfContribution;
 }
 
 __forceinline__ __device__ static rays::Vec3 directSampleLights(
