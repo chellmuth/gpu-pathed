@@ -40,11 +40,17 @@ public:
     uchar4 *launch(int spp, int currentSamples);
 
     void updateCamera(const Scene &scene);
-    void updateMaterials(const Scene &scene);
     void updateMaxDepth(const Scene &scene);
     void updateNextEventEstimation(const Scene &scene);
+    void updateMaterials(const Scene &scene);
 
 private:
+    void mallocMaterials(const Scene &scene);
+    void copyMaterials(const Scene &scene);
+    void freeMaterials();
+
+    MaterialLookup m_materialLookup;
+
     int m_width;
     int m_height;
     Params m_params;
