@@ -8,8 +8,11 @@ from PyQt5.QtWidgets import (
 )
 
 from gui.widget.color import ColorButton
+from path_tracer import MaterialType
 
 class LambertianWidget(QWidget):
+    MaterialType = MaterialType.Lambertian
+
     def __init__(self, model, parent=None):
         super().__init__(parent)
 
@@ -34,7 +37,6 @@ class LambertianWidget(QWidget):
     def update(self):
         self.albedoButton.update()
         self.emitWidget.update()
-
 
 class EmitWidget(QWidget):
     def __init__(self, model, parent=None):

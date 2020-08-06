@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
 )
 
 from gui.widget.material.lambertian import LambertianWidget
+from gui.widget.material.mirror import MirrorWidget
 from path_tracer import MaterialType
 
 class MaterialWidget(QGroupBox):
@@ -45,14 +46,28 @@ class MaterialWidget(QGroupBox):
             self.materialIDLabel.hide()
             self.typeButton.hide()
             self.materialWidget.hide()
-        else:
-            self.materialIDLabel.show()
-            self.typeButton.show()
-            self.materialWidget.show()
+            return
 
-            self.materialIDLabel.setText(self._materialIDText())
-            self.typeButton.update()
-            self.materialWidget.update()
+        material_type = self.model.getMaterialType()
+
+        if material_type != self.materialWidget.MaterialType:
+            widgets = {
+                MaterialType.Lambertian: LambertianWidget,
+                MaterialType.Mirror: MirrorWidget,
+            }
+            oldWidget = self.materialWidget
+            self.materialWidget = widgets[material_type](self.model, self)
+            self.layout().replaceWidget(oldWidget, self.materialWidget)
+            oldWidget.deleteLater()
+            self.layout().update()
+
+        self.materialIDLabel.show()
+        self.typeButton.show()
+        self.materialWidget.show()
+
+        self.materialIDLabel.setText(self._materialIDText())
+        self.typeButton.update()
+        self.materialWidget.update()
 
 class MaterialTypeWidget(QWidget):
     def __init__(self, getter, setter, parent=None):
