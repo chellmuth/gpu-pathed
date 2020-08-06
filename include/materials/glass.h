@@ -11,22 +11,10 @@ namespace rays {
 struct Glass  {
 public:
     __host__ __device__ Glass() {}
+    __host__ __device__ Glass(float ior) : m_ior(ior) {}
 
-    __host__ __device__ Glass(const Vec3 &albedo)
-    {}
-
-    __host__ __device__ Glass(const Vec3 &albedo, const Vec3 &emit)
-    {}
-
-    __device__ Vec3 getEmit(const HitRecord &hit) const;
+    __device__ Vec3 getEmit(const HitRecord &hit) const { return Vec3(0.f); }
     __host__ __device__ Vec3 getEmit() const { return Vec3(0.f); }
-
-    __host__ void setEmit(const Vec3 &emit);
-    __host__ __device__ Vec3 getAlbedo() const {
-        return Vec3(0.f);
-    }
-
-    __host__ void setAlbedo(const Vec3 &albedo);
 
     __device__ Vec3 f(const Vec3 &wo, const Vec3 &wi) const {
         return Vec3(0.f);
@@ -59,6 +47,9 @@ public:
     }
 
     __device__ bool isDelta() const { return true; }
+
+private:
+    float m_ior = 1.f;
 };
 
 }

@@ -52,7 +52,6 @@ add_library(rays STATIC
   src/transform.cu
   src/triangle.cu
 
-  src/materials/glass.cu
   src/materials/material.cu
   src/materials/material_store.cpp
   src/materials/material_table.cpp
