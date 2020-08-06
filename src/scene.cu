@@ -2,9 +2,10 @@
 
 #include <iostream>
 
-#include "materials/mirror.h"
+#include "materials/glass.h"
 #include "materials/material.h"
 #include "materials/material_store.h"
+#include "materials/mirror.h"
 
 namespace rays {
 
@@ -32,7 +33,7 @@ SceneData getSceneData(int index)
             ObjParser objParser(sceneFilename);
             request.objParsers.push_back(objParser);
 
-            Material boxMaterial(Vec3(1.f, 0.f, 1.f), Vec3(0.f));
+            Glass boxMaterial;
             const int materialID = request.materialStore.addMaterial(boxMaterial);
             request.defaultMaterialIDs.push_back(materialID);
         }

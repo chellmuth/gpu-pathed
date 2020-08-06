@@ -1,9 +1,10 @@
 #pragma once
 
 #include "camera.h"
-#include "materials/mirror.h"
+#include "materials/glass.h"
 #include "materials/material.h"
 #include "materials/material_table.h"
+#include "materials/mirror.h"
 #include "materials/types.h"
 #include "primitive.h"
 #include "scene_data.h"
@@ -33,6 +34,7 @@ public:
     MaterialIndex *d_materialIndices;
     Material *d_lambertians;
     Mirror *d_mirrors;
+    Glass *d_glasses;
 
     Triangle *d_triangles;
     Sphere *d_spheres;

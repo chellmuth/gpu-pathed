@@ -47,6 +47,7 @@ PYBIND11_MODULE(path_tracer, m) {
     py::enum_<MaterialType>(m, "MaterialType")
         .value("Lambertian", MaterialType::Lambertian)
         .value("Mirror", MaterialType::Mirror)
+        .value("Glass", MaterialType::Glass)
         .export_values();
 
     py::class_<MaterialIndex>(m, "MaterialIndex")

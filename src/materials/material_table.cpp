@@ -20,4 +20,13 @@ MaterialIndex MaterialTable::addMaterial(const Mirror &material)
     };
 }
 
+MaterialIndex MaterialTable::addMaterial(const Glass &material)
+{
+    m_glasses.push_back(material);
+    return MaterialIndex{
+        MaterialType::Glass,
+        m_glasses.size() - 1
+    };
+}
+
 }

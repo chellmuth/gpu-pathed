@@ -74,6 +74,9 @@ public:
         case MaterialType::Mirror: {
             return m_materialLookup->mirrors[index.index].getEmit();
         }
+        case MaterialType::Glass: {
+            return m_materialLookup->glasses[index.index].getEmit();
+        }
         }
         return Vec3(0.f);
     }
@@ -85,6 +88,9 @@ public:
         }
         case MaterialType::Mirror: {
             return m_materialLookup->mirrors[index.index].getEmit(record);
+        }
+        case MaterialType::Glass: {
+            return m_materialLookup->glasses[index.index].getEmit(record);
         }
         }
         return Vec3(0.f);
@@ -102,6 +108,9 @@ public:
         }
         case MaterialType::Mirror: {
             return m_materialLookup->mirrors[index.index].f(wo, wi);
+        }
+        case MaterialType::Glass: {
+            return m_materialLookup->glasses[index.index].f(wo, wi);
         }
         }
         return Vec3(0.f);
@@ -129,6 +138,9 @@ public:
         }
         case MaterialType::Mirror: {
             return m_materialLookup->mirrors[index.index].sample(record, randState);
+        }
+        case MaterialType::Glass: {
+            return m_materialLookup->glasses[index.index].sample(record, randState);
         }
         }
 

@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "materials/glass.h"
 #include "materials/material.h"
 #include "materials/material_table.h"
 #include "materials/mirror.h"
@@ -13,6 +14,7 @@ class MaterialStore {
 public:
     int addMaterial(const Material &material);
     int addMaterial(const Mirror &material);
+    int addMaterial(const Glass &material);
 
     MaterialIndex indexAt(int materialID) const {
         return m_indices[materialID];
@@ -36,6 +38,10 @@ public:
 
     const std::vector<Mirror> &getMirrors() const {
         return m_table.getMirrors();
+    }
+
+    const std::vector<Glass> &getGlasses() const {
+        return m_table.getGlasses();
     }
 
 private:

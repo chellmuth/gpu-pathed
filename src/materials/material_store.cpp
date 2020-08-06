@@ -16,4 +16,11 @@ int MaterialStore::addMaterial(const Mirror &material)
     return m_indices.size() - 1;
 }
 
+int MaterialStore::addMaterial(const Glass &material)
+{
+    MaterialIndex index = m_table.addMaterial(material);
+    m_indices.push_back(index);
+    return m_indices.size() - 1;
+}
+
 }

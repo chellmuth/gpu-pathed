@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "materials/glass.h"
 #include "materials/material.h"
 #include "materials/mirror.h"
 #include "materials/types.h"
@@ -13,12 +14,14 @@ struct MaterialLookup {
 
     Material *lambertians;
     Mirror *mirrors;
+    Glass *glasses;
 };
 
 class MaterialTable {
 public:
     MaterialIndex addMaterial(const Material &material);
     MaterialIndex addMaterial(const Mirror &material);
+    MaterialIndex addMaterial(const Glass &material);
 
     void updateMaterial(int materialIndex, Material material) {
         m_lambertians[materialIndex] = material;
@@ -32,9 +35,14 @@ public:
         return m_mirrors;
     }
 
+    const std::vector<Glass> &getGlasses() const {
+        return m_glasses;
+    }
+
 private:
     std::vector<Material> m_lambertians;
     std::vector<Mirror> m_mirrors;
+    std::vector<Glass> m_glasses;
 };
 
 }

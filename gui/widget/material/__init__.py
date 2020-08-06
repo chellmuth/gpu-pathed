@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
     QWidget
 )
 
+from gui.widget.material.glass import GlassWidget
 from gui.widget.material.lambertian import LambertianWidget
 from gui.widget.material.mirror import MirrorWidget
 from path_tracer import MaterialType
@@ -54,6 +55,7 @@ class MaterialWidget(QGroupBox):
             widgets = {
                 MaterialType.Lambertian: LambertianWidget,
                 MaterialType.Mirror: MirrorWidget,
+                MaterialType.Glass: GlassWidget,
             }
             oldWidget = self.materialWidget
             self.materialWidget = widgets[material_type](self.model, self)
@@ -85,6 +87,7 @@ class MaterialTypeWidget(QWidget):
         menu = QMenu(self)
         menu.addAction("Lambertian", lambda: self.handleStateChanged(MaterialType.Lambertian))
         menu.addAction("Mirror", lambda: self.handleStateChanged(MaterialType.Mirror))
+        menu.addAction("Glass", lambda: self.handleStateChanged(MaterialType.Glass))
         self.materialButton.setMenu(menu)
 
         layout.addWidget(self.materialButton)
@@ -98,6 +101,8 @@ class MaterialTypeWidget(QWidget):
             self.materialButton.setText("Lambertian")
         elif material_type == MaterialType.Mirror:
             self.materialButton.setText("Mirror")
+        elif material_type == MaterialType.Glass:
+            self.materialButton.setText("Glass")
         else:
             print("Error, unsupported material type")
             exit(1)

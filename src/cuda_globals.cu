@@ -26,7 +26,8 @@ __global__ static void updateMaterialLookup(
     MaterialLookup *materialLookup,
     MaterialIndex *materialIndices,
     Material *lambertians,
-    Mirror *mirrors
+    Mirror *mirrors,
+    Glass *glasses
 ) {
     if (blockIdx.x != 0 || blockIdx.y != 0) { return; }
     if (threadIdx.x != 0 || threadIdx.y != 0) { return; }
@@ -34,6 +35,7 @@ __global__ static void updateMaterialLookup(
     materialLookup->indices = materialIndices;
     materialLookup->lambertians = lambertians;
     materialLookup->mirrors = mirrors;
+    materialLookup->glasses = glasses;
 }
 
 __global__ static void initWorldKernel(
@@ -64,12 +66,14 @@ void CUDAGlobals::mallocMaterials(const SceneData &sceneData)
 {
     const int lambertianSize = sceneData.materialStore.getLambertians().size();
     const int mirrorSize = sceneData.materialStore.getMirrors().size();
+    const int glassSize = sceneData.materialStore.getGlasses().size();
 
     const std::vector<MaterialIndex> &indices = sceneData.materialStore.getIndices();
 
     checkCudaErrors(cudaMalloc((void **)&d_materialIndices, indices.size() * sizeof(MaterialIndex)));
     checkCudaErrors(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Material)));
     checkCudaErrors(cudaMalloc((void **)&d_mirrors, mirrorSize * sizeof(Mirror)));
+    checkCudaErrors(cudaMalloc((void **)&d_glasses, glassSize * sizeof(Glass)));
 }
 
 void CUDAGlobals::copyMaterials(const SceneData &sceneData)
@@ -98,11 +102,20 @@ void CUDAGlobals::copyMaterials(const SceneData &sceneData)
         cudaMemcpyHostToDevice
     ));
 
+    const std::vector<Glass> &glasses = sceneData.materialStore.getGlasses();
+    checkCudaErrors(cudaMemcpy(
+        d_glasses,
+        glasses.data(),
+        glasses.size() * sizeof(Glass),
+        cudaMemcpyHostToDevice
+    ));
+
     updateMaterialLookup<<<1, 1>>>(
         d_materialLookup,
         d_materialIndices,
         d_lambertians,
-        d_mirrors
+        d_mirrors,
+        d_glasses
     );
 
     checkCudaErrors(cudaDeviceSynchronize());
@@ -113,6 +126,7 @@ void CUDAGlobals::freeMaterials()
     checkCudaErrors(cudaFree(d_materialIndices));
     checkCudaErrors(cudaFree(d_lambertians));
     checkCudaErrors(cudaFree(d_mirrors));
+    checkCudaErrors(cudaFree(d_glasses));
 }
 
 void CUDAGlobals::mallocWorld(const SceneData &sceneData)

@@ -2,10 +2,11 @@
 
 #include <vector>
 
-#include "materials/mirror.h"
+#include "materials/glass.h"
 #include "materials/material.h"
 #include "materials/material_store.h"
 #include "materials/material_table.h"
+#include "materials/mirror.h"
 #include "parsers/obj_parser.h"
 #include "sphere.h"
 #include "triangle.h"
@@ -29,6 +30,9 @@ struct SceneData {
         }
         case MaterialType::Mirror: {
             return !materialStore.getMirrors()[materialIndex.index].getEmit().isZero();
+        }
+        case MaterialType::Glass: {
+            return false;
         }
         }
         return false;
