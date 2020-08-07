@@ -2,7 +2,7 @@
 
 namespace rays {
 
-__device__ Vec3 Material::getEmit(const HitRecord &hit) const
+__device__ Vec3 Lambertian::getEmit(const HitRecord &hit) const
 {
     if (hit.isFront()) {
         return m_emit;
@@ -10,12 +10,12 @@ __device__ Vec3 Material::getEmit(const HitRecord &hit) const
     return Vec3(0.f);
 }
 
-__host__ void Material::setEmit(const Vec3 &emit)
+__host__ void Lambertian::setEmit(const Vec3 &emit)
 {
     m_emit = emit;
 }
 
-__host__ void Material::setAlbedo(const Vec3 &albedo)
+__host__ void Lambertian::setAlbedo(const Vec3 &albedo)
 {
     m_albedo = albedo;
 }

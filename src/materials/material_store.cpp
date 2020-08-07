@@ -2,7 +2,7 @@
 
 namespace rays {
 
-int MaterialStore::addMaterial(const Material &material)
+int MaterialStore::addMaterial(const Lambertian &material)
 {
     MaterialIndex index = m_table.addMaterial(material);
     m_indices.push_back(index);

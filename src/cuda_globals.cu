@@ -25,7 +25,7 @@ void CUDAGlobals::copyCamera(const Camera &camera)
 __global__ static void updateMaterialLookup(
     MaterialLookup *materialLookup,
     MaterialIndex *materialIndices,
-    Material *lambertians,
+    Lambertian *lambertians,
     Mirror *mirrors,
     Glass *glasses
 ) {
@@ -71,7 +71,7 @@ void CUDAGlobals::mallocMaterials(const SceneData &sceneData)
     const std::vector<MaterialIndex> &indices = sceneData.materialStore.getIndices();
 
     checkCudaErrors(cudaMalloc((void **)&d_materialIndices, indices.size() * sizeof(MaterialIndex)));
-    checkCudaErrors(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Material)));
+    checkCudaErrors(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Lambertian)));
     checkCudaErrors(cudaMalloc((void **)&d_mirrors, mirrorSize * sizeof(Mirror)));
     checkCudaErrors(cudaMalloc((void **)&d_glasses, glassSize * sizeof(Glass)));
 }
@@ -86,11 +86,11 @@ void CUDAGlobals::copyMaterials(const SceneData &sceneData)
         cudaMemcpyHostToDevice
     ));
 
-    const std::vector<Material> &lambertians = sceneData.materialStore.getLambertians();
+    const std::vector<Lambertian> &lambertians = sceneData.materialStore.getLambertians();
     checkCudaErrors(cudaMemcpy(
         d_lambertians,
         lambertians.data(),
-        lambertians.size() * sizeof(Material),
+        lambertians.size() * sizeof(Lambertian),
         cudaMemcpyHostToDevice
     ));
 

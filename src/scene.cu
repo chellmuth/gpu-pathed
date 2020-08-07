@@ -18,7 +18,7 @@ SceneData getSceneData(int index)
         SceneAdapter::ParseRequest request;
         MaterialStore store;
 
-        Material testMaterial(Vec3(0.f), Vec3(0.f, 0.f, 0.f));
+        Lambertian testMaterial(Vec3(0.f), Vec3(0.f, 0.f, 0.f));
         const int testMaterialID = request.materialStore.addMaterial(testMaterial);
 
         {

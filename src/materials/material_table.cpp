@@ -2,7 +2,7 @@
 
 namespace rays {
 
-MaterialIndex MaterialTable::addMaterial(const Material &material)
+MaterialIndex MaterialTable::addMaterial(const Lambertian &material)
 {
     m_lambertians.push_back(material);
     return MaterialIndex{

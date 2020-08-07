@@ -57,7 +57,7 @@ private:
 
     uchar4 *d_image;
     Vec3 *d_passRadiances;
-    Material *d_materials;
+    Lambertian *d_materials;
     MaterialLookup *d_materialLookup;
     CUdeviceptr d_param;
 

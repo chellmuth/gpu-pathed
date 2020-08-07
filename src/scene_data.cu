@@ -22,7 +22,7 @@ SceneData createSceneData(ParseRequest &request)
         const bool useDefaultMaterial = result.mtls.empty();
 
         for (auto &mtl : result.mtls) {
-            Material objMaterial(
+            Lambertian objMaterial(
                 Vec3(mtl.r, mtl.g, mtl.b),
                 Vec3(mtl.emitR, mtl.emitG, mtl.emitB)
             );
@@ -80,7 +80,7 @@ SceneData createSceneData(ObjParser &objParser)
 
     request.objParsers.push_back(objParser);
 
-    Material defaultMaterial(Vec3(0.f), Vec3(100.f, 0.f, 0.f));
+    Lambertian defaultMaterial(Vec3(0.f), Vec3(100.f, 0.f, 0.f));
     const int defaultMaterialID = request.materialStore.addMaterial(defaultMaterial);
 
     return createSceneData(request);

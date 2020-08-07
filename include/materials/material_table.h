@@ -12,22 +12,22 @@ namespace rays {
 struct MaterialLookup {
     MaterialIndex *indices;
 
-    Material *lambertians;
+    Lambertian *lambertians;
     Mirror *mirrors;
     Glass *glasses;
 };
 
 class MaterialTable {
 public:
-    MaterialIndex addMaterial(const Material &material);
+    MaterialIndex addMaterial(const Lambertian &material);
     MaterialIndex addMaterial(const Mirror &material);
     MaterialIndex addMaterial(const Glass &material);
 
-    void updateMaterial(int materialIndex, Material material) {
+    void updateMaterial(int materialIndex, Lambertian material) {
         m_lambertians[materialIndex] = material;
     }
 
-    const std::vector<Material> &getLambertians() const {
+    const std::vector<Lambertian> &getLambertians() const {
         return m_lambertians;
     }
 
@@ -40,7 +40,7 @@ public:
     }
 
 private:
-    std::vector<Material> m_lambertians;
+    std::vector<Lambertian> m_lambertians;
     std::vector<Mirror> m_mirrors;
     std::vector<Glass> m_glasses;
 };

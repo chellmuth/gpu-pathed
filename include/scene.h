@@ -35,7 +35,7 @@ public:
 
     const SceneData &getSceneData() const { return m_sceneData; }
 
-    const std::vector<Material> &getLambertians() const {
+    const std::vector<Lambertian> &getLambertians() const {
         return m_sceneData.materialStore.getLambertians();
     }
 
@@ -43,12 +43,12 @@ public:
         return m_sceneData.materialStore.getMirrors();
     }
 
-    const Material *getLambertiansData() const {
+    const Lambertian *getLambertiansData() const {
         return getLambertians().data();
     }
 
     size_t getLambertiansSize() const {
-        return getLambertians().size() * sizeof(Material);
+        return getLambertians().size() * sizeof(Lambertian);
     }
 
     const Mirror *getMirrorsData() const {
@@ -67,7 +67,7 @@ public:
         int newID = -1;
         switch (materialType) {
         case MaterialType::Lambertian: {
-            Material newMaterial(0.f);
+            Lambertian newMaterial(0.f);
             newID = store.addMaterial(newMaterial);
             break;
         }
@@ -105,7 +105,7 @@ public:
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
         if (materialIndex.materialType == MaterialType::Lambertian) {
-            Material material = getLambertians()[materialIndex.index];
+            Lambertian material = getLambertians()[materialIndex.index];
             material.setAlbedo(color);
             m_sceneData.materialStore.updateMaterial(materialIndex.index, material);
         }
@@ -114,7 +114,7 @@ public:
         MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
         if (materialIndex.materialType == MaterialType::Lambertian) {
-            Material material = getLambertians()[materialIndex.index];
+            Lambertian material = getLambertians()[materialIndex.index];
             material.setEmit(color);
             m_sceneData.materialStore.updateMaterial(materialIndex.index, material);
         }

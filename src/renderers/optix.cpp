@@ -388,7 +388,7 @@ void Optix::mallocMaterials(const Scene &scene)
     const SceneData &sceneData = scene.getSceneData();
 
     MaterialIndex *d_materialIndices = 0;
-    Material *d_lambertians = 0;
+    Lambertian *d_lambertians = 0;
     Mirror *d_mirrors = 0;
     Glass *d_glasses = 0;
 
@@ -399,7 +399,7 @@ void Optix::mallocMaterials(const Scene &scene)
     const std::vector<MaterialIndex> &indices = sceneData.materialStore.getIndices();
 
     checkCUDA(cudaMalloc((void **)&d_materialIndices, indices.size() * sizeof(MaterialIndex)));
-    checkCUDA(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Material)));
+    checkCUDA(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Lambertian)));
     checkCUDA(cudaMalloc((void **)&d_mirrors, mirrorSize * sizeof(Mirror)));
     checkCUDA(cudaMalloc((void **)&d_glasses, glassSize * sizeof(Glass)));
 
@@ -434,11 +434,11 @@ void Optix::copyMaterials(const Scene &scene)
         cudaMemcpyHostToDevice
     ));
 
-    const std::vector<Material> &lambertians = sceneData.materialStore.getLambertians();
+    const std::vector<Lambertian> &lambertians = sceneData.materialStore.getLambertians();
     checkCUDA(cudaMemcpy(
         reinterpret_cast<void *>(m_materialLookup.lambertians),
         lambertians.data(),
-        lambertians.size() * sizeof(Material),
+        lambertians.size() * sizeof(Lambertian),
         cudaMemcpyHostToDevice
     ));
 

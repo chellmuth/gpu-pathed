@@ -12,7 +12,7 @@ namespace rays {
 
 class MaterialStore {
 public:
-    int addMaterial(const Material &material);
+    int addMaterial(const Lambertian &material);
     int addMaterial(const Mirror &material);
     int addMaterial(const Glass &material);
 
@@ -24,7 +24,7 @@ public:
         m_indices[materialID] = newIndex;
     }
 
-    void updateMaterial(int materialIndex, Material material) {
+    void updateMaterial(int materialIndex, Lambertian material) {
         m_table.updateMaterial(materialIndex, material);
     }
 
@@ -32,7 +32,7 @@ public:
         return m_indices;
     }
 
-    const std::vector<Material> &getLambertians() const {
+    const std::vector<Lambertian> &getLambertians() const {
         return m_table.getLambertians();
     }
 

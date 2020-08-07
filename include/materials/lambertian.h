@@ -11,15 +11,15 @@
 
 namespace rays {
 
-struct Material  {
+struct Lambertian  {
 public:
-    __host__ __device__ Material() {}
+    __host__ __device__ Lambertian() {}
 
-    __host__ __device__ Material(const Vec3 &albedo)
+    __host__ __device__ Lambertian(const Vec3 &albedo)
         : m_albedo(albedo), m_emit(Vec3(0.f, 0.f, 0.f))
     {}
 
-    __host__ __device__ Material(const Vec3 &albedo, const Vec3 &emit)
+    __host__ __device__ Lambertian(const Vec3 &albedo, const Vec3 &emit)
         : m_albedo(albedo), m_emit(emit)
     {}
 
@@ -76,7 +76,7 @@ public:
         os << "[Lambertian: diffuse=" << m_albedo << " emit=" << m_emit << "]";
     }
 
-    friend std::ostream &operator<<(std::ostream &os, const Material &m) {
+    friend std::ostream &operator<<(std::ostream &os, const Lambertian &m) {
         m.writeStream(os);
         return os;
     }

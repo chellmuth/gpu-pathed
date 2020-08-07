@@ -28,11 +28,11 @@ public:
     Camera *d_camera;
     PrimitiveList *d_world;
 
-    Material *d_materials;
+    Lambertian *d_materials;
 
     MaterialLookup *d_materialLookup;
     MaterialIndex *d_materialIndices;
-    Material *d_lambertians;
+    Lambertian *d_lambertians;
     Mirror *d_mirrors;
     Glass *d_glasses;
 
