@@ -9,7 +9,7 @@
 
 namespace rays {
 
-struct Mirror  {
+struct Mirror {
 public:
     __host__ __device__ Mirror() {}
 

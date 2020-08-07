@@ -11,7 +11,7 @@
 
 namespace rays {
 
-struct Lambertian  {
+struct Lambertian {
 public:
     __host__ __device__ Lambertian() {}
 

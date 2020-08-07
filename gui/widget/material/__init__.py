@@ -49,16 +49,16 @@ class MaterialWidget(QGroupBox):
             self.materialWidget.hide()
             return
 
-        material_type = self.model.getMaterialType()
+        materialType = self.model.getMaterialType()
 
-        if material_type != self.materialWidget.MaterialType:
+        if materialType != self.materialWidget.MaterialType:
             widgets = {
                 MaterialType.Lambertian: LambertianWidget,
                 MaterialType.Mirror: MirrorWidget,
                 MaterialType.Glass: GlassWidget,
             }
             oldWidget = self.materialWidget
-            self.materialWidget = widgets[material_type](self.model, self)
+            self.materialWidget = widgets[materialType](self.model, self)
             self.layout().replaceWidget(oldWidget, self.materialWidget)
             oldWidget.deleteLater()
             self.layout().update()
@@ -96,17 +96,17 @@ class MaterialTypeWidget(QWidget):
         self.setLayout(layout)
 
     def update(self):
-        material_type = self.getter()
-        if material_type == MaterialType.Lambertian:
+        materialType = self.getter()
+        if materialType == MaterialType.Lambertian:
             self.materialButton.setText("Lambertian")
-        elif material_type == MaterialType.Mirror:
+        elif materialType == MaterialType.Mirror:
             self.materialButton.setText("Mirror")
-        elif material_type == MaterialType.Glass:
+        elif materialType == MaterialType.Glass:
             self.materialButton.setText("Glass")
         else:
             print("Error, unsupported material type")
             exit(1)
 
-    def handleStateChanged(self, material_type):
-        self.setter(material_type)
+    def handleStateChanged(self, materialType):
+        self.setter(materialType)
         self.update()

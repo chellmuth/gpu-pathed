@@ -13,7 +13,7 @@
 
 namespace rays {
 
-struct Glass  {
+struct Glass {
 public:
     __host__ __device__ Glass() {}
     __host__ __device__ Glass(float ior) : m_ior(ior) {}
