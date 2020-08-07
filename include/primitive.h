@@ -4,6 +4,7 @@
 #include <curand_kernel.h>
 
 #include "hit_record.h"
+#include "materials/bsdf.h"
 #include "materials/bsdf_sample.h"
 #include "materials/material.h"
 #include "materials/material_table.h"
@@ -97,23 +98,8 @@ public:
     }
 
     __device__ Vec3 f(const int materialID, const Vec3 &wo, const Vec3 &wi) const {
-        const MaterialIndex index = m_materialLookup->indices[materialID];
-        return f(index, wo, wi);
-    }
-
-    __device__ Vec3 f(const MaterialIndex index, const Vec3 &wo, const Vec3 &wi) const {
-        switch(index.materialType) {
-        case MaterialType::Lambertian: {
-            return m_materialLookup->lambertians[index.index].f(wo, wi);
-        }
-        case MaterialType::Mirror: {
-            return m_materialLookup->mirrors[index.index].f(wo, wi);
-        }
-        case MaterialType::Glass: {
-            return m_materialLookup->glasses[index.index].f(wo, wi);
-        }
-        }
-        return Vec3(0.f);
+        BSDF bsdf(m_materialLookup, materialID);
+        return bsdf.f(wo, wi);
     }
 
     __device__ BSDFSample sample(
@@ -121,21 +107,8 @@ public:
         HitRecord &record,
         curandState &randState
     ) const {
-        const MaterialIndex index = m_materialLookup->indices[materialID];
-
-        switch(index.materialType) {
-        case MaterialType::Lambertian: {
-            return m_materialLookup->lambertians[index.index].sample(record, randState);
-        }
-        case MaterialType::Mirror: {
-            return m_materialLookup->mirrors[index.index].sample(record, randState);
-        }
-        case MaterialType::Glass: {
-            return m_materialLookup->glasses[index.index].sample(record, randState);
-        }
-        }
-
-        return BSDFSample{};
+        BSDF bsdf(m_materialLookup, materialID);
+        return bsdf.sample(record, randState);
     }
 
 private:

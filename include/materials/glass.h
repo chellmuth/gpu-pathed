@@ -24,8 +24,8 @@ public:
         return Vec3(0.f);
     }
 
-    __device__ BSDFSample sample(HitRecord &record, curandState &randState) const {
-        return sample(record.wo, curand_uniform(&randState));
+    __device__ BSDFSample sample(const Vec3 &wo, curandState &randState) const {
+        return sample(wo, curand_uniform(&randState));
     }
 
     __device__ BSDFSample sample(const Vec3 &wo, float xi1) const {

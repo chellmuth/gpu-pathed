@@ -1,5 +1,7 @@
 #pragma once
 
+#include <curand_kernel.h>
+
 #include "intersection.h"
 #include "materials/bsdf_sample.h"
 #include "materials/material_table.h"
@@ -45,6 +47,25 @@ public:
         case MaterialType::Glass: {
             const float xi1 = rnd(seed);
             return m_materialLookupPtr->glasses[index.index].sample(intersection.woLocal, xi1);
+        }
+        }
+        return {};
+    }
+
+    __device__ BSDFSample sample(
+        const HitRecord &record,
+        curandState &randState
+    ) {
+        const MaterialIndex index = m_materialLookupPtr->indices[m_materialID];
+        switch(index.materialType) {
+        case MaterialType::Lambertian: {
+            return m_materialLookupPtr->lambertians[index.index].sample(record.wo, randState);
+        }
+        case MaterialType::Mirror: {
+            return m_materialLookupPtr->mirrors[index.index].sample(record.wo, randState);
+        }
+        case MaterialType::Glass: {
+            return m_materialLookupPtr->glasses[index.index].sample(record.wo, randState);
         }
         }
         return {};

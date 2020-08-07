@@ -33,14 +33,8 @@ public:
         return Vec3(0.f);
     }
 
-    __device__ BSDFSample sample(HitRecord &record, curandState &randState) const {
-        Vec3 wi = record.wo.reflect(Vec3(0.f, 0.f, 1.f));
-        return BSDFSample{
-            wi,
-            1.f,
-            Vec3(fmaxf(0.f, 1.f / wi.z())),
-            isDelta()
-        };
+    __device__ BSDFSample sample(const Vec3 &wo, curandState &randState) const {
+        return sample(wo);
     }
 
     __device__ BSDFSample sample(const Vec3 &wo) const {
@@ -51,12 +45,6 @@ public:
             Vec3(fmaxf(0.f, 1.f / wi.z())),
             isDelta()
         };
-    }
-
-    __device__ Vec3 sample(const Vec3 &wo, float *pdf) const {
-        const Vec3 wi = wo.reflect(Vec3(0.f, 0.f, 1.f));
-        *pdf = 1.f;
-        return wi;
     }
 
     __device__ bool isDelta() const { return true; }

@@ -41,10 +41,10 @@ public:
         return m_albedo / M_PI;
     }
 
-    __device__ BSDFSample sample(HitRecord &record, curandState &randState) const {
+    __device__ BSDFSample sample(const Vec3 &wo, curandState &randState) const {
         const float xi1 = curand_uniform(&randState);
         const float xi2 = curand_uniform(&randState);
-        return sample(record.wo, xi1, xi2);
+        return sample(wo, xi1, xi2);
     }
 
     __device__ BSDFSample sample(const Vec3 &wo, unsigned int &seed) const {
