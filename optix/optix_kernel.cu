@@ -62,13 +62,14 @@ __forceinline__ __device__ static rays::Vec3 f(
 __forceinline__ __device__ static rays::BSDFSample sample(
     const Intersection &intersection,
     int materialID,
-    float xi1,
-    float xi2
+    unsigned int &seed
 ) {
     const rays::MaterialIndex index = params.materialLookup->indices[materialID];
     switch(index.materialType) {
     case rays::MaterialType::Lambertian: {
         float pdf;
+        const float xi1 = rnd(seed);
+        const float xi2 = rnd(seed);
         const rays::Vec3 wi = params.materialLookup->lambertians[index.index]
             .sample(&pdf, make_float2(xi1, xi2));
 
@@ -83,6 +84,7 @@ __forceinline__ __device__ static rays::BSDFSample sample(
         return params.materialLookup->mirrors[index.index].sample(intersection.woLocal);
     }
     case rays::MaterialType::Glass: {
+        const float xi1 = rnd(seed);
         return params.materialLookup->glasses[index.index].sample(intersection.woLocal, xi1);
     }
     }
@@ -278,10 +280,7 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
         if (prd.done) { break; }
 
         const Intersection &intersection = prd.intersection;
-
-        const float xi1 = rnd(seed);
-        const float xi2 = rnd(seed);
-        const rays::BSDFSample bsdfSample = sample(intersection, prd.materialID, xi1, xi2);
+        const rays::BSDFSample bsdfSample = sample(intersection, prd.materialID, seed);
 
         result += direct(intersection, bsdfSample, prd.materialID, seed) * beta;
 
@@ -357,10 +356,7 @@ __forceinline__ __device__ static rays::Vec3 LiNaive(
         if (prd.done) { break; }
 
         const Intersection &intersection = prd.intersection;
-
-        const float xi1 = rnd(seed);
-        const float xi2 = rnd(seed);
-        const rays::BSDFSample bsdfSample = sample(intersection, prd.materialID, xi1, xi2);
+        const rays::BSDFSample bsdfSample = sample(intersection, prd.materialID, seed);
 
         const rays::Frame &frame = intersection.frame;
         const rays::Vec3 bounceWorld = normalized(frame.toWorld(bsdfSample.wiLocal));
