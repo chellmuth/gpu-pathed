@@ -13,6 +13,6 @@ namespace rays { namespace WorldFrame {
 
     __device__ inline float absCosTheta(Vec3 normal, Vec3 w)
     {
-        return fabsf(cosTheta(normal, w));
+        return fabsf(dot(normal, w));
     }
 } };

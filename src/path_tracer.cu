@@ -145,7 +145,7 @@ __device__ static Vec3 calculateLiNEE(
         result += direct(record, bsdfSample, world, randState) * beta;
 
         beta *= bsdfSample.f
-            * intersection.cosTheta(bsdfSample.wiLocal)
+            * intersection.absCosTheta(bsdfSample.wiLocal)
             / bsdfSample.pdf;
 
         const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
@@ -189,7 +189,7 @@ __device__ static Vec3 calculateLiNaive(
 
         beta *= Vec3(1.f)
             * bsdfSample.f
-            * intersection.cosTheta(bsdfSample.wiLocal)
+            * intersection.absCosTheta(bsdfSample.wiLocal)
             / bsdfSample.pdf;
 
         const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
