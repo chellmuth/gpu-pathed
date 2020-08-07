@@ -38,7 +38,7 @@ public:
             etaTransmitted = temp;
         }
 
-        Vec3 wi;
+        Vec3 wi(0.f);
         const bool doesRefract = Snell::refract(
             wo,
             &wi,
@@ -93,12 +93,6 @@ public:
 
             return sample;
         }
-    }
-
-    __device__ Vec3 sample(const Vec3 &wo, float *pdf) const {
-        const Vec3 wi = wo.reflect(Vec3(0.f, 0.f, 1.f));
-        *pdf = 1.f;
-        return wi;
     }
 
     __device__ bool isDelta() const { return true; }

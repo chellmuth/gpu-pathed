@@ -140,8 +140,8 @@ __device__ static Vec3 calculateLiNEE(
 
     for (int path = 1; path < maxDepth; path++) {
         const Frame intersection(record.normal);
-        const BSDFSample bsdfSample = world->sample(record.materialID, record, randState);
 
+        const BSDFSample bsdfSample = world->sample(record.materialID, record, randState);
         result += direct(record, bsdfSample, world, randState) * beta;
 
         beta *= bsdfSample.f
