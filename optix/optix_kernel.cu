@@ -83,7 +83,7 @@ __forceinline__ __device__ static rays::BSDFSample sample(
         return params.materialLookup->mirrors[index.index].sample(intersection.woLocal);
     }
     case rays::MaterialType::Glass: {
-        return params.materialLookup->glasses[index.index].sample(intersection.woLocal);
+        return params.materialLookup->glasses[index.index].sample(intersection.woLocal, xi1);
     }
     }
     return {};

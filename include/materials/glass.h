@@ -25,10 +25,14 @@ public:
     }
 
     __device__ BSDFSample sample(HitRecord &record, curandState &randState) const {
+        return sample(record.wo, curand_uniform(&randState));
+    }
+
+    __device__ BSDFSample sample(const Vec3 &wo, float xi1) const {
         float etaIncident = 1.f;
         float etaTransmitted = m_ior;
 
-        if (record.wo.z() < 0.f) {
+        if (wo.z() < 0.f) {
             const float temp = etaIncident;
             etaIncident = etaTransmitted;
             etaTransmitted = temp;
@@ -36,20 +40,20 @@ public:
 
         Vec3 wi;
         const bool doesRefract = Snell::refract(
-            record.wo,
+            wo,
             &wi,
             etaIncident,
             etaTransmitted
         );
 
         const float fresnelReflectance = Fresnel::dielectricReflectance(
-            TangentFrame::absCosTheta(record.wo),
+            TangentFrame::absCosTheta(wo),
             etaIncident,
             etaTransmitted
         );
 
-        if (curand_uniform(&randState) < fresnelReflectance) {
-            wi = record.wo.reflect(Vec3(0.f, 0.f, 1.f));
+        if (xi1 < fresnelReflectance) {
+            wi = wo.reflect(Vec3(0.f, 0.f, 1.f));
 
             const float cosTheta = TangentFrame::absCosTheta(wi);
             const Vec3 throughput = cosTheta == 0.f
@@ -89,16 +93,6 @@ public:
 
             return sample;
         }
-    }
-
-    __device__ BSDFSample sample(const Vec3 &wo) const {
-        const Vec3 wi = wo.reflect(Vec3(0.f, 0.f, 1.f));
-        return BSDFSample{
-            wi,
-            1.f,
-            Vec3(fmaxf(0.f, 1.f / wi.z())),
-            isDelta()
-        };
     }
 
     __device__ Vec3 sample(const Vec3 &wo, float *pdf) const {
