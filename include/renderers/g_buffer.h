@@ -37,9 +37,7 @@ private:
     int m_currentSamples;
     bool m_shouldReset;
 
-    Vec3 *dev_radiances;
     Vec3 *dev_passRadiances;
-    uchar4 *dev_map;
 
     BufferType m_bufferType;
 };

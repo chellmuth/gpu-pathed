@@ -26,6 +26,10 @@ public:
     virtual int getSpp() const = 0;
 
     virtual std::vector<float> getRadianceBuffer() const = 0;
+
+protected:
+    Vec3 *dev_radiances;
+    uchar4 *dev_map;
 };
 
 }

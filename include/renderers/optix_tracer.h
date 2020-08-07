@@ -40,9 +40,6 @@ private:
 
     curandState *dev_randState;
 
-    Vec3 *dev_radiances;
-    uchar4 *dev_map;
-
     Optix m_optix;
 };
 
