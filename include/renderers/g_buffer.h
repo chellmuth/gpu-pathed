@@ -30,10 +30,7 @@ public:
     void reset() override;
     int getSpp() const override { return m_currentSamples; }
 
-    std::vector<float> getRadianceBuffer() const override { return {}; }
-
 private:
-    int m_width, m_height;
     int m_currentSamples;
     bool m_shouldReset;
 

@@ -62,6 +62,7 @@ add_library(rays STATIC
   src/renderers/g_buffer.cu
   src/renderers/optix.cpp
   src/renderers/optix_tracer.cu
+  src/renderers/renderer.cpp
 
   src/parsers/mtl_parser.cpp
   src/parsers/obj_parser.cpp

@@ -544,11 +544,6 @@ void Optix::init(int width, int height, const Scene &scene)
     ));
 
     checkCUDA(cudaMalloc(
-        reinterpret_cast<void **>(&d_radiances),
-        width * height * sizeof(Vec3)
-    ));
-
-    checkCUDA(cudaMalloc(
         reinterpret_cast<void **>(&d_image),
         width * height * sizeof(uchar4)
     ));
@@ -667,7 +662,7 @@ static uchar4 *launchOptix(
     return image;
 }
 
-uchar4 *Optix::launch(int spp, int currentSamples)
+uchar4 *Optix::launch(Vec3 *d_radiances, int spp, int currentSamples)
 {
     uchar4 *image = launchOptix(
         m_params,

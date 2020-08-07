@@ -29,13 +29,9 @@ void OptixTracer::init(
     int height,
     const Scene &scene
 ) {
-    m_width = width;
-    m_height = height;
-    const int pixelCount = m_width * m_height;
+    Renderer::init(width, height, scene);
 
     m_optix.init(m_width, m_height, scene);
-
-    checkCudaErrors(cudaMalloc((void **)&dev_radiances, pixelCount * sizeof(Vec3)));
 }
 
 RenderRecord OptixTracer::renderAsync(
@@ -63,7 +59,7 @@ RenderRecord OptixTracer::renderAsync(
     cudaEventCreate(&endEvent);
     cudaEventRecord(beginEvent);
 
-    uchar4 *image = m_optix.launch(spp, m_currentSamples);
+    uchar4 *image = m_optix.launch(dev_radiances, spp, m_currentSamples);
     checkCudaErrors(cudaMemcpy(dev_map, image, m_width * m_height * sizeof(uchar4), cudaMemcpyHostToDevice));
 
     cudaEventRecord(endEvent);

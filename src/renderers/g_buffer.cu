@@ -61,11 +61,10 @@ void GBuffer::init(
     int height,
     const Scene &scene
 ) {
-    m_width = width;
-    m_height = height;
+    Renderer::init(width, height, scene);
+
     const int pixelCount = m_width * m_height;
 
-    checkCudaErrors(cudaMalloc((void **)&dev_radiances, pixelCount * sizeof(Vec3)));
     checkCudaErrors(cudaMalloc((void **)&dev_passRadiances, pixelCount * sizeof(Vec3)));
 }
 
@@ -115,7 +114,7 @@ RenderRecord GBuffer::renderAsync(
 
     cudaEventRecord(endEvent);
 
-    return RenderRecord{beginEvent, endEvent, spp};
+    return RenderRecord{beginEvent, endEvent, 1};
 }
 
 bool GBuffer::pollRender(cudaGraphicsResource *pboResource, RenderRecord record)

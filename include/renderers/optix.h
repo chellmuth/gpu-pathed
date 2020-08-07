@@ -37,7 +37,7 @@ struct HitGroupData {
 class Optix {
 public:
     void init(int width, int height, const Scene &scene);
-    uchar4 *launch(int spp, int currentSamples);
+    uchar4 *launch(Vec3 *d_radiances, int spp, int currentSamples);
 
     void updateCamera(const Scene &scene);
     void updateMaxDepth(const Scene &scene);
@@ -57,7 +57,6 @@ private:
 
     uchar4 *d_image;
     Vec3 *d_passRadiances;
-    Vec3 *d_radiances;
     Material *d_materials;
     MaterialLookup *d_materialLookup;
     CUdeviceptr d_param;
