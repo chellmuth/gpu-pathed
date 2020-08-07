@@ -6,6 +6,7 @@
 #include "materials/bsdf_sample.h"
 #include "optics/fresnel.h"
 #include "optics/snell.h"
+#include "renderers/random.h"
 #include "tangent_frame.h"
 #include "util.h"
 #include "vec3.h"
@@ -26,6 +27,11 @@ public:
 
     __device__ BSDFSample sample(const Vec3 &wo, curandState &randState) const {
         return sample(wo, curand_uniform(&randState));
+    }
+
+    __device__ BSDFSample sample(const Vec3 &wo, unsigned int &seed) const {
+        const float xi1 = rnd(seed);
+        return sample(wo, xi1);
     }
 
     __device__ BSDFSample sample(const Vec3 &wo, float xi1) const {
