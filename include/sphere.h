@@ -1,6 +1,6 @@
 #pragma once
 
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "ray.h"
 #include "vec3.h"
 

@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "materials/glass.h"
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "materials/material_store.h"
 #include "materials/mirror.h"
 

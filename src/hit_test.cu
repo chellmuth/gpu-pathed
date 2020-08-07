@@ -6,7 +6,7 @@
 
 #include "camera.h"
 #include "macro_helper.h"
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "materials/types.h"
 #include "primitive.h"
 #include "scene.h"

@@ -2,7 +2,7 @@
 
 #include <curand_kernel.h>
 
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "materials/material_table.h"
 #include "ray.h"
 #include "surface_sample.h"

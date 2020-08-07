@@ -5,7 +5,7 @@
 #include <optix.h>
 
 #include "camera.h"
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "scene.h"
 #include "vec3.h"
 

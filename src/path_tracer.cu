@@ -8,7 +8,7 @@
 #include "framebuffer.h"
 #include "macro_helper.h"
 #include "primitive.h"
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "scene.h"
 #include "vec3.h"
 

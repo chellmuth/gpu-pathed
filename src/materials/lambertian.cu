@@ -1,4 +1,4 @@
-#include "materials/material.h"
+#include "materials/lambertian.h"
 
 namespace rays {
 

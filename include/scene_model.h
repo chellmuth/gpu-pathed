@@ -3,7 +3,7 @@
 #include <functional>
 #include <iostream>
 
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "materials/types.h"
 #include "path_tracer.h"
 #include "scene.h"

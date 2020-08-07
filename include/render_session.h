@@ -5,7 +5,7 @@
 #include "cuda_globals.h"
 #include "hit_test.h"
 #include "io/image.h"
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "path_tracer.h"
 #include "render_record.h"
 #include "renderers/g_buffer.h"

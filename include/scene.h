@@ -4,7 +4,7 @@
 
 #include "camera.h"
 #include "materials/mirror.h"
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "primitive.h"
 #include "scene_data.h"
 #include "sphere.h"

@@ -6,7 +6,7 @@
 #include "hit_record.h"
 #include "materials/bsdf.h"
 #include "materials/bsdf_sample.h"
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "materials/material_table.h"
 #include "ray.h"
 #include "sampler.h"

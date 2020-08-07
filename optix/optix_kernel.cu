@@ -4,7 +4,7 @@
 #include "intersection.h"
 #include "materials/bsdf.h"
 #include "materials/bsdf_sample.h"
-#include "materials/material.h"
+#include "materials/lambertian.h"
 #include "materials/types.h"
 #include "ray.h"
 #include "renderers/float3_helpers.h"
