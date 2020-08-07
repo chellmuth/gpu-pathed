@@ -42,11 +42,10 @@ public:
             return m_materialLookupPtr->lambertians[index.index].sample(intersection.woLocal, seed);
         }
         case MaterialType::Mirror: {
-            return m_materialLookupPtr->mirrors[index.index].sample(intersection.woLocal);
+            return m_materialLookupPtr->mirrors[index.index].sample(intersection.woLocal, seed);
         }
         case MaterialType::Glass: {
-            const float xi1 = rnd(seed);
-            return m_materialLookupPtr->glasses[index.index].sample(intersection.woLocal, xi1);
+            return m_materialLookupPtr->glasses[index.index].sample(intersection.woLocal, seed);
         }
         }
         return {};

@@ -33,6 +33,10 @@ public:
         return Vec3(0.f);
     }
 
+    __device__ BSDFSample sample(const Vec3 &wo, unsigned int &seed) const {
+        return sample(wo);
+    }
+
     __device__ BSDFSample sample(const Vec3 &wo, curandState &randState) const {
         return sample(wo);
     }
