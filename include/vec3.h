@@ -92,6 +92,11 @@ __host__ __device__ inline float dot(const Vec3 &v1, const Vec3 &v2)
     return v1.e[0] * v2.e[0] + v1.e[1] * v2.e[1]  + v1.e[2] * v2.e[2];
 }
 
+__host__ __device__ inline float absDot(const Vec3 &v1, const Vec3 &v2)
+{
+    return fabsf(v1.e[0] * v2.e[0] + v1.e[1] * v2.e[1]  + v1.e[2] * v2.e[2]);
+}
+
 __host__ __device__ inline Vec3 operator+(const Vec3 &v1, const Vec3 &v2)
 {
     return Vec3(v1.e[0] + v2.e[0], v1.e[1] + v2.e[1], v1.e[2] + v2.e[2]);
