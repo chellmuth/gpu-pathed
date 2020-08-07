@@ -1,6 +1,8 @@
 #include <optix.h>
 
 #include "frame.h"
+#include "intersection.h"
+#include "materials/bsdf.h"
 #include "materials/bsdf_sample.h"
 #include "materials/material.h"
 #include "materials/types.h"
@@ -19,23 +21,12 @@ extern "C" {
     __constant__ rays::Params params;
 }
 
-struct Intersection {
-    rays::Vec3 point;
-    rays::Vec3 normal;
-    rays::Vec3 woLocal;
-    rays::Frame frame;
-
-    __device__ bool isFront() const {
-        return woLocal.z() >= 0.f;
-    }
-};
-
 struct PerRayData {
     bool done;
     float3 beta;
     int materialID;
     float3 point;
-    Intersection intersection;
+    rays::Intersection intersection;
     int pad;
 };
 
@@ -44,68 +35,23 @@ __forceinline__ __device__ static rays::Vec3 f(
     const rays::Vec3 &wo,
     const rays::Vec3 &wi
 ) {
-    const rays::MaterialIndex index = params.materialLookup->indices[materialID];
-    switch(index.materialType) {
-    case rays::MaterialType::Lambertian: {
-        return params.materialLookup->lambertians[index.index].f(wo, wi);
-    }
-    case rays::MaterialType::Mirror: {
-        return params.materialLookup->mirrors[index.index].f(wo, wi);
-    }
-    case rays::MaterialType::Glass: {
-        return params.materialLookup->glasses[index.index].f(wo, wi);
-    }
-    }
-    return rays::Vec3(0.f);
+    rays::BSDF bsdf(params.materialLookup, materialID);
+    return bsdf.f(wo, wi);
 }
 
 __forceinline__ __device__ static rays::BSDFSample sample(
-    const Intersection &intersection,
     int materialID,
+    const rays::Intersection &intersection,
     unsigned int &seed
 ) {
-    const rays::MaterialIndex index = params.materialLookup->indices[materialID];
-    switch(index.materialType) {
-    case rays::MaterialType::Lambertian: {
-        float pdf;
-        const float xi1 = rnd(seed);
-        const float xi2 = rnd(seed);
-        const rays::Vec3 wi = params.materialLookup->lambertians[index.index]
-            .sample(&pdf, make_float2(xi1, xi2));
-
-        return rays::BSDFSample{
-            wi,
-            pdf,
-            f(materialID, intersection.woLocal, wi),
-            false
-        };
-    }
-    case rays::MaterialType::Mirror: {
-        return params.materialLookup->mirrors[index.index].sample(intersection.woLocal);
-    }
-    case rays::MaterialType::Glass: {
-        const float xi1 = rnd(seed);
-        return params.materialLookup->glasses[index.index].sample(intersection.woLocal, xi1);
-    }
-    }
-    return {};
+    rays::BSDF bsdf(params.materialLookup, materialID);
+    return bsdf.sample(intersection, seed);
 }
 
 __forceinline__ __device__ static rays::Vec3 getEmit(int materialID)
 {
-    const rays::MaterialIndex index = params.materialLookup->indices[materialID];
-    switch(index.materialType) {
-    case rays::MaterialType::Lambertian: {
-        return params.materialLookup->lambertians[index.index].getEmit();
-    }
-    case rays::MaterialType::Mirror: {
-        return params.materialLookup->mirrors[index.index].getEmit();
-    }
-    case rays::MaterialType::Glass: {
-        return params.materialLookup->glasses[index.index].getEmit();
-    }
-    }
-    return rays::Vec3(0.f);
+    rays::BSDF bsdf(params.materialLookup, materialID);
+    return bsdf.getEmit();
 }
 
 __forceinline__ __device__ static PerRayData *getPRD()
@@ -116,7 +62,7 @@ __forceinline__ __device__ static PerRayData *getPRD()
 }
 
 __forceinline__ __device__ static rays::Vec3 directSampleBSDF(
-    const Intersection &intersection,
+    const rays::Intersection &intersection,
     const rays::BSDFSample &bsdfSample,
     unsigned int &seed
 ) {
@@ -163,7 +109,7 @@ __forceinline__ __device__ static rays::Vec3 directSampleBSDF(
 }
 
 __forceinline__ __device__ static rays::Vec3 directSampleLights(
-    const Intersection &intersection,
+    const rays::Intersection &intersection,
     int materialID,
     const rays::BSDFSample &bsdfSample,
     unsigned int &seed
@@ -223,7 +169,7 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
 }
 
 __forceinline__ __device__ static rays::Vec3 direct(
-    const Intersection &intersection,
+    const rays::Intersection &intersection,
     const rays::BSDFSample &bsdfSample,
     const int &materialID,
     unsigned int &seed
@@ -270,7 +216,7 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
     );
 
     if (!prd.done) {
-        const Intersection &intersection = prd.intersection;
+        const rays::Intersection &intersection = prd.intersection;
         if (intersection.isFront()) {
             result += getEmit(prd.materialID);
         }
@@ -279,8 +225,8 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
     for (int path = 1; path < params.maxDepth; path++) {
         if (prd.done) { break; }
 
-        const Intersection &intersection = prd.intersection;
-        const rays::BSDFSample bsdfSample = sample(intersection, prd.materialID, seed);
+        const rays::Intersection &intersection = prd.intersection;
+        const rays::BSDFSample bsdfSample = sample(prd.materialID, intersection, seed);
 
         result += direct(intersection, bsdfSample, prd.materialID, seed) * beta;
 
@@ -346,7 +292,7 @@ __forceinline__ __device__ static rays::Vec3 LiNaive(
     );
 
     if (!prd.done) {
-        const Intersection &intersection = prd.intersection;
+        const rays::Intersection &intersection = prd.intersection;
         if (intersection.isFront()) {
             result += getEmit(prd.materialID);
         }
@@ -355,8 +301,8 @@ __forceinline__ __device__ static rays::Vec3 LiNaive(
     for (int path = 1; path < params.maxDepth; path++) {
         if (prd.done) { break; }
 
-        const Intersection &intersection = prd.intersection;
-        const rays::BSDFSample bsdfSample = sample(intersection, prd.materialID, seed);
+        const rays::Intersection &intersection = prd.intersection;
+        const rays::BSDFSample bsdfSample = sample(prd.materialID, intersection, seed);
 
         const rays::Frame &frame = intersection.frame;
         const rays::Vec3 bounceWorld = normalized(frame.toWorld(bsdfSample.wiLocal));
@@ -435,7 +381,7 @@ extern "C" __global__ void __closesthit__ch()
 
     rays::HitGroupData* hitgroupData = reinterpret_cast<rays::HitGroupData *>(optixGetSbtDataPointer());
 
-    Intersection intersection;
+    rays::Intersection intersection;
     const float u = optixGetTriangleBarycentrics().x;
     const float v = optixGetTriangleBarycentrics().y;
     intersection.point = triangle.interpolate(u, v);
