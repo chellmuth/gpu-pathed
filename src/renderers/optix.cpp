@@ -390,19 +390,23 @@ void Optix::mallocMaterials(const Scene &scene)
     MaterialIndex *d_materialIndices = 0;
     Material *d_lambertians = 0;
     Mirror *d_mirrors = 0;
+    Glass *d_glasses = 0;
 
     const int lambertianSize = sceneData.materialStore.getLambertians().size();
     const int mirrorSize = sceneData.materialStore.getMirrors().size();
+    const int glassSize = sceneData.materialStore.getGlasses().size();
 
     const std::vector<MaterialIndex> &indices = sceneData.materialStore.getIndices();
 
     checkCUDA(cudaMalloc((void **)&d_materialIndices, indices.size() * sizeof(MaterialIndex)));
     checkCUDA(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Material)));
     checkCUDA(cudaMalloc((void **)&d_mirrors, mirrorSize * sizeof(Mirror)));
+    checkCUDA(cudaMalloc((void **)&d_glasses, glassSize * sizeof(Glass)));
 
     m_materialLookup.indices = d_materialIndices;
     m_materialLookup.lambertians = d_lambertians;
     m_materialLookup.mirrors = d_mirrors;
+    m_materialLookup.glasses = d_glasses;
 }
 
 void Optix::freeMaterials()
@@ -410,6 +414,7 @@ void Optix::freeMaterials()
     checkCUDA(cudaFree(m_materialLookup.indices));
     checkCUDA(cudaFree(m_materialLookup.lambertians));
     checkCUDA(cudaFree(m_materialLookup.mirrors));
+    checkCUDA(cudaFree(m_materialLookup.glasses));
 }
 
 void Optix::copyMaterials(const Scene &scene)
@@ -418,6 +423,7 @@ void Optix::copyMaterials(const Scene &scene)
 
     const int lambertianSize = sceneData.materialStore.getLambertians().size();
     const int mirrorSize = sceneData.materialStore.getMirrors().size();
+    const int glassSize = sceneData.materialStore.getGlasses().size();
 
     const std::vector<MaterialIndex> &indices = sceneData.materialStore.getIndices();
 
@@ -441,6 +447,14 @@ void Optix::copyMaterials(const Scene &scene)
         reinterpret_cast<void *>(m_materialLookup.mirrors),
         mirrors.data(),
         mirrors.size() * sizeof(Mirror),
+        cudaMemcpyHostToDevice
+    ));
+
+    const std::vector<Glass> &glasses = sceneData.materialStore.getGlasses();
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(m_materialLookup.glasses),
+        glasses.data(),
+        glasses.size() * sizeof(Glass),
         cudaMemcpyHostToDevice
     ));
 

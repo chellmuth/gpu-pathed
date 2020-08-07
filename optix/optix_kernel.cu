@@ -10,6 +10,7 @@
 #include "renderers/payload_helpers.h"
 #include "renderers/random.h"
 #include "sampler.h"
+#include "tangent_frame.h"
 #include "triangle.h"
 #include "vec3.h"
 #include "world_frame.h"
@@ -51,6 +52,9 @@ __forceinline__ __device__ static rays::Vec3 f(
     case rays::MaterialType::Mirror: {
         return params.materialLookup->mirrors[index.index].f(wo, wi);
     }
+    case rays::MaterialType::Glass: {
+        return params.materialLookup->glasses[index.index].f(wo, wi);
+    }
     }
     return rays::Vec3(0.f);
 }
@@ -78,6 +82,9 @@ __forceinline__ __device__ static rays::BSDFSample sample(
     case rays::MaterialType::Mirror: {
         return params.materialLookup->mirrors[index.index].sample(intersection.woLocal);
     }
+    case rays::MaterialType::Glass: {
+        return params.materialLookup->glasses[index.index].sample(intersection.woLocal);
+    }
     }
     return {};
 }
@@ -91,6 +98,9 @@ __forceinline__ __device__ static rays::Vec3 getEmit(int materialID)
     }
     case rays::MaterialType::Mirror: {
         return params.materialLookup->mirrors[index.index].getEmit();
+    }
+    case rays::MaterialType::Glass: {
+        return params.materialLookup->glasses[index.index].getEmit();
     }
     }
     return rays::Vec3(0.f);
@@ -144,7 +154,7 @@ __forceinline__ __device__ static rays::Vec3 directSampleBSDF(
     const rays::Vec3 bsdfContribution = emit
         * bsdfWeight
         * bsdfSample.f
-        * bsdfSample.wiLocal.z()
+        * rays::TangentFrame::absCosTheta(bsdfSample.wiLocal)
         / bsdfSample.pdf;
 
     return bsdfContribution;
@@ -280,7 +290,7 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
 
         const float3 normal = vec3_to_float3(intersection.normal);
         beta *= bsdfSample.f
-            * bsdfSample.wiLocal.z()
+            * rays::TangentFrame::absCosTheta(bsdfSample.wiLocal)
             / bsdfSample.pdf;
 
         rays::packPointer(&prd, p0, p1);
@@ -356,7 +366,9 @@ __forceinline__ __device__ static rays::Vec3 LiNaive(
         const rays::Vec3 bounceWorld = normalized(frame.toWorld(bsdfSample.wiLocal));
 
         const float3 normal = vec3_to_float3(intersection.normal);
-        beta *= bsdfSample.f * bsdfSample.wiLocal.z() / bsdfSample.pdf;
+        beta *= bsdfSample.f
+            * rays::TangentFrame::absCosTheta(bsdfSample.wiLocal)
+            / bsdfSample.pdf;
 
         rays::packPointer(&prd, p0, p1);
         optixTrace(
