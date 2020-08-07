@@ -337,4 +337,28 @@ void PathTracer::reset()
     m_shouldReset = true;
 }
 
+std::vector<float> PathTracer::getRadianceBuffer() const
+{
+    std::vector<float> radiances(3 * m_width * m_height, 0.f);
+    Vec3 *copied = (Vec3 *)malloc(sizeof(Vec3) * m_width * m_height);
+    checkCudaErrors(cudaMemcpy(
+        copied,
+        dev_radiances,
+        sizeof(Vec3) * m_width * m_height,
+        cudaMemcpyDeviceToHost
+    ));
+
+    for (int row = 0; row < m_height; row++) {
+        for (int col = 0; col < m_width; col++) {
+            const int pixelIndex = row * m_width + col;
+            const Vec3 vector = copied[pixelIndex];
+            radiances[pixelIndex * 3 + 0] = vector.x();
+            radiances[pixelIndex * 3 + 1] = vector.y();
+            radiances[pixelIndex * 3 + 2] = vector.z();
+        }
+    }
+
+    return radiances;
+}
+
 }

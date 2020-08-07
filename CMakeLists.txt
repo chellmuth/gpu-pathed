@@ -52,6 +52,8 @@ add_library(rays STATIC
   src/transform.cu
   src/triangle.cu
 
+  src/io/image.cpp
+
   src/materials/material.cu
   src/materials/material_store.cpp
   src/materials/material_table.cpp
@@ -66,7 +68,7 @@ add_library(rays STATIC
   src/parsers/string_util.cpp
 )
 
-target_include_directories(rays PUBLIC include optix)
+target_include_directories(rays PUBLIC include optix vendor)
 target_include_directories(rays PUBLIC "${OptiX_INCLUDE}")
 target_include_directories(rays PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
 target_link_libraries(rays Boost::filesystem)

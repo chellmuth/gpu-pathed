@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <cuda_gl_interop.h>
 
 #include "cuda_globals.h"
@@ -22,6 +24,8 @@ public:
 
     virtual void reset() = 0;
     virtual int getSpp() const = 0;
+
+    virtual std::vector<float> getRadianceBuffer() const = 0;
 };
 
 }

@@ -1,7 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include "cuda_globals.h"
 #include "hit_test.h"
+#include "io/image.h"
 #include "materials/material.h"
 #include "path_tracer.h"
 #include "render_record.h"
@@ -80,6 +83,14 @@ public:
 
             m_pboManager.swapPBOs();
             m_sceneModel->updateSpp(m_pathTracer->getSpp());
+
+            const int sppThreshold = 1024;
+            if (m_pathTracer->getSpp() >= sppThreshold
+                && m_pathTracer->getSpp() - m_currentRecord.spp < sppThreshold
+            ) {
+                std::vector<float> radiances = m_pathTracer->getRadianceBuffer();
+                Image::save(m_width, m_height, radiances, "out.exr");
+            }
 
             if (m_resetRenderer) {
                 if (m_rendererType == RendererType::CUDA) {
