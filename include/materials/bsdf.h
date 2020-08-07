@@ -37,18 +37,7 @@ public:
         const MaterialIndex index = m_materialLookupPtr->indices[m_materialID];
         switch(index.materialType) {
         case MaterialType::Lambertian: {
-            float pdf;
-            const float xi1 = rnd(seed);
-            const float xi2 = rnd(seed);
-            const Vec3 wi = m_materialLookupPtr->lambertians[index.index]
-                .sample(&pdf, make_float2(xi1, xi2));
-
-            return BSDFSample{
-                wi,
-                pdf,
-                f(intersection.woLocal, wi),
-                false
-            };
+            return m_materialLookupPtr->lambertians[index.index].sample(intersection.woLocal, seed);
         }
         case MaterialType::Mirror: {
             return m_materialLookupPtr->mirrors[index.index].sample(intersection.woLocal);

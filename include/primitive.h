@@ -125,16 +125,7 @@ public:
 
         switch(index.materialType) {
         case MaterialType::Lambertian: {
-            float pdf;
-            Material material = m_materialLookup->lambertians[index.index];
-            Vec3 wi = material.sample(record, &pdf, randState);
-            return BSDFSample{
-                wi,
-                pdf,
-                f(index, record.wo, wi),
-                material.isDelta()
-            };
-
+            return m_materialLookup->lambertians[index.index].sample(record, randState);
         }
         case MaterialType::Mirror: {
             return m_materialLookup->mirrors[index.index].sample(record, randState);

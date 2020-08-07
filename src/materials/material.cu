@@ -2,23 +2,6 @@
 
 namespace rays {
 
-__device__ Vec3 Material::sample(
-    HitRecord &record,
-    float *pdf,
-    curandState &randState
-) const {
-    float z = curand_uniform(&randState);
-    float r = sqrt(max(0.f, 1.f - z * z));
-
-    float phi = 2 * M_PI * curand_uniform(&randState);
-    float x = r * cos(phi);
-    float y = r * sin(phi);
-
-    *pdf = 1 / (2.f * M_PI);
-
-    return Vec3(x, y, z);
-}
-
 __device__ Vec3 Material::getEmit(const HitRecord &hit) const
 {
     if (hit.isFront()) {
@@ -36,6 +19,5 @@ __host__ void Material::setAlbedo(const Vec3 &albedo)
 {
     m_albedo = albedo;
 }
-
 
 }
