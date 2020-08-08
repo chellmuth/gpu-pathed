@@ -22,6 +22,7 @@ enum class RendererType {
 struct SceneModelAttributes {
     Vec3 albedo;
     Vec3 emitted;
+    float ior;
     Camera camera;
     RendererType rendererType;
     int maxDepth;
@@ -50,6 +51,9 @@ public:
 
     void setEmit(float r, float g, float b);
     Vec3 getEmit() const;
+
+    void setIOR(float ior);
+    float getIOR() const;
 
     int getMaterialID() const;
     void setMaterialID(int materialID);

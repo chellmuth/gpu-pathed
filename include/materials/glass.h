@@ -103,6 +103,9 @@ public:
 
     __device__ bool isDelta() const { return true; }
 
+    float getIOR() const { return m_ior; }
+    void setIOR(float ior) { m_ior = ior; }
+
 private:
     float m_ior = 1.f;
 };

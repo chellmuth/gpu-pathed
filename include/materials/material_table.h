@@ -27,6 +27,10 @@ public:
         m_lambertians[materialIndex] = material;
     }
 
+    void updateMaterial(int materialIndex, Glass material) {
+        m_glasses[materialIndex] = material;
+    }
+
     const std::vector<Lambertian> &getLambertians() const {
         return m_lambertians;
     }

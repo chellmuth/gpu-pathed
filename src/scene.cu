@@ -33,7 +33,7 @@ SceneData getSceneData(int index)
             ObjParser objParser(sceneFilename);
             request.objParsers.push_back(objParser);
 
-            Mirror boxMaterial;
+            Glass boxMaterial(1.4f);
             const int materialID = request.materialStore.addMaterial(boxMaterial);
             request.defaultMaterialIDs.push_back(materialID);
         }
@@ -42,7 +42,7 @@ SceneData getSceneData(int index)
             ObjParser objParser(sceneFilename);
             request.objParsers.push_back(objParser);
 
-            Glass ballMaterial(1.4f);
+            Mirror ballMaterial;
             const int materialID = request.materialStore.addMaterial(ballMaterial);
             request.defaultMaterialIDs.push_back(materialID);
         }

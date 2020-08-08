@@ -28,6 +28,7 @@ void SceneModel::setRendererType(RendererType rendererType)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -41,6 +42,7 @@ void SceneModel::setColor(float r, float g, float b)
     m_callback({
         Vec3(r, g, b),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -60,6 +62,7 @@ void SceneModel::setEmit(float r, float g, float b)
     m_callback({
         getColor(),
         Vec3(r, g, b),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -72,6 +75,25 @@ Vec3 SceneModel::getEmit() const
 {
     if (m_materialID == -1) { return Vec3(0.f); }
     return m_scene->getEmit(m_materialID);
+}
+
+void SceneModel::setIOR(float ior)
+{
+    m_callback({
+        getColor(),
+        getEmit(),
+        ior,
+        m_scene->getCamera(),
+        m_rendererType,
+        getMaxDepth(),
+        getNextEventEstimation(),
+        getMaterialType()
+    });
+}
+
+float SceneModel::getIOR() const
+{
+    return m_scene->getIOR(m_materialID);
 }
 
 int SceneModel::getMaterialID() const
@@ -94,6 +116,7 @@ void SceneModel::setMaterialType(MaterialType materialType)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -108,6 +131,7 @@ void SceneModel::setLightPosition(float lightPosition)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -151,6 +175,7 @@ void SceneModel::setCameraOrigin(float originX, float originY, float originZ)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         updated,
         m_rendererType,
         getMaxDepth(),
@@ -179,6 +204,7 @@ void SceneModel::setCameraTarget(float targetX, float targetY, float targetZ)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         updated,
         m_rendererType,
         getMaxDepth(),
@@ -207,6 +233,7 @@ void SceneModel::setCameraUp(float upX, float upY, float upZ)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         updated,
         m_rendererType,
         getMaxDepth(),
@@ -230,6 +257,7 @@ void SceneModel::zoomCamera(float ticks)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         updated,
         m_rendererType,
         getMaxDepth(),
@@ -248,6 +276,7 @@ void SceneModel::setMaxDepth(int maxDepth)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         maxDepth,
@@ -266,6 +295,7 @@ void SceneModel::setNextEventEstimation(bool nextEventEstimation)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),

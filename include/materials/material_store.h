@@ -28,6 +28,10 @@ public:
         m_table.updateMaterial(materialIndex, material);
     }
 
+    void updateMaterial(int materialIndex, Glass material) {
+        m_table.updateMaterial(materialIndex, material);
+    }
+
     const std::vector<MaterialIndex> &getIndices() const {
         return m_indices;
     }

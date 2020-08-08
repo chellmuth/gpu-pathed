@@ -61,6 +61,8 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("getColor", &SceneModel::getColor)
         .def("setEmit", &SceneModel::setEmit)
         .def("getEmit", &SceneModel::getEmit)
+        .def("getIOR", &SceneModel::getIOR)
+        .def("setIOR", &SceneModel::setIOR)
         .def("getMaterialID", &SceneModel::getMaterialID)
         .def("getMaterialType", &SceneModel::getMaterialType)
         .def("setMaterialType", &SceneModel::setMaterialType)

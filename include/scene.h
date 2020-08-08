@@ -3,8 +3,9 @@
 #include <vector>
 
 #include "camera.h"
-#include "materials/mirror.h"
+#include "materials/glass.h"
 #include "materials/lambertian.h"
+#include "materials/mirror.h"
 #include "primitive.h"
 #include "scene_data.h"
 #include "sphere.h"
@@ -43,19 +44,8 @@ public:
         return m_sceneData.materialStore.getMirrors();
     }
 
-    const Lambertian *getLambertiansData() const {
-        return getLambertians().data();
-    }
-
-    size_t getLambertiansSize() const {
-        return getLambertians().size() * sizeof(Lambertian);
-    }
-
-    const Mirror *getMirrorsData() const {
-        return getMirrors().data();
-    }
-    size_t getMirrorsSize() const {
-        return getMirrors().size() * sizeof(Mirror);
+    const std::vector<Glass> &getGlasses() const {
+        return m_sceneData.materialStore.getGlasses();
     }
 
     void setMaterialType(int materialID, MaterialType materialType) {
@@ -73,6 +63,11 @@ public:
         }
         case MaterialType::Mirror: {
             Mirror newMaterial;
+            newID = store.addMaterial(newMaterial);
+            break;
+        }
+        case MaterialType::Glass: {
+            Glass newMaterial(1.4f);
             newID = store.addMaterial(newMaterial);
             break;
         }
@@ -116,6 +111,24 @@ public:
         if (materialIndex.materialType == MaterialType::Lambertian) {
             Lambertian material = getLambertians()[materialIndex.index];
             material.setEmit(color);
+            m_sceneData.materialStore.updateMaterial(materialIndex.index, material);
+        }
+    }
+
+    float getIOR(int materialID) const {
+        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
+
+        if (materialIndex.materialType == MaterialType::Glass) {
+            return getGlasses()[materialIndex.index].getIOR();
+        }
+        return -1.f;
+    }
+    void setIOR(int materialID, float ior) {
+        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
+
+        if (materialIndex.materialType == MaterialType::Glass) {
+            Glass material = getGlasses()[materialIndex.index];
+            material.setIOR(ior);
             m_sceneData.materialStore.updateMaterial(materialIndex.index, material);
         }
     }

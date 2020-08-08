@@ -84,7 +84,7 @@ public:
             m_pboManager.swapPBOs();
             m_sceneModel->updateSpp(m_pathTracer->getSpp());
 
-            const int sppThreshold = 8;
+            const int sppThreshold = 128;
             if (m_pathTracer->getSpp() >= sppThreshold
                 && m_pathTracer->getSpp() - m_currentRecord.spp < sppThreshold
             ) {
