@@ -1,5 +1,7 @@
 #include "triangle.h"
 
+#include "frame.h"
+
 namespace rays {
 
 __device__ bool Triangle::hit(

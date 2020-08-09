@@ -4,7 +4,7 @@
 
 #include "intersection.h"
 #include "materials/bsdf_sample.h"
-#include "materials/material_table.h"
+#include "materials/material_lookup.h"
 #include "renderers/random.h"
 
 namespace rays {

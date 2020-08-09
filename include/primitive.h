@@ -7,7 +7,7 @@
 #include "materials/bsdf.h"
 #include "materials/bsdf_sample.h"
 #include "materials/lambertian.h"
-#include "materials/material_table.h"
+#include "materials/material_lookup.h"
 #include "ray.h"
 #include "sampler.h"
 #include "sphere.h"

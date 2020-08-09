@@ -2,7 +2,6 @@
 
 #include <cuda_runtime.h>
 
-#include "materials/material_table.h"
 #include "surface_sample.h"
 #include "triangle.h"
 #include "vec3.h"
