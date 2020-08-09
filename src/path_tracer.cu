@@ -134,7 +134,7 @@ __device__ static Vec3 calculateLiNEE(
             result += emit * beta;
         }
     } else {
-        return Vec3(0.f);
+        return world->environmentL(ray.direction());
     }
 
     for (int path = 1; path < maxDepth; path++) {

@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "lights/environment_light.h"
 #include "materials/glass.h"
 #include "materials/lambertian.h"
 #include "materials/mirror.h"
@@ -19,6 +20,7 @@ struct SceneData {
     std::vector<int> lightIndices;
 
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
+    EnvironmentLight environmentLight;
 
     SceneData() = default;
     SceneData(SceneData&&) = default;
@@ -44,6 +46,7 @@ struct ParseRequest {
     std::vector<ObjParser> objParsers;
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
     std::vector<int> defaultMaterialIDs;
+    EnvironmentLight environmentLight;
 };
 
 SceneData createSceneData(ParseRequest &request);

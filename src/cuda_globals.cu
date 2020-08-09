@@ -30,6 +30,7 @@ __global__ static void initWorldKernel(
     int sphereSize,
     int *lightIndices,
     int lightIndexSize,
+    EnvironmentLight *environmentLight,
     MaterialLookup *materialLookup
 ) {
     if (blockIdx.x != 0 || blockIdx.y != 0) { return; }
@@ -42,6 +43,7 @@ __global__ static void initWorldKernel(
         sphereSize,
         lightIndices,
         lightIndexSize,
+        environmentLight,
         materialLookup
     );
 }
@@ -85,6 +87,7 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
     checkCudaErrors(cudaMalloc((void **)&d_triangles, triangleSize * sizeof(Triangle)));
     checkCudaErrors(cudaMalloc((void **)&d_spheres, sphereSize * sizeof(Sphere)));
     checkCudaErrors(cudaMalloc((void **)&d_lightIndices, lightIndexSize * sizeof(int)));
+    checkCudaErrors(cudaMalloc((void **)&d_environmentLight, sizeof(EnvironmentLight)));
 
     checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(World)));
 
@@ -96,6 +99,7 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
         sphereSize,
         d_lightIndices,
         lightIndexSize,
+        d_environmentLight,
         d_materialLookup
     );
     checkCudaErrors(cudaDeviceSynchronize());
@@ -121,6 +125,13 @@ void CUDAGlobals::copySceneData(const SceneData &sceneData)
         d_lightIndices,
         sceneData.lightIndices.data(),
         sceneData.lightIndices.size() * sizeof(int),
+        cudaMemcpyHostToDevice
+    ));
+
+    checkCudaErrors(cudaMemcpy(
+        d_environmentLight,
+        &sceneData.environmentLight,
+        sizeof(EnvironmentLight),
         cudaMemcpyHostToDevice
     ));
 }

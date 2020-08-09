@@ -17,13 +17,14 @@ public:
     void initMaterials(const SceneData &sceneData);
     void updateMaterials(const SceneData &sceneData);
 
-    void copySceneData(const SceneData &sceneData);
     void mallocWorld(const SceneData &sceneData);
+    void copySceneData(const SceneData &sceneData);
 
     MaterialLookup m_materialLookup;
     MaterialLookup *d_materialLookup;
 
     Camera *d_camera;
+    EnvironmentLight *d_environmentLight;
     World *d_world;
 
     Triangle *d_triangles;

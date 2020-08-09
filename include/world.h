@@ -4,6 +4,7 @@
 #include <curand_kernel.h>
 
 #include "hit_record.h"
+#include "lights/environment_light.h"
 #include "materials/bsdf.h"
 #include "materials/bsdf_sample.h"
 #include "materials/lambertian.h"
@@ -25,6 +26,7 @@ public:
         size_t sphereSize,
         int *lightIndices,
         size_t lightIndexSize,
+        EnvironmentLight *environmentLight,
         MaterialLookup *materialLookup
     ) : m_triangles(triangles),
         m_triangleSize(triangleSize),
@@ -32,6 +34,7 @@ public:
         m_sphereSize(sphereSize),
         m_lightIndices(lightIndices),
         m_lightIndexSize(lightIndexSize),
+        m_environmentLight(environmentLight),
         m_materialLookup(materialLookup)
     {}
 
@@ -111,6 +114,10 @@ public:
         return bsdf.sample(record, randState);
     }
 
+    __device__ Vec3 environmentL(const Vec3 &wi) const {
+        return m_environmentLight->getEmit(wi);
+    }
+
 private:
     Triangle *m_triangles;
     size_t m_triangleSize;
@@ -120,6 +127,8 @@ private:
 
     int *m_lightIndices;
     size_t m_lightIndexSize;
+
+    EnvironmentLight *m_environmentLight;
 
     MaterialLookup *m_materialLookup;
 };
