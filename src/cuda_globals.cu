@@ -23,7 +23,7 @@ void CUDAGlobals::copyCamera(const Camera &camera)
 }
 
 __global__ static void initWorldKernel(
-    PrimitiveList *world,
+    World *world,
     Triangle *triangles,
     int triangleSize,
     Sphere *spheres,
@@ -35,7 +35,7 @@ __global__ static void initWorldKernel(
     if (blockIdx.x != 0 || blockIdx.y != 0) { return; }
     if (threadIdx.x != 0 || threadIdx.y != 0) { return; }
 
-    *world = PrimitiveList(
+    *world = World(
         triangles,
         triangleSize,
         spheres,
@@ -86,7 +86,7 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
     checkCudaErrors(cudaMalloc((void **)&d_spheres, sphereSize * sizeof(Sphere)));
     checkCudaErrors(cudaMalloc((void **)&d_lightIndices, lightIndexSize * sizeof(int)));
 
-    checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(PrimitiveList)));
+    checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(World)));
 
     initWorldKernel<<<1, 1>>>(
         d_world,

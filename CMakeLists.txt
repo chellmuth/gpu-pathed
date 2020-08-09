@@ -42,7 +42,7 @@ add_library(rays STATIC
   src/framebuffer.cu
   src/hit_test.cu
   src/path_tracer.cu
-  src/primitive.cu
+  src/world.cu
   src/render_session.cu
   src/scene.cu
   src/scene_data.cu

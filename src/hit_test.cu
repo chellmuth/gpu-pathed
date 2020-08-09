@@ -8,7 +8,7 @@
 #include "macro_helper.h"
 #include "materials/lambertian.h"
 #include "materials/types.h"
-#include "primitive.h"
+#include "world.h"
 #include "scene.h"
 #include "vec3.h"
 
@@ -25,7 +25,7 @@ struct HitTest {
 __global__ static void hitTestKernel(
     int pixelX,
     int pixelY,
-    PrimitiveList *world,
+    World *world,
     Camera *camera,
     HitTest *hitTest
 ) {

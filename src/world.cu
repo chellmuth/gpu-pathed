@@ -1,8 +1,8 @@
-#include "primitive.h"
+#include "world.h"
 
 namespace rays {
 
-__device__ bool PrimitiveList::hit(
+__device__ bool World::hit(
     const Ray& ray,
     float tMin,
     float tMax,

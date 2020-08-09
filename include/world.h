@@ -16,9 +16,9 @@
 
 namespace rays {
 
-class PrimitiveList {
+class World {
 public:
-    __device__ PrimitiveList(
+    __device__ World(
         Triangle *triangles,
         size_t triangleSize,
         Sphere *spheres,

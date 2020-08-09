@@ -7,7 +7,7 @@
 #include "frame.h"
 #include "framebuffer.h"
 #include "macro_helper.h"
-#include "primitive.h"
+#include "world.h"
 #include "scene.h"
 #include "vec3.h"
 
@@ -37,7 +37,7 @@ __global__ static void renderInit(int width, int height, curandState *randState)
 __device__ static Vec3 directSampleBSDF(
     const HitRecord &hitRecord,
     const BSDFSample &bsdfSample,
-    const PrimitiveList *world,
+    const World *world,
     curandState &randState
 ) {
     if (!bsdfSample.isDelta) { return Vec3(0.f); }
@@ -66,7 +66,7 @@ __device__ static Vec3 directSampleBSDF(
 __device__ static Vec3 directSampleLights(
     const HitRecord &hitRecord,
     const BSDFSample &bsdfSample,
-    const PrimitiveList *world,
+    const World *world,
     curandState &randState
 ) {
     if (bsdfSample.isDelta) { return 0.f; }
@@ -103,7 +103,7 @@ __device__ static Vec3 directSampleLights(
 __device__ static Vec3 direct(
     const HitRecord &hitRecord,
     const BSDFSample &bsdfSample,
-    const PrimitiveList *world,
+    const World *world,
     curandState &randState
 ) {
     Vec3 result(0.f);
@@ -116,7 +116,7 @@ __device__ static Vec3 direct(
 
 __device__ static Vec3 calculateLiNEE(
     const Ray& ray,
-    const PrimitiveList *world,
+    const World *world,
     int maxDepth,
     curandState &randState
 ) {
@@ -160,7 +160,7 @@ __device__ static Vec3 calculateLiNEE(
 
 __device__ static Vec3 calculateLiNaive(
     const Ray& ray,
-    const PrimitiveList *world,
+    const World *world,
     int maxDepth,
     curandState &randState
 ) {
@@ -211,7 +211,7 @@ __global__ static void renderKernel(
     Vec3 *passRadiances,
     int width, int height,
     curandState *randState,
-    PrimitiveList *world,
+    World *world,
     Camera *camera,
     int maxDepth,
     int spp,

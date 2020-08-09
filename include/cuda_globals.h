@@ -2,7 +2,7 @@
 
 #include "camera.h"
 #include "materials/material_lookup.h"
-#include "primitive.h"
+#include "world.h"
 #include "scene_data.h"
 #include "sphere.h"
 #include "triangle.h"
@@ -24,7 +24,7 @@ public:
     MaterialLookup *d_materialLookup;
 
     Camera *d_camera;
-    PrimitiveList *d_world;
+    World *d_world;
 
     Triangle *d_triangles;
     Sphere *d_spheres;

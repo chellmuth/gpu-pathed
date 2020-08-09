@@ -6,7 +6,7 @@
 #include "materials/glass.h"
 #include "materials/lambertian.h"
 #include "materials/mirror.h"
-#include "primitive.h"
+#include "world.h"
 #include "scene_data.h"
 #include "sphere.h"
 #include "triangle.h"
