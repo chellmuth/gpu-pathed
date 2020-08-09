@@ -383,110 +383,15 @@ static void setupShaderBindingTable(
     sbt.hitgroupRecordCount = materialIDsCount;
 }
 
-void Optix::mallocMaterials(const Scene &scene)
+void Optix::initMaterials(const SceneData &sceneData)
 {
-    const SceneData &sceneData = scene.getSceneData();
+    checkCUDA(cudaMalloc((void **)&d_materialLookup, sizeof(MaterialLookup)));
 
-    int lambertianSize = 0;
-    int mirrorSize = 0;
-    int glassSize = 0;
-
-    for (const auto &param : sceneData.materialParams) {
-        switch (param->getMaterialType()) {
-        case MaterialType::Lambertian: {
-            lambertianSize += 1;
-            break;
-        }
-        case MaterialType::Mirror: {
-            mirrorSize += 1;
-            break;
-        }
-        case MaterialType::Glass: {
-            glassSize += 1;
-            break;
-        }
-        }
-    }
-
-    checkCUDA(cudaMalloc((void **)&m_materialLookup.indices, sceneData.materialParams.size() * sizeof(MaterialIndex)));
-    checkCUDA(cudaMalloc((void **)&m_materialLookup.lambertians, lambertianSize * sizeof(Lambertian)));
-    checkCUDA(cudaMalloc((void **)&m_materialLookup.mirrors, mirrorSize * sizeof(Mirror)));
-    checkCUDA(cudaMalloc((void **)&m_materialLookup.glasses, glassSize * sizeof(Glass)));
-}
-
-void Optix::freeMaterials()
-{
-    checkCUDA(cudaFree(m_materialLookup.indices));
-    checkCUDA(cudaFree(m_materialLookup.lambertians));
-    checkCUDA(cudaFree(m_materialLookup.mirrors));
-    checkCUDA(cudaFree(m_materialLookup.glasses));
-}
-
-void Optix::copyMaterials(const Scene &scene)
-{
-    const SceneData &sceneData = scene.getSceneData();
-
-    std::vector<MaterialIndex> indices;
-    std::vector<Lambertian> lambertians;
-    std::vector<Mirror> mirrors;
-    std::vector<Glass> glasses;
-
-    for (const auto &param : sceneData.materialParams) {
-        switch (param->getMaterialType()) {
-        case MaterialType::Lambertian: {
-            Lambertian lambertian(*param);
-            lambertians.push_back(lambertian);
-
-            indices.push_back({MaterialType::Lambertian, lambertians.size() - 1});
-            break;
-        }
-        case MaterialType::Mirror: {
-            Mirror mirror(*param);
-            mirrors.push_back(mirror);
-
-            indices.push_back({MaterialType::Mirror, mirrors.size() - 1});
-            break;
-        }
-        case MaterialType::Glass: {
-            Glass glass(*param);
-            glasses.push_back(glass);
-
-            indices.push_back({MaterialType::Glass, glasses.size() - 1});
-            break;
-        }
-        }
-    }
+    m_materialLookup.mallocMaterials(sceneData);
+    m_materialLookup.copyMaterials(sceneData);
 
     checkCUDA(cudaMemcpy(
-        reinterpret_cast<void *>(m_materialLookup.indices),
-        indices.data(),
-        indices.size() * sizeof(MaterialIndex),
-        cudaMemcpyHostToDevice
-    ));
-
-    checkCUDA(cudaMemcpy(
-        reinterpret_cast<void *>(m_materialLookup.lambertians),
-        lambertians.data(),
-        lambertians.size() * sizeof(Lambertian),
-        cudaMemcpyHostToDevice
-    ));
-
-    checkCUDA(cudaMemcpy(
-        reinterpret_cast<void *>(m_materialLookup.mirrors),
-        mirrors.data(),
-        mirrors.size() * sizeof(Mirror),
-        cudaMemcpyHostToDevice
-    ));
-
-    checkCUDA(cudaMemcpy(
-        reinterpret_cast<void *>(m_materialLookup.glasses),
-        glasses.data(),
-        glasses.size() * sizeof(Glass),
-        cudaMemcpyHostToDevice
-    ));
-
-    checkCUDA(cudaMemcpy(
-        reinterpret_cast<void *>(d_materialLookup),
+        d_materialLookup,
         &m_materialLookup,
         sizeof(MaterialLookup),
         cudaMemcpyHostToDevice
@@ -495,9 +400,18 @@ void Optix::copyMaterials(const Scene &scene)
 
 void Optix::updateMaterials(const Scene &scene)
 {
-    freeMaterials();
-    mallocMaterials(scene);
-    copyMaterials(scene);
+    const SceneData &sceneData = scene.getSceneData();
+
+    m_materialLookup.freeMaterials();
+    m_materialLookup.mallocMaterials(sceneData);
+    m_materialLookup.copyMaterials(sceneData);
+
+    checkCUDA(cudaMemcpy(
+        d_materialLookup,
+        &m_materialLookup,
+        sizeof(MaterialLookup),
+        cudaMemcpyHostToDevice
+    ));
 }
 
 void Optix::updateCamera(const Scene &scene)
@@ -573,10 +487,7 @@ void Optix::init(int width, int height, const Scene &scene)
         width * height * sizeof(uchar4)
     ));
 
-
-    checkCUDA(cudaMalloc((void **)&d_materialLookup, sizeof(MaterialLookup)));
-    mallocMaterials(scene);
-    copyMaterials(scene);
+    initMaterials(scene.getSceneData());
 
     const std::vector<Triangle> &triangles = scene.getSceneData().triangles;
     Triangle *d_triangles = 0;

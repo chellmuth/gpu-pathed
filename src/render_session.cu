@@ -104,9 +104,7 @@ RenderSession::RenderSession(int width, int height)
         m_pathTracer->reset();
         m_sppOptimizer.reset();
 
-        m_cudaGlobals->freeMaterials();
-        m_cudaGlobals->mallocMaterials(m_scene->getSceneData());
-        m_cudaGlobals->copyMaterials(m_scene->getSceneData());
+        m_cudaGlobals->updateMaterials(m_scene->getSceneData());
 
         m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
@@ -122,9 +120,8 @@ RenderState RenderSession::init(GLuint pbo1, GLuint pbo2)
     m_cudaGlobals->mallocCamera();
     m_cudaGlobals->copyCamera(m_scene->getCamera());
 
+    m_cudaGlobals->initMaterials(m_scene->getSceneData());
     m_cudaGlobals->mallocWorld(m_scene->getSceneData());
-    m_cudaGlobals->mallocMaterials(m_scene->getSceneData());
-    m_cudaGlobals->copyMaterials(m_scene->getSceneData());
 
     m_cudaGlobals->copySceneData(m_scene->getSceneData());
 

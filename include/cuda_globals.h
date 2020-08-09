@@ -18,12 +18,13 @@ public:
     void mallocCamera();
     void copyCamera(const Camera &camera);
 
-    void mallocMaterials(const SceneData &sceneData);
-    void copyMaterials(const SceneData &sceneData);
-    void freeMaterials();
+    void initMaterials(const SceneData &sceneData);
+    void updateMaterials(const SceneData &sceneData);
 
     void copySceneData(const SceneData &sceneData);
     void mallocWorld(const SceneData &sceneData);
+
+    MaterialLookup m_materialLookup;
 
     Camera *d_camera;
     PrimitiveList *d_world;

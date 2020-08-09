@@ -45,9 +45,7 @@ public:
     void updateMaterials(const Scene &scene);
 
 private:
-    void mallocMaterials(const Scene &scene);
-    void copyMaterials(const Scene &scene);
-    void freeMaterials();
+    void initMaterials(const SceneData &sceneData);
 
     MaterialLookup m_materialLookup;
 

@@ -22,22 +22,6 @@ void CUDAGlobals::copyCamera(const Camera &camera)
     ));
 }
 
-__global__ static void updateMaterialLookup(
-    MaterialLookup *materialLookup,
-    MaterialIndex *materialIndices,
-    Lambertian *lambertians,
-    Mirror *mirrors,
-    Glass *glasses
-) {
-    if (blockIdx.x != 0 || blockIdx.y != 0) { return; }
-    if (threadIdx.x != 0 || threadIdx.y != 0) { return; }
-
-    materialLookup->indices = materialIndices;
-    materialLookup->lambertians = lambertians;
-    materialLookup->mirrors = mirrors;
-    materialLookup->glasses = glasses;
-}
-
 __global__ static void initWorldKernel(
     PrimitiveList *world,
     Triangle *triangles,
@@ -62,114 +46,35 @@ __global__ static void initWorldKernel(
     );
 }
 
-void CUDAGlobals::mallocMaterials(const SceneData &sceneData)
+void CUDAGlobals::initMaterials(const SceneData &sceneData)
 {
-    int lambertianSize = 0;
-    int mirrorSize = 0;
-    int glassSize = 0;
+    checkCudaErrors(cudaMalloc((void **)&d_materialLookup, sizeof(MaterialLookup)));
 
-    for (const auto &param : sceneData.materialParams) {
-        switch (param->getMaterialType()) {
-        case MaterialType::Lambertian: {
-            lambertianSize += 1;
-            break;
-        }
-        case MaterialType::Mirror: {
-            mirrorSize += 1;
-            break;
-        }
-        case MaterialType::Glass: {
-            glassSize += 1;
-            break;
-        }
-        }
-    }
-
-    checkCudaErrors(cudaMalloc((void **)&d_materialIndices, sceneData.materialParams.size() * sizeof(MaterialIndex)));
-    checkCudaErrors(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Lambertian)));
-    checkCudaErrors(cudaMalloc((void **)&d_mirrors, mirrorSize * sizeof(Mirror)));
-    checkCudaErrors(cudaMalloc((void **)&d_glasses, glassSize * sizeof(Glass)));
-}
-
-void CUDAGlobals::copyMaterials(const SceneData &sceneData)
-{
-    std::vector<MaterialIndex> indices;
-    std::vector<Lambertian> lambertians;
-    std::vector<Mirror> mirrors;
-    std::vector<Glass> glasses;
-
-    for (const auto &param : sceneData.materialParams) {
-        switch (param->getMaterialType()) {
-        case MaterialType::Lambertian: {
-            Lambertian lambertian(*param);
-            lambertians.push_back(lambertian);
-
-            indices.push_back({MaterialType::Lambertian, lambertians.size() - 1});
-            break;
-        }
-        case MaterialType::Mirror: {
-            Mirror mirror(*param);
-            mirrors.push_back(mirror);
-
-            indices.push_back({MaterialType::Mirror, mirrors.size() - 1});
-            break;
-        }
-        case MaterialType::Glass: {
-            Glass glass(*param);
-            glasses.push_back(glass);
-
-            indices.push_back({MaterialType::Glass, glasses.size() - 1});
-            break;
-        }
-        }
-    }
+    m_materialLookup.mallocMaterials(sceneData);
+    m_materialLookup.copyMaterials(sceneData);
 
     checkCudaErrors(cudaMemcpy(
-        d_materialIndices,
-        indices.data(),
-        indices.size() * sizeof(MaterialIndex),
-        cudaMemcpyHostToDevice
-    ));
-
-    checkCudaErrors(cudaMemcpy(
-        d_lambertians,
-        lambertians.data(),
-        lambertians.size() * sizeof(Lambertian),
-        cudaMemcpyHostToDevice
-    ));
-
-    checkCudaErrors(cudaMemcpy(
-        d_mirrors,
-        mirrors.data(),
-        mirrors.size() * sizeof(Mirror),
-        cudaMemcpyHostToDevice
-    ));
-
-    checkCudaErrors(cudaMemcpy(
-        d_glasses,
-        glasses.data(),
-        glasses.size() * sizeof(Glass),
-        cudaMemcpyHostToDevice
-    ));
-
-    updateMaterialLookup<<<1, 1>>>(
         d_materialLookup,
-        d_materialIndices,
-        d_lambertians,
-        d_mirrors,
-        d_glasses
-    );
-
-    checkCudaErrors(cudaDeviceSynchronize());
+        &m_materialLookup,
+        sizeof(MaterialLookup),
+        cudaMemcpyHostToDevice
+    ));
 }
 
-void CUDAGlobals::freeMaterials()
+void CUDAGlobals::updateMaterials(const SceneData &sceneData)
 {
-    checkCudaErrors(cudaFree(d_materialIndices));
-    checkCudaErrors(cudaFree(d_lambertians));
-    checkCudaErrors(cudaFree(d_mirrors));
-    checkCudaErrors(cudaFree(d_glasses));
+    m_materialLookup.freeMaterials();
+    m_materialLookup.mallocMaterials(sceneData);
+    m_materialLookup.copyMaterials(sceneData);
+
+    checkCudaErrors(cudaMemcpy(
+        d_materialLookup,
+        &m_materialLookup,
+        sizeof(MaterialLookup),
+        cudaMemcpyHostToDevice
+    ));
 }
+
 
 void CUDAGlobals::mallocWorld(const SceneData &sceneData)
 {
@@ -180,7 +85,6 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
     checkCudaErrors(cudaMalloc((void **)&d_triangles, triangleSize * sizeof(Triangle)));
     checkCudaErrors(cudaMalloc((void **)&d_spheres, sphereSize * sizeof(Sphere)));
     checkCudaErrors(cudaMalloc((void **)&d_lightIndices, lightIndexSize * sizeof(int)));
-    checkCudaErrors(cudaMalloc((void **)&d_materialLookup, sizeof(MaterialLookup)));
 
     checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(PrimitiveList)));
 
