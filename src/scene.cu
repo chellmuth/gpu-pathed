@@ -83,15 +83,4 @@ Camera getCamera(int index, Resolution resolution)
 
 }
 
-void Scene::init()
-{
-    update();
-}
-
-void Scene::update()
-{
-    // m_lambertians = m_sceneData.lambertians;
-    // m_mirrors = m_sceneData.mirrors;
-}
-
 }

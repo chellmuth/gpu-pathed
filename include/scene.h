@@ -28,9 +28,6 @@ public:
         m_nextEventEstimation(true)
     {}
 
-    void init();
-    void update();
-
     const Camera &getCamera() const { return m_camera; }
     void setCamera(const Camera &camera) { m_camera = camera; }
 

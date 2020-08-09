@@ -126,8 +126,6 @@ RenderState RenderSession::init(GLuint pbo1, GLuint pbo2)
     m_cudaGlobals->mallocMaterials(m_scene->getSceneData());
     m_cudaGlobals->copyMaterials(m_scene->getSceneData());
 
-    m_scene->init();
-
     m_cudaGlobals->copySceneData(m_scene->getSceneData());
 
     checkCudaErrors(cudaGetLastError());
