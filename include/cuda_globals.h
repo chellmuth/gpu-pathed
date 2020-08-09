@@ -28,8 +28,6 @@ public:
     Camera *d_camera;
     PrimitiveList *d_world;
 
-    Lambertian *d_materials;
-
     MaterialLookup *d_materialLookup;
     MaterialIndex *d_materialIndices;
     Lambertian *d_lambertians;
