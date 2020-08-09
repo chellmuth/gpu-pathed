@@ -21,11 +21,18 @@ SceneData createSceneData(ParseRequest &request)
         // Process materials
         const bool useDefaultMaterial = result.mtls.empty();
 
+        int paramsOffset = request.materialParams.size();
         for (auto &mtl : result.mtls) {
             Lambertian objMaterial(
                 Vec3(mtl.r, mtl.g, mtl.b),
                 Vec3(mtl.emitR, mtl.emitG, mtl.emitB)
             );
+
+            auto mtlParams = std::make_unique<LambertianParams>(
+                Vec3(mtl.r, mtl.g, mtl.b),
+                Vec3(mtl.emitR, mtl.emitG, mtl.emitB)
+            );
+            request.materialParams.push_back(std::move(mtlParams));
 
             const int materialID = request.materialStore.addMaterial(objMaterial);
             materialIDs.push_back(materialID);
@@ -37,11 +44,14 @@ SceneData createSceneData(ParseRequest &request)
             Face &face = result.faces[j];
 
             int materialID;
+            int paramID;
             if (useDefaultMaterial) {
                 materialID = request.defaultMaterialIDs[i];
+                paramID = request.defaultMaterialParamsIDs[i];
             } else {
                 int mtlIndex = result.mtlIndices[j];
                 materialID = materialIDs[mtlIndex];
+                paramID = mtlIndex + paramsOffset;
             }
 
             sceneData.triangles.push_back(

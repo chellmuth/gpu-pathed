@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "materials/glass.h"
@@ -7,6 +8,7 @@
 #include "materials/material_store.h"
 #include "materials/material_table.h"
 #include "materials/mirror.h"
+#include "materials/params.h"
 #include "parsers/obj_parser.h"
 #include "sphere.h"
 #include "triangle.h"
@@ -47,6 +49,9 @@ struct ParseRequest {
     std::vector<ObjParser> objParsers;
     MaterialStore materialStore;
     std::vector<int> defaultMaterialIDs;
+
+    std::vector<std::unique_ptr<MaterialParams> > materialParams;
+    std::vector<int> defaultMaterialParamsIDs;
 };
 
 SceneData createSceneData(ParseRequest &request);

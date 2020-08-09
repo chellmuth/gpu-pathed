@@ -18,6 +18,11 @@ SceneData getSceneData(int index)
         SceneAdapter::ParseRequest request;
         MaterialStore store;
 
+        auto defaultMaterial = std::make_unique<LambertianParams>(
+            Vec3(0.f), Vec3(0.f)
+        );
+        request.materialParams.push_back(std::move(defaultMaterial));
+
         Lambertian testMaterial(Vec3(0.f), Vec3(0.f, 0.f, 0.f));
         const int testMaterialID = request.materialStore.addMaterial(testMaterial);
 
@@ -27,6 +32,7 @@ SceneData getSceneData(int index)
             request.objParsers.push_back(objParser);
 
             request.defaultMaterialIDs.push_back(testMaterialID);
+            request.defaultMaterialParamsIDs.push_back(0);
         }
         {
             std::string sceneFilename("../scenes/cornell-glossy/box.obj");
@@ -36,6 +42,10 @@ SceneData getSceneData(int index)
             Glass boxMaterial(1.4f);
             const int materialID = request.materialStore.addMaterial(boxMaterial);
             request.defaultMaterialIDs.push_back(materialID);
+
+            auto boxParams = std::make_unique<GlassParams>(1.4f);
+            request.materialParams.push_back(std::move(boxParams));
+            request.defaultMaterialParamsIDs.push_back(1);
         }
         {
             std::string sceneFilename("../scenes/cornell-glossy/ball.obj");
@@ -45,6 +55,10 @@ SceneData getSceneData(int index)
             Mirror ballMaterial;
             const int materialID = request.materialStore.addMaterial(ballMaterial);
             request.defaultMaterialIDs.push_back(materialID);
+
+            auto ballParams = std::make_unique<MirrorParams>();
+            request.materialParams.push_back(std::move(ballParams));
+            request.defaultMaterialIDs.push_back(2);
         }
 
         return SceneAdapter::createSceneData(request);
