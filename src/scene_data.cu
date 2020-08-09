@@ -68,15 +68,13 @@ SceneData createSceneData(ParseRequest &request)
         }
     }
 
-    sceneData.materialStore = request.materialStore;
     sceneData.materialParams = std::move(request.materialParams);
 
     // Post-process lights
     size_t triangleCount = sceneData.triangles.size();
     for (size_t i = 0; i < triangleCount; i++) {
         int materialID = sceneData.triangles[i].materialID();
-        MaterialIndex materialIndex = sceneData.materialStore.indexAt(materialID);
-        if (sceneData.isEmitter(materialIndex)) {
+        if (sceneData.isEmitter(materialID)) {
             sceneData.lightIndices.push_back(i);
         }
     }
@@ -91,8 +89,11 @@ SceneData createSceneData(ObjParser &objParser)
 
     request.objParsers.push_back(objParser);
 
-    Lambertian defaultMaterial(Vec3(0.f), Vec3(100.f, 0.f, 0.f));
-    const int defaultMaterialID = request.materialStore.addMaterial(defaultMaterial);
+    auto defaultMaterial = std::make_unique<LambertianParams>(
+        Vec3(0.f), Vec3(100.f, 0.f, 0.f)
+    );
+    request.materialParams.push_back(std::move(defaultMaterial));
+    request.defaultMaterialIDs.push_back(0);
 
     return createSceneData(request);
 }

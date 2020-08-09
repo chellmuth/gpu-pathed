@@ -18,7 +18,7 @@ namespace rays {
 struct SceneData {
     std::vector<Triangle> triangles;
     std::vector<Sphere> spheres;
-    MaterialStore materialStore;
+    // MaterialStore materialStore;
     std::vector<int> lightIndices;
 
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
@@ -31,22 +31,11 @@ struct SceneData {
     ~SceneData() = default;
 
     int materialIDsCount() const {
-        return materialStore.getIndices().size();
+        return materialParams.size();
     }
 
-    bool isEmitter(MaterialIndex materialIndex) const {
-        switch (materialIndex.materialType) {
-        case MaterialType::Lambertian: {
-            return !materialStore.getLambertians()[materialIndex.index].getEmit().isZero();
-        }
-        case MaterialType::Mirror: {
-            return !materialStore.getMirrors()[materialIndex.index].getEmit().isZero();
-        }
-        case MaterialType::Glass: {
-            return false;
-        }
-        }
-        return false;
+    bool isEmitter(int materialID) const {
+        return !materialParams[materialID]->getEmit().isZero();
     }
 };
 

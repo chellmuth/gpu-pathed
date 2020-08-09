@@ -36,18 +36,6 @@ public:
 
     const SceneData &getSceneData() const { return m_sceneData; }
 
-    const std::vector<Lambertian> &getLambertians() const {
-        return m_sceneData.materialStore.getLambertians();
-    }
-
-    const std::vector<Mirror> &getMirrors() const {
-        return m_sceneData.materialStore.getMirrors();
-    }
-
-    const std::vector<Glass> &getGlasses() const {
-        return m_sceneData.materialStore.getGlasses();
-    }
-
     void setMaterialType(int materialID, MaterialType materialType) {
         const MaterialParams &params = *m_sceneData.materialParams[materialID];
         if (params.getMaterialType() == materialType) { return; }
