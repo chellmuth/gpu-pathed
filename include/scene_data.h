@@ -18,7 +18,6 @@ namespace rays {
 struct SceneData {
     std::vector<Triangle> triangles;
     std::vector<Sphere> spheres;
-    // MaterialStore materialStore;
     std::vector<int> lightIndices;
 
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
@@ -45,9 +44,6 @@ namespace rays { namespace SceneAdapter {
 
 struct ParseRequest {
     std::vector<ObjParser> objParsers;
-    MaterialStore materialStore;
-    std::vector<int> defaultMaterialIDs;
-
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
     std::vector<int> defaultMaterialParamsIDs;
 };

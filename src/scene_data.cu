@@ -11,7 +11,6 @@ SceneData createSceneData(ParseRequest &request)
     // assert(request.objParsers.size() == request.defaultMaterials.size());
 
     SceneData sceneData;
-    std::vector<int> materialIDs;
 
     const int requestSize = request.objParsers.size();
     for (int i = 0; i < requestSize; i++) {
@@ -23,19 +22,11 @@ SceneData createSceneData(ParseRequest &request)
 
         int paramsOffset = request.materialParams.size();
         for (auto &mtl : result.mtls) {
-            Lambertian objMaterial(
-                Vec3(mtl.r, mtl.g, mtl.b),
-                Vec3(mtl.emitR, mtl.emitG, mtl.emitB)
-            );
-
             auto mtlParams = std::make_unique<LambertianParams>(
                 Vec3(mtl.r, mtl.g, mtl.b),
                 Vec3(mtl.emitR, mtl.emitG, mtl.emitB)
             );
             request.materialParams.push_back(std::move(mtlParams));
-
-            const int materialID = request.materialStore.addMaterial(objMaterial);
-            materialIDs.push_back(materialID);
         }
 
         // Process geometry
@@ -44,14 +35,11 @@ SceneData createSceneData(ParseRequest &request)
             Face &face = result.faces[j];
 
             int materialID;
-            int paramID;
             if (useDefaultMaterial) {
-                materialID = request.defaultMaterialIDs[i];
-                paramID = request.defaultMaterialParamsIDs[i];
+                materialID = request.defaultMaterialParamsIDs[i];
             } else {
                 int mtlIndex = result.mtlIndices[j];
-                materialID = materialIDs[mtlIndex];
-                paramID = mtlIndex + paramsOffset;
+                materialID = mtlIndex + paramsOffset;
             }
 
             sceneData.triangles.push_back(
@@ -93,7 +81,7 @@ SceneData createSceneData(ObjParser &objParser)
         Vec3(0.f), Vec3(100.f, 0.f, 0.f)
     );
     request.materialParams.push_back(std::move(defaultMaterial));
-    request.defaultMaterialIDs.push_back(0);
+    request.defaultMaterialParamsIDs.push_back(0);
 
     return createSceneData(request);
 }
