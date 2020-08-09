@@ -64,13 +64,28 @@ __global__ static void initWorldKernel(
 
 void CUDAGlobals::mallocMaterials(const SceneData &sceneData)
 {
-    const int lambertianSize = sceneData.materialStore.getLambertians().size();
-    const int mirrorSize = sceneData.materialStore.getMirrors().size();
-    const int glassSize = sceneData.materialStore.getGlasses().size();
+    int lambertianSize = 0;
+    int mirrorSize = 0;
+    int glassSize = 0;
 
-    const std::vector<MaterialIndex> &indices = sceneData.materialStore.getIndices();
+    for (const auto &param : sceneData.materialParams) {
+        switch (param->getMaterialType()) {
+        case MaterialType::Lambertian: {
+            lambertianSize += 1;
+            break;
+        }
+        case MaterialType::Mirror: {
+            mirrorSize += 1;
+            break;
+        }
+        case MaterialType::Glass: {
+            glassSize += 1;
+            break;
+        }
+        }
+    }
 
-    checkCudaErrors(cudaMalloc((void **)&d_materialIndices, indices.size() * sizeof(MaterialIndex)));
+    checkCudaErrors(cudaMalloc((void **)&d_materialIndices, sceneData.materialParams.size() * sizeof(MaterialIndex)));
     checkCudaErrors(cudaMalloc((void **)&d_lambertians, lambertianSize * sizeof(Lambertian)));
     checkCudaErrors(cudaMalloc((void **)&d_mirrors, mirrorSize * sizeof(Mirror)));
     checkCudaErrors(cudaMalloc((void **)&d_glasses, glassSize * sizeof(Glass)));
@@ -78,7 +93,37 @@ void CUDAGlobals::mallocMaterials(const SceneData &sceneData)
 
 void CUDAGlobals::copyMaterials(const SceneData &sceneData)
 {
-    const std::vector<MaterialIndex> indices = sceneData.materialStore.getIndices();
+    std::vector<MaterialIndex> indices;
+    std::vector<Lambertian> lambertians;
+    std::vector<Mirror> mirrors;
+    std::vector<Glass> glasses;
+
+    for (const auto &param : sceneData.materialParams) {
+        switch (param->getMaterialType()) {
+        case MaterialType::Lambertian: {
+            Lambertian lambertian(*param);
+            lambertians.push_back(lambertian);
+
+            indices.push_back({MaterialType::Lambertian, lambertians.size() - 1});
+            break;
+        }
+        case MaterialType::Mirror: {
+            Mirror mirror(*param);
+            mirrors.push_back(mirror);
+
+            indices.push_back({MaterialType::Mirror, mirrors.size() - 1});
+            break;
+        }
+        case MaterialType::Glass: {
+            Glass glass(*param);
+            glasses.push_back(glass);
+
+            indices.push_back({MaterialType::Glass, glasses.size() - 1});
+            break;
+        }
+        }
+    }
+
     checkCudaErrors(cudaMemcpy(
         d_materialIndices,
         indices.data(),
@@ -86,7 +131,6 @@ void CUDAGlobals::copyMaterials(const SceneData &sceneData)
         cudaMemcpyHostToDevice
     ));
 
-    const std::vector<Lambertian> &lambertians = sceneData.materialStore.getLambertians();
     checkCudaErrors(cudaMemcpy(
         d_lambertians,
         lambertians.data(),
@@ -94,7 +138,6 @@ void CUDAGlobals::copyMaterials(const SceneData &sceneData)
         cudaMemcpyHostToDevice
     ));
 
-    const std::vector<Mirror> &mirrors = sceneData.materialStore.getMirrors();
     checkCudaErrors(cudaMemcpy(
         d_mirrors,
         mirrors.data(),
@@ -102,7 +145,6 @@ void CUDAGlobals::copyMaterials(const SceneData &sceneData)
         cudaMemcpyHostToDevice
     ));
 
-    const std::vector<Glass> &glasses = sceneData.materialStore.getGlasses();
     checkCudaErrors(cudaMemcpy(
         d_glasses,
         glasses.data(),

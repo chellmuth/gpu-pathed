@@ -21,9 +21,9 @@ class Scene {
 public:
     Scene(
         Camera &camera,
-        SceneData sceneData
+        SceneData &sceneData
     ) : m_camera(camera),
-        m_sceneData(sceneData),
+        m_sceneData(std::move(sceneData)),
         m_maxDepth(defaultMaxDepth),
         m_nextEventEstimation(true)
     {}

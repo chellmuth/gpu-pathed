@@ -4,6 +4,7 @@
 
 #include "hit_record.h"
 #include "materials/bsdf_sample.h"
+#include "materials/params.h"
 #include "optics/fresnel.h"
 #include "optics/snell.h"
 #include "renderers/random.h"
@@ -17,6 +18,8 @@ struct Glass {
 public:
     __host__ __device__ Glass() {}
     __host__ __device__ Glass(float ior) : m_ior(ior) {}
+
+    Glass(const MaterialParams &params) : m_ior(params.getIOR()) {}
 
     __device__ Vec3 getEmit(const HitRecord &hit) const { return Vec3(0.f); }
     __host__ __device__ Vec3 getEmit() const { return Vec3(0.f); }

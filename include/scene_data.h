@@ -21,6 +21,15 @@ struct SceneData {
     MaterialStore materialStore;
     std::vector<int> lightIndices;
 
+    std::vector<std::unique_ptr<MaterialParams> > materialParams;
+
+    SceneData() = default;
+    SceneData(SceneData&&) = default;
+    SceneData& operator=(SceneData&&) = default;
+    SceneData(const SceneData&) = delete;
+    SceneData& operator=(const SceneData&) = delete;
+    ~SceneData() = default;
+
     int materialIDsCount() const {
         return materialStore.getIndices().size();
     }

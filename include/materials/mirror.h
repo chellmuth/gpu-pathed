@@ -5,6 +5,7 @@
 #include "frame.h"
 #include "hit_record.h"
 #include "materials/bsdf_sample.h"
+#include "materials/params.h"
 #include "vec3.h"
 
 namespace rays {
@@ -12,12 +13,10 @@ namespace rays {
 struct Mirror {
 public:
     __host__ __device__ Mirror() {}
+    __host__ __device__ Mirror(const Vec3 &albedo) {}
+    __host__ __device__ Mirror(const Vec3 &albedo, const Vec3 &emit) {}
 
-    __host__ __device__ Mirror(const Vec3 &albedo)
-    {}
-
-    __host__ __device__ Mirror(const Vec3 &albedo, const Vec3 &emit)
-    {}
+    Mirror(const MaterialParams &params) {}
 
     __device__ Vec3 getEmit(const HitRecord &hit) const;
     __host__ __device__ Vec3 getEmit() const { return Vec3(0.f); }

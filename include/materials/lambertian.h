@@ -6,6 +6,7 @@
 #include "frame.h"
 #include "hit_record.h"
 #include "materials/bsdf_sample.h"
+#include "materials/params.h"
 #include "renderers/random.h"
 #include "vec3.h"
 
@@ -14,6 +15,11 @@ namespace rays {
 struct Lambertian {
 public:
     __host__ __device__ Lambertian() {}
+
+    Lambertian(const MaterialParams &params)
+        : m_albedo(params.getAlbedo()),
+          m_emit(params.getEmit())
+    {}
 
     __host__ __device__ Lambertian(const Vec3 &albedo)
         : m_albedo(albedo), m_emit(Vec3(0.f, 0.f, 0.f))
