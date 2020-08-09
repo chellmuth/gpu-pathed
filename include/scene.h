@@ -49,93 +49,54 @@ public:
     }
 
     void setMaterialType(int materialID, MaterialType materialType) {
-        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
-        if (materialIndex.materialType == materialType) { return; }
+        const MaterialParams &params = *m_sceneData.materialParams[materialID];
+        if (params.getMaterialType() == materialType) { return; }
 
-        MaterialStore &store = m_sceneData.materialStore;
-
-        int newID = -1;
+        std::unique_ptr<MaterialParams> newParams;
         switch (materialType) {
         case MaterialType::Lambertian: {
-            Lambertian newMaterial(0.f);
-            newID = store.addMaterial(newMaterial);
+            newParams = std::make_unique<LambertianParams>(Vec3(0.f), Vec3(0.f));
             break;
         }
         case MaterialType::Mirror: {
-            Mirror newMaterial;
-            newID = store.addMaterial(newMaterial);
+            newParams = std::make_unique<MirrorParams>();
             break;
         }
         case MaterialType::Glass: {
-            Glass newMaterial(1.4f);
-            newID = store.addMaterial(newMaterial);
+            newParams = std::make_unique<GlassParams>(1.4f);
             break;
         }
         }
 
-        MaterialIndex newIndex = store.indexAt(newID);
-        store.updateIndex(materialID, newIndex);
+        m_sceneData.materialParams[materialID] = std::move(newParams);
     }
 
     Vec3 getColor(int materialID) const {
-        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
-
-        if (materialIndex.materialType == MaterialType::Lambertian) {
-            return getLambertians()[materialIndex.index].getAlbedo();
-        } else {
-            return Vec3(0.f);
-        }
+        return m_sceneData.materialParams[materialID]->getAlbedo();
     }
-    Vec3 getEmit(int materialID) const {
-        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
-        if (materialIndex.materialType == MaterialType::Lambertian) {
-            return getLambertians()[materialIndex.index].getEmit();
-        } else {
-            return Vec3(0.f);
-        }
+    Vec3 getEmit(int materialID) const {
+        return m_sceneData.materialParams[materialID]->getEmit();
     }
 
     void setColor(int materialID, Vec3 color) {
-        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
-
-        if (materialIndex.materialType == MaterialType::Lambertian) {
-            Lambertian material = getLambertians()[materialIndex.index];
-            material.setAlbedo(color);
-            m_sceneData.materialStore.updateMaterial(materialIndex.index, material);
-        }
+        m_sceneData.materialParams[materialID]->setAlbedo(color);
     }
-    void setEmit(int materialID, Vec3 color) {
-        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
-        if (materialIndex.materialType == MaterialType::Lambertian) {
-            Lambertian material = getLambertians()[materialIndex.index];
-            material.setEmit(color);
-            m_sceneData.materialStore.updateMaterial(materialIndex.index, material);
-        }
+    void setEmit(int materialID, Vec3 color) {
+        m_sceneData.materialParams[materialID]->setEmit(color);
     }
 
     float getIOR(int materialID) const {
-        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
-
-        if (materialIndex.materialType == MaterialType::Glass) {
-            return getGlasses()[materialIndex.index].getIOR();
-        }
-        return -1.f;
+        return m_sceneData.materialParams[materialID]->getIOR();
     }
-    void setIOR(int materialID, float ior) {
-        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
 
-        if (materialIndex.materialType == MaterialType::Glass) {
-            Glass material = getGlasses()[materialIndex.index];
-            material.setIOR(ior);
-            m_sceneData.materialStore.updateMaterial(materialIndex.index, material);
-        }
+    void setIOR(int materialID, float ior) {
+        m_sceneData.materialParams[materialID]->setIOR(ior);
     }
 
     MaterialType getMaterialType(int materialID) const {
-        MaterialIndex materialIndex = m_sceneData.materialStore.indexAt(materialID);
-        return materialIndex.materialType;
+        return m_sceneData.materialParams[materialID]->getMaterialType();
     }
 
     int getMaxDepth() const {

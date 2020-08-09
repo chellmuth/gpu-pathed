@@ -16,8 +16,13 @@ public:
     virtual MaterialType getMaterialType() const = 0;
 
     virtual Vec3 getAlbedo() const { return Vec3(0.f); }
+    virtual void setAlbedo(const Vec3 &color) {}
+
     virtual Vec3 getEmit() const { return Vec3(0.f); }
+    virtual void setEmit(const Vec3 &color) {}
+
     virtual float getIOR() const { return 0.f; }
+    virtual void setIOR(float ior) {}
 };
 
 class LambertianParams : public MaterialParams {
@@ -35,8 +40,16 @@ public:
         return m_albedo;
     }
 
+    void setAlbedo(const Vec3 &color) override {
+        m_albedo = color;
+    }
+
     Vec3 getEmit() const override {
         return m_emit;
+    }
+
+    void setEmit(const Vec3 &color) override {
+        m_emit = color;
     }
 
 private:
@@ -62,6 +75,9 @@ public:
         return m_ior;
     }
 
+    void setIOR(float ior) override {
+        m_ior = ior;
+    }
 private:
     float m_ior;
 };
