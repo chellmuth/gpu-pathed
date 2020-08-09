@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <ostream>
 
 namespace rays {
 
@@ -37,13 +38,24 @@ public:
     __host__ __device__ inline Vec3& operator*=(const float t);
     __host__ __device__ inline Vec3& operator/=(const float t);
 
+    __host__ __device__ inline Vec3 operator-(const Vec3 &v) const {
+        return Vec3(e[0] - v.e[0], e[1] - v.e[1], e[2] - v.e[2]);
+    }
+
     __host__ __device__ inline float length() const {
         return sqrtf(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
     }
 
-    __host__ __device__ inline bool isZero() const
-    {
+    __host__ __device__ inline bool isZero() const {
         return e[0] == 0.f && e[1] == 0.f && e[2] == 0.f;
+    }
+
+    __host__ __device__ inline Vec3 dot(const Vec3 &v) const {
+        return e[0] * v.e[0] + e[1] * v.e[1] + e[2] * v.e[2];
+    }
+
+    __host__ __device__ inline Vec3 reflect(const Vec3 &normal) const {
+        return normal * dot(normal) * 2.f - *this;
     }
 
     float e[3];
@@ -77,17 +89,17 @@ __host__ __device__ inline Vec3 cross(const Vec3 &v1, const Vec3 &v2)
 
 __host__ __device__ inline float dot(const Vec3 &v1, const Vec3 &v2)
 {
-    return v1.e[0] *v2.e[0] + v1.e[1] *v2.e[1]  + v1.e[2] *v2.e[2];
+    return v1.e[0] * v2.e[0] + v1.e[1] * v2.e[1] + v1.e[2] * v2.e[2];
+}
+
+__host__ __device__ inline float absDot(const Vec3 &v1, const Vec3 &v2)
+{
+    return fabsf(v1.e[0] * v2.e[0] + v1.e[1] * v2.e[1] + v1.e[2] * v2.e[2]);
 }
 
 __host__ __device__ inline Vec3 operator+(const Vec3 &v1, const Vec3 &v2)
 {
     return Vec3(v1.e[0] + v2.e[0], v1.e[1] + v2.e[1], v1.e[2] + v2.e[2]);
-}
-
-__host__ __device__ inline Vec3 operator-(const Vec3 &v1, const Vec3 &v2)
-{
-    return Vec3(v1.e[0] - v2.e[0], v1.e[1] - v2.e[1], v1.e[2] - v2.e[2]);
 }
 
 __host__ __device__ inline Vec3 operator*(float t, const Vec3 &v)
@@ -103,6 +115,11 @@ __host__ __device__ inline Vec3 operator/(Vec3 v, float t)
 __host__ __device__ inline Vec3 normalized(Vec3 v)
 {
     return v / v.length();
+}
+
+inline std::ostream &operator<<(std::ostream &os, const Vec3 &v)
+{
+    return os << "Vec3: " << v.x() << " " << v.y() << " " << v.z();
 }
 
 }

@@ -3,7 +3,7 @@
 #include "vec3.h"
 
 namespace rays { namespace WorldFrame {
-    __device__ inline float cosTheta(Vec3 normal, Vec3 w)
+    __device__ inline float cosTheta(const Vec3 &normal, const Vec3 &w)
     {
         return fmaxf(
             0.f,
@@ -11,8 +11,8 @@ namespace rays { namespace WorldFrame {
         );
     }
 
-    __device__ inline float absCosTheta(Vec3 normal, Vec3 w)
+    __device__ inline float absCosTheta(const Vec3 &normal, const Vec3 &w)
     {
-        return fabsf(cosTheta(normal, w));
+        return fabsf(dot(normal, w));
     }
 } };

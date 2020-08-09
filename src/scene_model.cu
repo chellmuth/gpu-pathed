@@ -10,7 +10,7 @@ SceneModel::SceneModel(
     m_lightPosition(lightPosition),
     m_rendererType(rendererType),
     m_spp(0),
-    m_materialIndex(-1)
+    m_materialID(-1)
 {}
 
 void SceneModel::subscribe(std::function<void(const SceneModelAttributes &attributes)> callback)
@@ -28,10 +28,12 @@ void SceneModel::setRendererType(RendererType rendererType)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
-        getNextEventEstimation()
+        getNextEventEstimation(),
+        getMaterialType()
     });
 }
 
@@ -40,18 +42,19 @@ void SceneModel::setColor(float r, float g, float b)
     m_callback({
         Vec3(r, g, b),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
-        getNextEventEstimation()
+        getNextEventEstimation(),
+        getMaterialType()
     });
 }
 
 Vec3 SceneModel::getColor() const
 {
-    if (m_materialIndex == -1) { return Vec3(0.f); }
-
-    return m_scene->getMaterial(m_materialIndex).getAlbedo();
+    if (m_materialID == -1) { return Vec3(0.f); }
+    return m_scene->getColor(m_materialID);
 }
 
 void SceneModel::setEmit(float r, float g, float b)
@@ -59,28 +62,67 @@ void SceneModel::setEmit(float r, float g, float b)
     m_callback({
         getColor(),
         Vec3(r, g, b),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
-        getNextEventEstimation()
+        getNextEventEstimation(),
+        getMaterialType()
     });
 }
 
 Vec3 SceneModel::getEmit() const
 {
-    if (m_materialIndex == -1) { return Vec3(0.f); }
-
-    return m_scene->getMaterial(m_materialIndex).getEmit();
+    if (m_materialID == -1) { return Vec3(0.f); }
+    return m_scene->getEmit(m_materialID);
 }
 
-int SceneModel::getMaterialIndex() const
+void SceneModel::setIOR(float ior)
 {
-    return m_materialIndex;
+    m_callback({
+        getColor(),
+        getEmit(),
+        ior,
+        m_scene->getCamera(),
+        m_rendererType,
+        getMaxDepth(),
+        getNextEventEstimation(),
+        getMaterialType()
+    });
 }
 
-void SceneModel::setMaterialIndex(int materialIndex)
+float SceneModel::getIOR() const
 {
-    m_materialIndex = materialIndex;
+    return m_scene->getIOR(m_materialID);
+}
+
+int SceneModel::getMaterialID() const
+{
+    return m_materialID;
+}
+
+void SceneModel::setMaterialID(int materialID)
+{
+    m_materialID = materialID;
+}
+
+MaterialType SceneModel::getMaterialType() const
+{
+    return m_scene->getMaterialType(m_materialID);
+}
+
+void SceneModel::setMaterialType(MaterialType materialType)
+{
+    m_callback({
+        getColor(),
+        getEmit(),
+        getIOR(),
+        m_scene->getCamera(),
+        m_rendererType,
+        getMaxDepth(),
+        getNextEventEstimation(),
+        materialType
+    });
 }
 
 void SceneModel::setLightPosition(float lightPosition)
@@ -89,10 +131,12 @@ void SceneModel::setLightPosition(float lightPosition)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
-        getNextEventEstimation()
+        getNextEventEstimation(),
+        getMaterialType()
     });
 }
 
@@ -131,10 +175,12 @@ void SceneModel::setCameraOrigin(float originX, float originY, float originZ)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         updated,
         m_rendererType,
         getMaxDepth(),
-        getNextEventEstimation()
+        getNextEventEstimation(),
+        getMaterialType()
     });
 }
 
@@ -158,10 +204,12 @@ void SceneModel::setCameraTarget(float targetX, float targetY, float targetZ)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         updated,
         m_rendererType,
         getMaxDepth(),
-        getNextEventEstimation()
+        getNextEventEstimation(),
+        getMaterialType()
     });
 }
 
@@ -185,10 +233,12 @@ void SceneModel::setCameraUp(float upX, float upY, float upZ)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         updated,
         m_rendererType,
         getMaxDepth(),
-        getNextEventEstimation()
+        getNextEventEstimation(),
+        getMaterialType()
     });
 }
 
@@ -207,10 +257,12 @@ void SceneModel::zoomCamera(float ticks)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         updated,
         m_rendererType,
         getMaxDepth(),
-        getNextEventEstimation()
+        getNextEventEstimation(),
+        getMaterialType()
     });
 }
 
@@ -224,10 +276,12 @@ void SceneModel::setMaxDepth(int maxDepth)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         maxDepth,
-        getNextEventEstimation()
+        getNextEventEstimation(),
+        getMaterialType()
     });
 }
 
@@ -241,10 +295,12 @@ void SceneModel::setNextEventEstimation(bool nextEventEstimation)
     m_callback({
         getColor(),
         getEmit(),
+        getIOR(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
-        nextEventEstimation
+        nextEventEstimation,
+        getMaterialType()
     });
 }
 

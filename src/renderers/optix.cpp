@@ -70,7 +70,7 @@ static void initAcceleration(
     accelOptions.operation = OPTIX_BUILD_OPERATION_BUILD;
 
     std::vector<float3> vertices;
-    std::vector<int> materialIndices;
+    std::vector<int> materialIDs;
     for (const auto &triangle : sceneData.triangles) {
         const Vec3 p0 = triangle.p0();
         const Vec3 p1 = triangle.p1();
@@ -80,7 +80,7 @@ static void initAcceleration(
         vertices.push_back({ p1.x(), p1.y(), p1.z() });
         vertices.push_back({ p2.x(), p2.y(), p2.z() });
 
-        materialIndices.push_back(triangle.materialIndex());
+        materialIDs.push_back(triangle.materialID());
     }
 
     const size_t verticesSize = sizeof(float3) * vertices.size();
@@ -93,20 +93,20 @@ static void initAcceleration(
         cudaMemcpyHostToDevice
     ));
 
-    CUdeviceptr d_materialIndices = 0;
-    const size_t materialIndicesSizeInBytes = materialIndices.size() * sizeof(int);
-    checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_materialIndices), materialIndicesSizeInBytes));
+    CUdeviceptr d_materialIDs = 0;
+    const size_t materialIDsSizeInBytes = materialIDs.size() * sizeof(int);
+    checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_materialIDs), materialIDsSizeInBytes));
     checkCUDA(cudaMemcpy(
-        reinterpret_cast<void *>(d_materialIndices),
-        materialIndices.data(),
-        materialIndicesSizeInBytes,
+        reinterpret_cast<void *>(d_materialIDs),
+        materialIDs.data(),
+        materialIDsSizeInBytes,
         cudaMemcpyHostToDevice
     ));
 
-    const std::vector<Material> &materials = sceneData.materials;
+    const int materialIDsCount = sceneData.materialIDsCount();
     std::vector<uint32_t> triangleInputFlags;
-    triangleInputFlags.reserve(vertices.size());
-    for (const auto &material : materials) {
+    triangleInputFlags.reserve(materialIDsCount);
+    for (int i = 0; i < materialIDsCount; i++) {
         triangleInputFlags.push_back(OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT);
     }
 
@@ -117,8 +117,8 @@ static void initAcceleration(
     triangleInput.triangleArray.numVertices = static_cast<uint32_t>(vertices.size());
     triangleInput.triangleArray.vertexBuffers = &d_vertices;
     triangleInput.triangleArray.flags = triangleInputFlags.data();
-    triangleInput.triangleArray.numSbtRecords = materials.size();
-    triangleInput.triangleArray.sbtIndexOffsetBuffer = d_materialIndices;
+    triangleInput.triangleArray.numSbtRecords = materialIDsCount;
+    triangleInput.triangleArray.sbtIndexOffsetBuffer = d_materialIDs;
     triangleInput.triangleArray.sbtIndexOffsetSizeInBytes = sizeof(int);
     triangleInput.triangleArray.sbtIndexOffsetStrideInBytes = 0;
 
@@ -345,18 +345,17 @@ static void setupShaderBindingTable(
         cudaMemcpyHostToDevice
     ));
 
-    const std::vector<Material> &materials = sceneData.materials;
+    const int materialIDsCount = sceneData.materialIDsCount();
     std::vector<HitGroupSbtRecord> hitgroupRecords;
-    hitgroupRecords.reserve(materials.size());
-    int i = 0;
-    for (const auto &material : materials) {
+    hitgroupRecords.reserve(materialIDsCount);
+    for (int materialID = 0; materialID < materialIDsCount; materialID++) {
         HitGroupSbtRecord record;
         checkOptix(optixSbtRecordPackHeader(
             hitgroupProgramGroup,
             &record
         ));
 
-        record.data.materialIndex = i++;
+        record.data.materialID = materialID;
 
         hitgroupRecords.push_back(record);
     }
@@ -365,13 +364,13 @@ static void setupShaderBindingTable(
     size_t hitgroupRecordSize = sizeof(HitGroupSbtRecord);
     checkCUDA(cudaMalloc(
         reinterpret_cast<void **>(&d_hitgroupRecords),
-        hitgroupRecordSize * materials.size()
+        hitgroupRecordSize * materialIDsCount
     ));
 
     checkCUDA(cudaMemcpy(
         reinterpret_cast<void *>(d_hitgroupRecords),
         hitgroupRecords.data(),
-        hitgroupRecordSize * materials.size(),
+        hitgroupRecordSize * materialIDsCount,
         cudaMemcpyHostToDevice
     ));
 
@@ -381,17 +380,36 @@ static void setupShaderBindingTable(
     sbt.missRecordCount = 1;
     sbt.hitgroupRecordBase = d_hitgroupRecords;
     sbt.hitgroupRecordStrideInBytes = sizeof(HitGroupSbtRecord);
-    sbt.hitgroupRecordCount = materials.size();
+    sbt.hitgroupRecordCount = materialIDsCount;
+}
+
+void Optix::initMaterials(const SceneData &sceneData)
+{
+    checkCUDA(cudaMalloc((void **)&d_materialLookup, sizeof(MaterialLookup)));
+
+    m_materialLookup.mallocMaterials(sceneData);
+    m_materialLookup.copyMaterials(sceneData);
+
+    checkCUDA(cudaMemcpy(
+        d_materialLookup,
+        &m_materialLookup,
+        sizeof(MaterialLookup),
+        cudaMemcpyHostToDevice
+    ));
 }
 
 void Optix::updateMaterials(const Scene &scene)
 {
-    const Material *materials = scene.getMaterialsData();
-    const size_t materialsSizeInBytes = scene.getMaterialsSize();
+    const SceneData &sceneData = scene.getSceneData();
+
+    m_materialLookup.freeMaterials();
+    m_materialLookup.mallocMaterials(sceneData);
+    m_materialLookup.copyMaterials(sceneData);
+
     checkCUDA(cudaMemcpy(
-        reinterpret_cast<void *>(d_materials),
-        materials,
-        materialsSizeInBytes,
+        d_materialLookup,
+        &m_materialLookup,
+        sizeof(MaterialLookup),
         cudaMemcpyHostToDevice
     ));
 }
@@ -465,18 +483,11 @@ void Optix::init(int width, int height, const Scene &scene)
     ));
 
     checkCUDA(cudaMalloc(
-        reinterpret_cast<void **>(&d_radiances),
-        width * height * sizeof(Vec3)
-    ));
-
-    checkCUDA(cudaMalloc(
         reinterpret_cast<void **>(&d_image),
         width * height * sizeof(uchar4)
     ));
 
-    const size_t materialsSizeInBytes = scene.getMaterialsSize();
-    checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_materials), materialsSizeInBytes));
-    updateMaterials(scene);
+    initMaterials(scene.getSceneData());
 
     const std::vector<Triangle> &triangles = scene.getSceneData().triangles;
     Triangle *d_triangles = 0;
@@ -506,7 +517,7 @@ void Optix::init(int width, int height, const Scene &scene)
     m_params.width = width;
     m_params.height = height;
     m_params.camera = scene.getCamera();
-    m_params.materials = d_materials;
+    m_params.materialLookup = d_materialLookup;
     m_params.triangles = d_triangles;
     m_params.lightIndices = d_lightIndices;
     m_params.lightIndexSize = lightIndices.size();
@@ -587,7 +598,7 @@ static uchar4 *launchOptix(
     return image;
 }
 
-uchar4 *Optix::launch(int spp, int currentSamples)
+uchar4 *Optix::launch(Vec3 *d_radiances, int spp, int currentSamples)
 {
     uchar4 *image = launchOptix(
         m_params,

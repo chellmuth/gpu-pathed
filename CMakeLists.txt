@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# set(CMAKE_CXX_FLAGS_DEBUG  "-g")
+# set(CMAKE_CXX_FLAGS_DEBUG "-g")
+# set(CMAKE_CUDA_FLAGS_DEBUG "-g -G")
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
@@ -40,7 +41,6 @@ add_library(rays STATIC
   src/cuda_globals.cu
   src/framebuffer.cu
   src/hit_test.cu
-  src/material.cu
   src/path_tracer.cu
   src/primitive.cu
   src/render_session.cu
@@ -52,15 +52,23 @@ add_library(rays STATIC
   src/transform.cu
   src/triangle.cu
 
+  src/io/image.cpp
+
+  src/materials/lambertian.cu
+  src/materials/material_lookup.cpp
+  src/materials/mirror.cu
+
+  src/renderers/g_buffer.cu
   src/renderers/optix.cpp
   src/renderers/optix_tracer.cu
+  src/renderers/renderer.cpp
 
   src/parsers/mtl_parser.cpp
   src/parsers/obj_parser.cpp
   src/parsers/string_util.cpp
 )
 
-target_include_directories(rays PUBLIC include optix)
+target_include_directories(rays PUBLIC include optix vendor)
 target_include_directories(rays PUBLIC "${OptiX_INCLUDE}")
 target_include_directories(rays PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
 target_link_libraries(rays Boost::filesystem)

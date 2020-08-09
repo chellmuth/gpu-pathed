@@ -68,7 +68,8 @@ class RendererWidget(QWidget):
         self.rendererButton = QPushButton("Renderer")
         menu = QMenu(self)
         menu.addAction("CUDA", lambda: self.handleStateChanged(RendererType.CUDA))
-        menu.addAction("Optix", lambda: self.handleStateChanged(RendererType.Optix))
+        menu.addAction("OptiX", lambda: self.handleStateChanged(RendererType.Optix))
+        menu.addAction("Normals", lambda: self.handleStateChanged(RendererType.Normals))
         self.rendererButton.setMenu(menu)
 
         layout.addWidget(self.rendererButton)
@@ -80,7 +81,9 @@ class RendererWidget(QWidget):
         if renderer_type == RendererType.CUDA:
             self.rendererButton.setText("CUDA")
         elif renderer_type == RendererType.Optix:
-            self.rendererButton.setText("Optix")
+            self.rendererButton.setText("OptiX")
+        elif renderer_type == RendererType.Normals:
+            self.rendererButton.setText("Normals")
         else:
             print("Error, unsupported renderer type")
             exit(1)

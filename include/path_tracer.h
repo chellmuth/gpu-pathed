@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <curand_kernel.h>
 
 #include "cuda_globals.h"
@@ -27,15 +29,12 @@ public:
     int getSpp() const override { return m_currentSamples; }
 
 private:
-    int m_width, m_height;
     int m_currentSamples;
     bool m_shouldReset;
 
     curandState *dev_randState;
 
-    Vec3 *dev_radiances;
     Vec3 *dev_passRadiances;
-    uchar4 *dev_map;
 };
 
 }

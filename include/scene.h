@@ -1,10 +1,11 @@
 #pragma once
 
-#include <iostream>
 #include <vector>
 
 #include "camera.h"
-#include "material.h"
+#include "materials/glass.h"
+#include "materials/lambertian.h"
+#include "materials/mirror.h"
 #include "primitive.h"
 #include "scene_data.h"
 #include "sphere.h"
@@ -20,30 +21,67 @@ class Scene {
 public:
     Scene(
         Camera &camera,
-        SceneData sceneData
+        SceneData &sceneData
     ) : m_camera(camera),
-        m_sceneData(sceneData),
+        m_sceneData(std::move(sceneData)),
         m_maxDepth(defaultMaxDepth),
         m_nextEventEstimation(true)
     {}
-
-    void init();
-    void update();
 
     const Camera &getCamera() const { return m_camera; }
     void setCamera(const Camera &camera) { m_camera = camera; }
 
     const SceneData &getSceneData() const { return m_sceneData; }
 
-    const Material *getMaterialsData() const { return m_materials.data(); }
-    const Material &getMaterial(int materialIndex) const { return m_materials[materialIndex]; }
-    size_t getMaterialsSize() const { return m_materials.size() * sizeof(Material); }
+    void setMaterialType(int materialID, MaterialType materialType) {
+        const MaterialParams &params = *m_sceneData.materialParams[materialID];
+        if (params.getMaterialType() == materialType) { return; }
 
-    void setColor(int materialIndex, Vec3 color) {
-        m_materials[materialIndex].setAlbedo(color);
+        std::unique_ptr<MaterialParams> newParams;
+        switch (materialType) {
+        case MaterialType::Lambertian: {
+            newParams = std::make_unique<LambertianParams>(Vec3(0.f), Vec3(0.f));
+            break;
+        }
+        case MaterialType::Mirror: {
+            newParams = std::make_unique<MirrorParams>();
+            break;
+        }
+        case MaterialType::Glass: {
+            newParams = std::make_unique<GlassParams>(1.4f);
+            break;
+        }
+        }
+
+        m_sceneData.materialParams[materialID] = std::move(newParams);
     }
-    void setEmit(int materialIndex, Vec3 color) {
-        m_materials[materialIndex].setEmit(color);
+
+    Vec3 getColor(int materialID) const {
+        return m_sceneData.materialParams[materialID]->getAlbedo();
+    }
+
+    Vec3 getEmit(int materialID) const {
+        return m_sceneData.materialParams[materialID]->getEmit();
+    }
+
+    void setColor(int materialID, Vec3 color) {
+        m_sceneData.materialParams[materialID]->setAlbedo(color);
+    }
+
+    void setEmit(int materialID, Vec3 color) {
+        m_sceneData.materialParams[materialID]->setEmit(color);
+    }
+
+    float getIOR(int materialID) const {
+        return m_sceneData.materialParams[materialID]->getIOR();
+    }
+
+    void setIOR(int materialID, float ior) {
+        m_sceneData.materialParams[materialID]->setIOR(ior);
+    }
+
+    MaterialType getMaterialType(int materialID) const {
+        return m_sceneData.materialParams[materialID]->getMaterialType();
     }
 
     int getMaxDepth() const {
@@ -63,7 +101,6 @@ public:
 private:
     Camera m_camera;
     SceneData m_sceneData;
-    std::vector<Material> m_materials;
     int m_maxDepth;
     bool m_nextEventEstimation;
 };

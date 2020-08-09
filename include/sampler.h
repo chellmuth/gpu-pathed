@@ -13,7 +13,7 @@ struct LightSample {
     Vec3 point;
     Vec3 normal;
     float pdf;
-    size_t materialIndex;
+    int materialID;
 
     __device__ float solidAnglePDF(const Vec3 &referencePoint) const
     {
@@ -50,7 +50,7 @@ namespace rays { namespace Sampler {
             sample.point,
             sample.normal,
             sample.pdf * choicePDF,
-            triangle.materialIndex()
+            triangle.materialID()
         };
         return lightSample;
     }

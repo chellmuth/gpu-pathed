@@ -1,3 +1,4 @@
+#include "materials/types.h"
 #include "path_tracer.h"
 #include "render_session.h"
 #include "scene_model.h"
@@ -40,7 +41,18 @@ PYBIND11_MODULE(path_tracer, m) {
     py::enum_<RendererType>(m, "RendererType")
         .value("CUDA", RendererType::CUDA)
         .value("Optix", RendererType::Optix)
+        .value("Normals", RendererType::Normals)
         .export_values();
+
+    py::enum_<MaterialType>(m, "MaterialType")
+        .value("Lambertian", MaterialType::Lambertian)
+        .value("Mirror", MaterialType::Mirror)
+        .value("Glass", MaterialType::Glass)
+        .export_values();
+
+    py::class_<MaterialIndex>(m, "MaterialIndex")
+        .def_readonly("materialType", &MaterialIndex::materialType)
+        .def_readonly("index", &MaterialIndex::index);
 
     py::class_<SceneModel>(m, "SceneModel")
         .def("getRendererType", &SceneModel::getRendererType)
@@ -49,7 +61,11 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("getColor", &SceneModel::getColor)
         .def("setEmit", &SceneModel::setEmit)
         .def("getEmit", &SceneModel::getEmit)
-        .def("getMaterialIndex", &SceneModel::getMaterialIndex)
+        .def("getIOR", &SceneModel::getIOR)
+        .def("setIOR", &SceneModel::setIOR)
+        .def("getMaterialID", &SceneModel::getMaterialID)
+        .def("getMaterialType", &SceneModel::getMaterialType)
+        .def("setMaterialType", &SceneModel::setMaterialType)
         .def("setLightPosition", &SceneModel::setLightPosition)
         .def("getLightPosition", &SceneModel::getLightPosition)
         .def("getCameraOrigin", &SceneModel::getCameraOrigin)

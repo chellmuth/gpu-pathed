@@ -3,7 +3,8 @@
 #include <functional>
 #include <iostream>
 
-#include "material.h"
+#include "materials/lambertian.h"
+#include "materials/types.h"
 #include "path_tracer.h"
 #include "scene.h"
 #include "vec3.h"
@@ -14,16 +15,19 @@ class OptixTracer;
 
 enum class RendererType {
     CUDA,
-    Optix
+    Optix,
+    Normals
 };
 
 struct SceneModelAttributes {
     Vec3 albedo;
     Vec3 emitted;
+    float ior;
     Camera camera;
     RendererType rendererType;
     int maxDepth;
     bool nextEventEstimation;
+    MaterialType materialType;
 };
 
 class SceneModel {
@@ -48,8 +52,14 @@ public:
     void setEmit(float r, float g, float b);
     Vec3 getEmit() const;
 
-    int getMaterialIndex() const;
-    void setMaterialIndex(int materialIndex);
+    void setIOR(float ior);
+    float getIOR() const;
+
+    int getMaterialID() const;
+    void setMaterialID(int materialID);
+
+    MaterialType getMaterialType() const;
+    void setMaterialType(MaterialType materialType);
 
     void setLightPosition(float lightPosition);
     float getLightPosition() const;
@@ -76,7 +86,7 @@ private:
     const Scene *m_scene;
 
     RendererType m_rendererType;
-    int m_materialIndex;
+    int m_materialID;
 
     int m_spp;
     float m_lightPosition;

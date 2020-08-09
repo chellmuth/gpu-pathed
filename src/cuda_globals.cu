@@ -30,8 +30,7 @@ __global__ static void initWorldKernel(
     int sphereSize,
     int *lightIndices,
     int lightIndexSize,
-    Material *materials,
-    int materialSize
+    MaterialLookup *materialLookup
 ) {
     if (blockIdx.x != 0 || blockIdx.y != 0) { return; }
     if (threadIdx.x != 0 || threadIdx.y != 0) { return; }
@@ -43,19 +42,45 @@ __global__ static void initWorldKernel(
         sphereSize,
         lightIndices,
         lightIndexSize,
-        materials,
-        materialSize
+        materialLookup
     );
 }
 
+void CUDAGlobals::initMaterials(const SceneData &sceneData)
+{
+    checkCudaErrors(cudaMalloc((void **)&d_materialLookup, sizeof(MaterialLookup)));
+
+    m_materialLookup.mallocMaterials(sceneData);
+    m_materialLookup.copyMaterials(sceneData);
+
+    checkCudaErrors(cudaMemcpy(
+        d_materialLookup,
+        &m_materialLookup,
+        sizeof(MaterialLookup),
+        cudaMemcpyHostToDevice
+    ));
+}
+
+void CUDAGlobals::updateMaterials(const SceneData &sceneData)
+{
+    m_materialLookup.freeMaterials();
+    m_materialLookup.mallocMaterials(sceneData);
+    m_materialLookup.copyMaterials(sceneData);
+
+    checkCudaErrors(cudaMemcpy(
+        d_materialLookup,
+        &m_materialLookup,
+        sizeof(MaterialLookup),
+        cudaMemcpyHostToDevice
+    ));
+}
+
+
 void CUDAGlobals::mallocWorld(const SceneData &sceneData)
 {
-    const int materialSize = sceneData.materials.size();
     const int triangleSize = sceneData.triangles.size();
     const int sphereSize = sceneData.spheres.size();
     const int lightIndexSize = sceneData.lightIndices.size();
-
-    checkCudaErrors(cudaMalloc((void **)&d_materials, materialSize * sizeof(Material)));
 
     checkCudaErrors(cudaMalloc((void **)&d_triangles, triangleSize * sizeof(Triangle)));
     checkCudaErrors(cudaMalloc((void **)&d_spheres, sphereSize * sizeof(Sphere)));
@@ -71,8 +96,7 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
         sphereSize,
         d_lightIndices,
         lightIndexSize,
-        d_materials,
-        materialSize
+        d_materialLookup
     );
     checkCudaErrors(cudaDeviceSynchronize());
 }

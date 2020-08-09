@@ -1,18 +1,24 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGroupBox, QHBoxLayout, QLabel, QSlider, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QSlider,
+    QVBoxLayout,
+    QWidget
+)
 
 from gui.widget.color import ColorButton
+from path_tracer import MaterialType
 
-class MaterialWidget(QGroupBox):
+class LambertianWidget(QWidget):
+    MaterialType = MaterialType.Lambertian
+
     def __init__(self, model, parent=None):
-        super().__init__("Material", parent)
+        super().__init__(parent)
 
         self.model = model
 
         layout = QVBoxLayout()
-
-        self.materialIDLabel = QLabel(self._materialIDText(), self)
-        layout.addWidget(self.materialIDLabel)
 
         self.albedoButton = ColorButton(
             "Albedo",
@@ -28,24 +34,9 @@ class MaterialWidget(QGroupBox):
         layout.addStretch()
         self.setLayout(layout)
 
-        self.update()
-
-    def _materialIDText(self):
-        return f"Material ID: {self.model.getMaterialIndex()}"
-
     def update(self):
-        self.materialIDLabel.setText(self._materialIDText())
         self.albedoButton.update()
         self.emitWidget.update()
-
-        if self.model.getMaterialIndex() == -1:
-            self.materialIDLabel.hide()
-            self.albedoButton.hide()
-            self.emitWidget.hide()
-        else:
-            self.materialIDLabel.show()
-            self.albedoButton.show()
-            self.emitWidget.show()
 
 class EmitWidget(QWidget):
     def __init__(self, model, parent=None):

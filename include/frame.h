@@ -48,6 +48,11 @@ public:
         return wi.z();
     }
 
+    __device__ float absCosTheta(const Vec3 &wi) const
+    {
+        return fabsf(wi.z());
+    }
+
     Vec3 s;
     Vec3 t;
     Vec3 n;

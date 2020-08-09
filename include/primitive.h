@@ -4,7 +4,10 @@
 #include <curand_kernel.h>
 
 #include "hit_record.h"
-#include "material.h"
+#include "materials/bsdf.h"
+#include "materials/bsdf_sample.h"
+#include "materials/lambertian.h"
+#include "materials/material_lookup.h"
 #include "ray.h"
 #include "sampler.h"
 #include "sphere.h"
@@ -22,16 +25,14 @@ public:
         size_t sphereSize,
         int *lightIndices,
         size_t lightIndexSize,
-        Material *materials,
-        size_t materialSize
+        MaterialLookup *materialLookup
     ) : m_triangles(triangles),
         m_triangleSize(triangleSize),
         m_spheres(spheres),
         m_sphereSize(sphereSize),
         m_lightIndices(lightIndices),
         m_lightIndexSize(lightIndexSize),
-        m_materials(materials),
-        m_materialSize(materialSize)
+        m_materialLookup(materialLookup)
     {}
 
     __device__ bool hit(
@@ -55,8 +56,59 @@ public:
         );
     }
 
-    __device__ Material &getMaterial(size_t index) const {
-        return m_materials[index];
+    __device__ Vec3 getEmit(const int materialID) const {
+        MaterialIndex index = m_materialLookup->indices[materialID];
+        return getEmit(index);
+    }
+
+
+    __device__ Vec3 getEmit(const int materialID, const HitRecord &record) const {
+        MaterialIndex index = m_materialLookup->indices[materialID];
+        return getEmit(index, record);
+    }
+
+    __device__ Vec3 getEmit(const MaterialIndex index) const {
+        switch(index.materialType) {
+        case MaterialType::Lambertian: {
+            return m_materialLookup->lambertians[index.index].getEmit();
+        }
+        case MaterialType::Mirror: {
+            return m_materialLookup->mirrors[index.index].getEmit();
+        }
+        case MaterialType::Glass: {
+            return m_materialLookup->glasses[index.index].getEmit();
+        }
+        }
+        return Vec3(0.f);
+    }
+
+    __device__ Vec3 getEmit(const MaterialIndex index, const HitRecord &record) const {
+        switch(index.materialType) {
+        case MaterialType::Lambertian: {
+            return m_materialLookup->lambertians[index.index].getEmit(record);
+        }
+        case MaterialType::Mirror: {
+            return m_materialLookup->mirrors[index.index].getEmit(record);
+        }
+        case MaterialType::Glass: {
+            return m_materialLookup->glasses[index.index].getEmit(record);
+        }
+        }
+        return Vec3(0.f);
+    }
+
+    __device__ Vec3 f(const int materialID, const Vec3 &wo, const Vec3 &wi) const {
+        BSDF bsdf(m_materialLookup, materialID);
+        return bsdf.f(wo, wi);
+    }
+
+    __device__ BSDFSample sample(
+        int materialID,
+        HitRecord &record,
+        curandState &randState
+    ) const {
+        BSDF bsdf(m_materialLookup, materialID);
+        return bsdf.sample(record, randState);
     }
 
 private:
@@ -69,8 +121,7 @@ private:
     int *m_lightIndices;
     size_t m_lightIndexSize;
 
-    Material *m_materials;
-    size_t m_materialSize;
+    MaterialLookup *m_materialLookup;
 };
 
 }

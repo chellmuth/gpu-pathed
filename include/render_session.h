@@ -1,10 +1,14 @@
 #pragma once
 
+#include <vector>
+
 #include "cuda_globals.h"
 #include "hit_test.h"
-#include "material.h"
+#include "io/image.h"
+#include "materials/lambertian.h"
 #include "path_tracer.h"
 #include "render_record.h"
+#include "renderers/g_buffer.h"
 #include "renderers/optix_tracer.h"
 #include "renderers/renderer.h"
 #include "scene.h"
@@ -80,11 +84,21 @@ public:
             m_pboManager.swapPBOs();
             m_sceneModel->updateSpp(m_pathTracer->getSpp());
 
+            const int sppThreshold = 128;
+            if (m_pathTracer->getSpp() >= sppThreshold
+                && m_pathTracer->getSpp() - m_currentRecord.spp < sppThreshold
+            ) {
+                std::vector<float> radiances = m_pathTracer->getRadianceBuffer();
+                Image::save(m_width, m_height, radiances, "out.exr");
+            }
+
             if (m_resetRenderer) {
                 if (m_rendererType == RendererType::CUDA) {
                     m_pathTracer.reset(new PathTracer());
                 } else if (m_rendererType == RendererType::Optix) {
                     m_pathTracer.reset(new OptixTracer());
+                } else if (m_rendererType == RendererType::Normals) {
+                    m_pathTracer.reset(new GBuffer(BufferType::Normals));
                 }
                 m_pathTracer->init(m_width, m_height, *m_scene);
                 m_sppOptimizer.reset();

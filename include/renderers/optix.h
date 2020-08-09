@@ -5,7 +5,7 @@
 #include <optix.h>
 
 #include "camera.h"
-#include "material.h"
+#include "materials/lambertian.h"
 #include "scene.h"
 #include "vec3.h"
 
@@ -21,7 +21,7 @@ struct Params
     Camera camera;
     int maxDepth;
     bool useNextEventEstimation;
-    Material *materials;
+    MaterialLookup *materialLookup;
     Triangle *triangles;
     int *lightIndices;
     int lightIndexSize;
@@ -31,28 +31,32 @@ struct Params
 struct RayGenData {};
 struct MissData {};
 struct HitGroupData {
-    int materialIndex;
+    int materialID;
 };
 
 class Optix {
 public:
     void init(int width, int height, const Scene &scene);
-    uchar4 *launch(int spp, int currentSamples);
+    uchar4 *launch(Vec3 *d_radiances, int spp, int currentSamples);
 
     void updateCamera(const Scene &scene);
-    void updateMaterials(const Scene &scene);
     void updateMaxDepth(const Scene &scene);
     void updateNextEventEstimation(const Scene &scene);
+    void updateMaterials(const Scene &scene);
 
 private:
+    void initMaterials(const SceneData &sceneData);
+
+    MaterialLookup m_materialLookup;
+
     int m_width;
     int m_height;
     Params m_params;
 
     uchar4 *d_image;
     Vec3 *d_passRadiances;
-    Vec3 *d_radiances;
-    Material *d_materials;
+    Lambertian *d_materials;
+    MaterialLookup *d_materialLookup;
     CUdeviceptr d_param;
 
     OptixTraversableHandle m_gasHandle;

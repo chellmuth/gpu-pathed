@@ -8,7 +8,6 @@
 #include "framebuffer.h"
 #include "macro_helper.h"
 #include "primitive.h"
-#include "material.h"
 #include "scene.h"
 #include "vec3.h"
 
@@ -35,11 +34,43 @@ __global__ static void renderInit(int width, int height, curandState *randState)
     curand_init(seed, pixelIndex, 0, &randState[pixelIndex]);
 }
 
-__device__ static Vec3 directSampleLights(
+__device__ static Vec3 directSampleBSDF(
     const HitRecord &hitRecord,
+    const BSDFSample &bsdfSample,
     const PrimitiveList *world,
     curandState &randState
 ) {
+    if (!bsdfSample.isDelta) { return Vec3(0.f); }
+
+    const Frame intersection(hitRecord.normal);
+    const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
+    const Ray bounceRay(hitRecord.point, bounceDirection);
+
+    HitRecord brdfRecord;
+    const bool hit = world->hit(bounceRay, 1e-3, FLT_MAX, brdfRecord);
+    if (!hit) { return Vec3(0.f); }
+    const Vec3 emit = world->getEmit(brdfRecord.materialID, brdfRecord);
+    if (emit.isZero()) { return Vec3(0.f); }
+
+    const float brdfWeight = 1.f;
+
+    const Vec3 brdfContribution = emit
+        * brdfWeight
+        * bsdfSample.f
+        * bsdfSample.wiLocal.z()
+        / bsdfSample.pdf;
+
+    return brdfContribution;
+}
+
+__device__ static Vec3 directSampleLights(
+    const HitRecord &hitRecord,
+    const BSDFSample &bsdfSample,
+    const PrimitiveList *world,
+    curandState &randState
+) {
+    if (bsdfSample.isDelta) { return 0.f; }
+
     const LightSample lightSample = world->sampleDirectLights(hitRecord.point, randState);
 
     const Vec3 wiWorld = normalized(lightSample.point - hitRecord.point);
@@ -56,11 +87,10 @@ __device__ static Vec3 directSampleLights(
     if (!occluded) {
         const Vec3 wi = Frame(hitRecord.normal).toLocal(wiWorld);
         const float pdf = lightSample.solidAnglePDF(hitRecord.point);
-        const Material &emitMaterial = world->getMaterial(lightSample.materialIndex);
-        const Material &hitMaterial = world->getMaterial(hitRecord.materialIndex);
+        const Vec3 emit = world->getEmit(lightSample.materialID);
         const Vec3 lightContribution = Vec3(1.f)
-            * emitMaterial.getEmit()
-            * hitMaterial.f(hitRecord.wo, wi)
+            * emit
+            * world->f(hitRecord.materialID, hitRecord.wo, wi)
             * WorldFrame::absCosTheta(hitRecord.normal, wiWorld)
             / pdf;
 
@@ -72,11 +102,16 @@ __device__ static Vec3 directSampleLights(
 
 __device__ static Vec3 direct(
     const HitRecord &hitRecord,
-// todo bsdf sample
+    const BSDFSample &bsdfSample,
     const PrimitiveList *world,
     curandState &randState
 ) {
-    return directSampleLights(hitRecord, world, randState);
+    Vec3 result(0.f);
+
+    result += directSampleLights(hitRecord, bsdfSample, world, randState);
+    result += directSampleBSDF(hitRecord, bsdfSample, world, randState);
+
+    return result;
 }
 
 __device__ static Vec3 calculateLiNEE(
@@ -93,8 +128,7 @@ __device__ static Vec3 calculateLiNEE(
     HitRecord record;
     bool hit = world->hit(ray, 0.f, FLT_MAX, record);
     if (hit) {
-        const Material &emitMaterial = world->getMaterial(record.materialIndex);
-        const Vec3 emit = emitMaterial.getEmit(record);
+        const Vec3 emit = world->getEmit(record.materialID, record);
 
         if (!emit.isZero()) {
             result += emit * beta;
@@ -104,17 +138,16 @@ __device__ static Vec3 calculateLiNEE(
     }
 
     for (int path = 1; path < maxDepth; path++) {
-        result += direct(record, world, randState) * beta;
-
         const Frame intersection(record.normal);
-        const Material &material = world->getMaterial(record.materialIndex);
-        float pdf;
 
-        const Vec3 wi = material.sample(record, &pdf, randState);
-        const Vec3 bounceDirection = intersection.toWorld(wi);
+        const BSDFSample bsdfSample = world->sample(record.materialID, record, randState);
+        result += direct(record, bsdfSample, world, randState) * beta;
 
-        beta *= material.f(record.wo, wi) * intersection.cosTheta(wi) / pdf;
+        beta *= bsdfSample.f
+            * intersection.absCosTheta(bsdfSample.wiLocal)
+            / bsdfSample.pdf;
 
+        const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
         if (!hit) {
@@ -139,8 +172,7 @@ __device__ static Vec3 calculateLiNaive(
     HitRecord record;
     bool hit = world->hit(ray, 0.f, FLT_MAX, record);
     if (hit) {
-        const Material &emitMaterial = world->getMaterial(record.materialIndex);
-        const Vec3 emit = emitMaterial.getEmit(record);
+       const Vec3 emit = world->getEmit(record.materialID, record);
 
         if (!emit.isZero()) {
             result += emit * beta;
@@ -151,19 +183,19 @@ __device__ static Vec3 calculateLiNaive(
 
     for (int path = 1; path < maxDepth; path++) {
         const Frame intersection(record.normal);
-        const Material &material = world->getMaterial(record.materialIndex);
-        float pdf;
 
-        const Vec3 wi = material.sample(record, &pdf, randState);
-        const Vec3 bounceDirection = intersection.toWorld(wi);
+        const BSDFSample bsdfSample = world->sample(record.materialID, record, randState);
 
-        beta *= material.f(record.wo, wi) * intersection.cosTheta(wi) / pdf;
+        beta *= Vec3(1.f)
+            * bsdfSample.f
+            * intersection.absCosTheta(bsdfSample.wiLocal)
+            / bsdfSample.pdf;
 
+        const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
         const Ray bounceRay(record.point, bounceDirection);
         hit = world->hit(bounceRay, 1e-3, FLT_MAX, record);
         if (hit) {
-            const Material &emitMaterial = world->getMaterial(record.materialIndex);
-            const Vec3 emit = emitMaterial.getEmit(record);
+            const Vec3 emit = world->getEmit(record.materialID, record);
             if (!emit.isZero()) {
                 result += emit * beta;
             }
@@ -211,12 +243,11 @@ void PathTracer::init(
     int height,
     const Scene &scene
 ) {
-    m_width = width;
-    m_height = height;
+    Renderer::init(width, height, scene);
+
     const int pixelCount = m_width * m_height;
 
     checkCudaErrors(cudaMalloc((void **)&dev_randState, pixelCount * sizeof(curandState)));
-    checkCudaErrors(cudaMalloc((void **)&dev_radiances, pixelCount * sizeof(Vec3)));
     checkCudaErrors(cudaMalloc((void **)&dev_passRadiances, pixelCount * sizeof(Vec3)));
 
     dim3 blocks(m_width, m_height);

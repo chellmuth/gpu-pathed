@@ -1,20 +1,59 @@
 #include "scene.h"
+
+#include <iostream>
+
+#include "materials/glass.h"
+#include "materials/lambertian.h"
+#include "materials/mirror.h"
+
 namespace rays {
 
 namespace SceneParameters {
 
 SceneData getSceneData(int index)
 {
+
     if (index == 0) {
-        std::string sceneFilename("../scenes/cornell-box/CornellBox-Original.obj");
-        ObjParser objParser(sceneFilename);
-        return SceneAdapter::createSceneData(objParser);
+        SceneAdapter::ParseRequest request;
+
+        auto defaultMaterial = std::make_unique<LambertianParams>(
+            Vec3(0.f), Vec3(0.f)
+        );
+        request.materialParams.push_back(std::move(defaultMaterial));
+        {
+            std::string sceneFilename("../scenes/cornell-glossy/CornellBox-Glossy.obj");
+            ObjParser objParser(sceneFilename);
+            request.objParsers.push_back(objParser);
+
+            request.defaultMaterialIDs.push_back(0);
+        }
+        {
+            std::string sceneFilename("../scenes/cornell-glossy/box.obj");
+            ObjParser objParser(sceneFilename);
+            request.objParsers.push_back(objParser);
+
+            auto boxParams = std::make_unique<GlassParams>(1.4f);
+            request.materialParams.push_back(std::move(boxParams));
+            request.defaultMaterialIDs.push_back(1);
+        }
+        {
+            std::string sceneFilename("../scenes/cornell-glossy/ball.obj");
+            ObjParser objParser(sceneFilename);
+            request.objParsers.push_back(objParser);
+
+            auto ballParams = std::make_unique<MirrorParams>();
+            request.materialParams.push_back(std::move(ballParams));
+            request.defaultMaterialIDs.push_back(2);
+        }
+
+        return SceneAdapter::createSceneData(request);
     } else if (index == 1) {
         std::string sceneFilename("../scenes/bunny/bunny.obj");
         ObjParser objParser(sceneFilename);
         return SceneAdapter::createSceneData(objParser);
     } else {
-        return SceneAdapter::createSceneData(defaultLightPosition);
+        std::cerr << "Invalid scene index: " << index << std::endl;
+        exit(1);
     }
 }
 
@@ -37,26 +76,11 @@ Camera getCamera(int index, Resolution resolution)
             resolution
         );
     } else {
-        return Camera(
-            Vec3(0.f, 0.3f, 5.f),
-            Vec3(0.f),
-            Vec3(0.f, 1.f, 0.f),
-            30.f / 180.f * M_PI,
-            resolution
-        );
+        std::cerr << "Invalid scene index: " << index << std::endl;
+        exit(1);
     }
 }
 
-}
-
-void Scene::init()
-{
-    update();
-}
-
-void Scene::update()
-{
-    m_materials = m_sceneData.materials;
 }
 
 }

@@ -49,6 +49,8 @@ void ObjParser::parseLine(string &line)
 
     if (command == "v") {
         processVertex(rest);
+    } else if (command == "vn") {
+        processNormal(rest);
     } else if (command == "f") {
         processFace(rest);
     } else if (command == "mtllib") {
@@ -72,6 +74,22 @@ void ObjParser::processVertex(string &vertexArgs)
     float z = std::stof(rest, &index);
 
     m_vertices.push_back(Vertex(x, y, z));
+}
+
+void ObjParser::processNormal(string &normalArgs)
+{
+    string::size_type index = 0;
+    string rest = normalArgs;
+
+    float x = std::stof(rest, &index);
+
+    rest = rest.substr(index);
+    float y = std::stof(rest, &index);
+
+    rest = rest.substr(index);
+    float z = std::stof(rest, &index);
+
+    m_normals.push_back(Vertex(x, y, z));
 }
 
 void ObjParser::processFace(string &faceArgs)
@@ -136,11 +154,36 @@ void ObjParser::processTriangle(int vertexIndex0, int vertexIndex1, int vertexIn
 {
     correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
 
-    Vertex v0(m_vertices[vertexIndex0]);
-    Vertex v1(m_vertices[vertexIndex1]);
-    Vertex v2(m_vertices[vertexIndex2]);
+    const Vertex v0(m_vertices[vertexIndex0]);
+    const Vertex v1(m_vertices[vertexIndex1]);
+    const Vertex v2(m_vertices[vertexIndex2]);
 
-    Face face(v0, v1, v2);
+    const Vertex e1 = v1 - v0;
+    const Vertex e2 = v2 - v0;
+
+    const Vertex normal = e1.cross(e2).normalized();
+
+    const Face face(v0, v1, v2, normal, normal, normal);
+    m_faces.push_back(face);
+    m_mtlIndices.push_back(m_currentMtlIndex);
+}
+
+void ObjParser::processTriangle(
+    int vertexIndex0, int vertexIndex1, int vertexIndex2,
+    int normalIndex0, int normalIndex1, int normalIndex2
+) {
+    correctIndices(m_vertices, &vertexIndex0, &vertexIndex1, &vertexIndex2);
+    correctIndices(m_normals, &normalIndex0, &normalIndex1, &normalIndex2);
+
+    const Vertex v0(m_vertices[vertexIndex0]);
+    const Vertex v1(m_vertices[vertexIndex1]);
+    const Vertex v2(m_vertices[vertexIndex2]);
+
+    const Vertex n0(m_normals[normalIndex0]);
+    const Vertex n1(m_normals[normalIndex1]);
+    const Vertex n2(m_normals[normalIndex2]);
+
+    const Face face(v0, v1, v2, n0, n1, n2);
     m_faces.push_back(face);
     m_mtlIndices.push_back(m_currentMtlIndex);
 }
@@ -150,8 +193,15 @@ void ObjParser::processTriangle(
     int normalIndex0, int normalIndex1, int normalIndex2,
     int UVIndex0, int UVIndex1, int UVIndex2
 ) {
-    // TODO: Handle normals and UVs
-    processTriangle(vertexIndex0, vertexIndex1, vertexIndex2);
+    // TODO: Handle UVs
+    processTriangle(
+        vertexIndex0,
+        vertexIndex1,
+        vertexIndex2,
+        normalIndex0,
+        normalIndex1,
+        normalIndex2
+    );
 }
 
 template <class T>

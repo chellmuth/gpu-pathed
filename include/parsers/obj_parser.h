@@ -25,6 +25,7 @@ private:
     void parseLine(std::string &line);
 
     void processVertex(std::string &vertexArgs);
+    void processNormal(std::string &normalArgs);
     void processFace(std::string &faceArgs);
     void processMaterialLibrary(std::string &libraryArgs);
 
@@ -32,6 +33,10 @@ private:
     bool processDoubleFaceGeometryOnly(std::string &faceArgs);
 
     void processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2);
+    void processTriangle(
+        int vertexIndex0, int vertexIndex1, int vertexIndex2,
+        int normalIndex0, int normalIndex1, int normalIndex2
+    );
     void processTriangle(
         int vertexIndex0, int vertexIndex1, int vertexIndex2,
         int normalIndex0, int normalIndex1, int normalIndex2,
@@ -49,9 +54,10 @@ private:
         int *index2
     );
 
-    std::string &m_objFilename;
+    std::string m_objFilename;
 
     std::vector<Vertex> m_vertices;
+    std::vector<Vertex> m_normals;
     std::vector<Face> m_faces;
 
     int m_currentMtlIndex;
