@@ -44,7 +44,7 @@ namespace rays { namespace SceneAdapter {
 struct ParseRequest {
     std::vector<ObjParser> objParsers;
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
-    std::vector<int> defaultMaterialParamsIDs;
+    std::vector<int> defaultMaterialIDs;
 };
 
 SceneData createSceneData(ParseRequest &request);

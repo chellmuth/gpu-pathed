@@ -25,7 +25,7 @@ SceneData getSceneData(int index)
             ObjParser objParser(sceneFilename);
             request.objParsers.push_back(objParser);
 
-            request.defaultMaterialParamsIDs.push_back(0);
+            request.defaultMaterialIDs.push_back(0);
         }
         {
             std::string sceneFilename("../scenes/cornell-glossy/box.obj");
@@ -34,7 +34,7 @@ SceneData getSceneData(int index)
 
             auto boxParams = std::make_unique<GlassParams>(1.4f);
             request.materialParams.push_back(std::move(boxParams));
-            request.defaultMaterialParamsIDs.push_back(1);
+            request.defaultMaterialIDs.push_back(1);
         }
         {
             std::string sceneFilename("../scenes/cornell-glossy/ball.obj");
@@ -43,7 +43,7 @@ SceneData getSceneData(int index)
 
             auto ballParams = std::make_unique<MirrorParams>();
             request.materialParams.push_back(std::move(ballParams));
-            request.defaultMaterialParamsIDs.push_back(2);
+            request.defaultMaterialIDs.push_back(2);
         }
 
         return SceneAdapter::createSceneData(request);

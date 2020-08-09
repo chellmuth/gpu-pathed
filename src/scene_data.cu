@@ -36,7 +36,7 @@ SceneData createSceneData(ParseRequest &request)
 
             int materialID;
             if (useDefaultMaterial) {
-                materialID = request.defaultMaterialParamsIDs[i];
+                materialID = request.defaultMaterialIDs[i];
             } else {
                 int mtlIndex = result.mtlIndices[j];
                 materialID = mtlIndex + paramsOffset;
@@ -80,7 +80,7 @@ SceneData createSceneData(ObjParser &objParser)
         Vec3(0.f), Vec3(100.f, 0.f, 0.f)
     );
     request.materialParams.push_back(std::move(defaultMaterial));
-    request.defaultMaterialParamsIDs.push_back(0);
+    request.defaultMaterialIDs.push_back(0);
 
     return createSceneData(request);
 }
