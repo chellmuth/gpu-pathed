@@ -5,7 +5,6 @@
 
 #include "materials/glass.h"
 #include "materials/lambertian.h"
-#include "materials/material_store.h"
 #include "materials/material_table.h"
 #include "materials/mirror.h"
 #include "materials/params.h"

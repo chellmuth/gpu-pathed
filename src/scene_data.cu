@@ -73,7 +73,6 @@ SceneData createSceneData(ParseRequest &request)
 SceneData createSceneData(ObjParser &objParser)
 {
     ParseRequest request;
-    MaterialStore store;
 
     request.objParsers.push_back(objParser);
 

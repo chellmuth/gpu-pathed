@@ -4,7 +4,6 @@
 
 #include "materials/glass.h"
 #include "materials/lambertian.h"
-#include "materials/material_store.h"
 #include "materials/mirror.h"
 
 namespace rays {
@@ -16,7 +15,6 @@ SceneData getSceneData(int index)
 
     if (index == 0) {
         SceneAdapter::ParseRequest request;
-        MaterialStore store;
 
         auto defaultMaterial = std::make_unique<LambertianParams>(
             Vec3(0.f), Vec3(0.f)
