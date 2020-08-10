@@ -23,8 +23,10 @@ public:
     MaterialLookup m_materialLookup;
     MaterialLookup *d_materialLookup;
 
-    Camera *d_camera;
+    EnvironmentLight m_environmentLight;
     EnvironmentLight *d_environmentLight;
+
+    Camera *d_camera;
     World *d_world;
 
     Triangle *d_triangles;

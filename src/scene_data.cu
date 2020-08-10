@@ -57,7 +57,7 @@ SceneData createSceneData(ParseRequest &request)
     }
 
     sceneData.materialParams = std::move(request.materialParams);
-    sceneData.environmentLight = request.environmentLight;
+    sceneData.environmentLightParams = request.environmentLightParams;
 
     // Post-process lights
     size_t triangleCount = sceneData.triangles.size();

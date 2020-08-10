@@ -20,7 +20,7 @@ struct SceneData {
     std::vector<int> lightIndices;
 
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
-    EnvironmentLight environmentLight;
+    EnvironmentLightParams environmentLightParams;
 
     SceneData() = default;
     SceneData(SceneData&&) = default;
@@ -46,7 +46,7 @@ struct ParseRequest {
     std::vector<ObjParser> objParsers;
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
     std::vector<int> defaultMaterialIDs;
-    EnvironmentLight environmentLight;
+    EnvironmentLightParams environmentLightParams;
 };
 
 SceneData createSceneData(ParseRequest &request);

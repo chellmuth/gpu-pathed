@@ -1,41 +1,53 @@
 #pragma once
 
+#include <string>
+
+#include "math/spherical_coordinates.h"
 #include "vec3.h"
 
 namespace rays {
 
-enum class EnvironmentLightType {
-    None,
-    Constant
+class EnvironmentLightParams {
+public:
+    EnvironmentLightParams() {}
+
+    EnvironmentLightParams(const std::string &filename)
+        : m_filename(filename)
+    {}
+
+private:
+    std::string m_filename;
 };
 
 class EnvironmentLight {
 public:
-    EnvironmentLight()
-        : m_type(EnvironmentLightType::None),
-          m_color(Vec3(0.f))
-    {}
+    EnvironmentLight() {}
 
-    EnvironmentLight(const Vec3 color)
-        : m_type(EnvironmentLightType::Constant),
-          m_color(color)
+    EnvironmentLight(float *data, int width, int height)
+        : m_data(data),
+          m_width(width),
+          m_height(height)
     {}
 
     __device__ Vec3 getEmit(const Vec3 &wi) const {
-        switch (m_type) {
-        case EnvironmentLightType::None: {
-            return Vec3(0.f);
-        }
-        case EnvironmentLightType::Constant: {
-            return m_color;
-        }
-        }
-        return Vec3(0.f);
+        float phi, theta;
+        Coordinates::cartesianToSpherical(wi, &phi, &theta);
+
+        const int x = floorf(phi / (M_PI * 2.f) * m_width);
+        const int y = floorf(theta / M_PI * m_height);
+
+        const int offset = (4 * m_width) * y + 4 * x;
+        return Vec3(
+            m_data[offset + 0],
+            m_data[offset + 1],
+            m_data[offset + 2]
+        );
     }
 
 private:
-    EnvironmentLightType m_type;
-    Vec3 m_color;
+    float *m_data;
+    int m_width;
+    int m_height;
 };
 
 }

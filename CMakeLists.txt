@@ -58,6 +58,8 @@ add_library(rays STATIC
   src/materials/material_lookup.cpp
   src/materials/mirror.cu
 
+  src/math/spherical_coordinates.cu
+
   src/renderers/g_buffer.cu
   src/renderers/optix.cpp
   src/renderers/optix_tracer.cu

@@ -46,7 +46,9 @@ SceneData getSceneData(int index)
             request.defaultMaterialIDs.push_back(2);
         }
 
-        request.environmentLight = EnvironmentLight(Vec3(0.f, 0.f, 1.));
+        request.environmentLightParams = EnvironmentLightParams(
+            "../scenes/assets/20060807_wells6_hd.exr"
+        );
 
         return SceneAdapter::createSceneData(request);
     } else if (index == 1) {

@@ -1,5 +1,7 @@
 #include "cuda_globals.h"
 
+#include "tinyexr.h"
+
 #include "macro_helper.h"
 #include "scene.h"
 
@@ -78,6 +80,34 @@ void CUDAGlobals::updateMaterials(const SceneData &sceneData)
 }
 
 
+static EnvironmentLight prototypeEnvironmentLight()
+{
+    float *data;
+    int width, height;
+    const char *error = nullptr;
+    std::string filename = "/media/cjh/workpad/Dropbox/renderer/20060807_wells6_hd.exr";
+    int code = LoadEXR(&data, &width, &height, filename.c_str(), &error);
+    if (code == TINYEXR_SUCCESS) {
+        std::cout << "width: " << width << " height: " << height << std::endl;
+    } else {
+        fprintf(stderr, "ERROR: %s\n", error);
+        FreeEXRErrorMessage(error);
+    }
+
+    float *d_data;
+    size_t dataSize = width * height * 4 * sizeof(float);
+    checkCudaErrors(cudaMalloc((void **)&d_data, dataSize));
+    checkCudaErrors(cudaMemcpy(
+        d_data,
+        data,
+        dataSize,
+        cudaMemcpyHostToDevice
+    ));
+
+    EnvironmentLight environmentLight(d_data, width, height);
+    return environmentLight;
+}
+
 void CUDAGlobals::mallocWorld(const SceneData &sceneData)
 {
     const int triangleSize = sceneData.triangles.size();
@@ -103,6 +133,8 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
         d_materialLookup
     );
     checkCudaErrors(cudaDeviceSynchronize());
+
+    m_environmentLight = prototypeEnvironmentLight();
 }
 
 void CUDAGlobals::copySceneData(const SceneData &sceneData)
@@ -130,7 +162,7 @@ void CUDAGlobals::copySceneData(const SceneData &sceneData)
 
     checkCudaErrors(cudaMemcpy(
         d_environmentLight,
-        &sceneData.environmentLight,
+        &m_environmentLight,
         sizeof(EnvironmentLight),
         cudaMemcpyHostToDevice
     ));
