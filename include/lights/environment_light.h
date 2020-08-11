@@ -30,7 +30,7 @@ struct EnvironmentLightSample {
 
 class EnvironmentLight {
 public:
-    EnvironmentLight() {}
+    __device__ EnvironmentLight() {}
 
     EnvironmentLight(float *data, int width, int height)
         : m_data(data),

@@ -25,7 +25,7 @@ public:
     ) : m_camera(camera),
         m_sceneData(std::move(sceneData)),
         m_maxDepth(defaultMaxDepth),
-        m_nextEventEstimation(true)
+        m_nextEventEstimation(false)
     {}
 
     const Camera &getCamera() const { return m_camera; }

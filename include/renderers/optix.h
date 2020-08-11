@@ -5,9 +5,10 @@
 #include <optix.h>
 
 #include "core/camera.h"
+#include "core/vec3.h"
+#include "lights/environment_light.h"
 #include "materials/lambertian.h"
 #include "scene.h"
-#include "core/vec3.h"
 
 namespace rays {
 
@@ -25,6 +26,7 @@ struct Params
     Triangle *triangles;
     int *lightIndices;
     int lightIndexSize;
+    EnvironmentLight environmentLight;
     OptixTraversableHandle handle;
 };
 

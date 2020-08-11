@@ -36,7 +36,7 @@ __device__ inline LightSample sampleDirectLights(
     const MaterialLookup &materialLookup
 ) {
     const int lightChoice = (int)floorf(samples.x * (lightIndexSize + 1));
-    const float choicePDF = 1.f / lightIndexSize;
+    const float choicePDF = 1.f / (lightIndexSize + 1);
 
     // Area lights or environment light
     if (lightChoice < lightIndexSize) {

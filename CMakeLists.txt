@@ -56,8 +56,6 @@ add_library(rays STATIC
   src/materials/material_lookup.cu
   src/materials/mirror.cu
 
-  src/math/spherical_coordinates.cu
-
   src/parsers/mtl_parser.cpp
   src/parsers/obj_parser.cpp
   src/parsers/string_util.cpp

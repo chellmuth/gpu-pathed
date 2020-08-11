@@ -10,6 +10,8 @@
 #include <optix_stack_size.h>
 #include <optix_stubs.h>
 
+#include "tinyexr.h"
+
 #include "framebuffer.h"
 #include "macro_helper.h"
 #include "scene_data.h"
@@ -429,6 +431,34 @@ void Optix::updateNextEventEstimation(const Scene &scene)
     m_params.useNextEventEstimation = scene.getNextEventEstimation();
 }
 
+static EnvironmentLight prototypeEnvironmentLight()
+{
+    float *data;
+    int width, height;
+    const char *error = nullptr;
+    std::string filename = "/media/cjh/workpad/Dropbox/renderer/20060807_wells6_hd.exr";
+    int code = LoadEXR(&data, &width, &height, filename.c_str(), &error);
+    if (code == TINYEXR_SUCCESS) {
+        std::cout << "width: " << width << " height: " << height << std::endl;
+    } else {
+        fprintf(stderr, "ERROR: %s\n", error);
+        FreeEXRErrorMessage(error);
+    }
+
+    float *d_data;
+    size_t dataSize = width * height * 4 * sizeof(float);
+    checkCUDA(cudaMalloc((void **)&d_data, dataSize));
+    checkCUDA(cudaMemcpy(
+        d_data,
+        data,
+        dataSize,
+        cudaMemcpyHostToDevice
+    ));
+
+    EnvironmentLight environmentLight(d_data, width, height);
+    return environmentLight;
+}
+
 void Optix::init(int width, int height, const Scene &scene)
 {
     char log[2048];
@@ -511,6 +541,8 @@ void Optix::init(int width, int height, const Scene &scene)
         cudaMemcpyHostToDevice
     ));
 
+    const EnvironmentLight environmentLight = prototypeEnvironmentLight();
+
     m_params.passRadiances = d_passRadiances;
     m_params.launchCount = 0;
     m_params.samplesPerPass = 0;
@@ -521,6 +553,7 @@ void Optix::init(int width, int height, const Scene &scene)
     m_params.triangles = d_triangles;
     m_params.lightIndices = d_lightIndices;
     m_params.lightIndexSize = lightIndices.size();
+    m_params.environmentLight = environmentLight;
     m_params.handle = gasHandle;
     updateMaxDepth(scene);
     updateNextEventEstimation(scene);
