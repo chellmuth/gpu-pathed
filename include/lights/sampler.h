@@ -14,7 +14,6 @@
 namespace rays {
 
 struct LightSample {
-    Ray occlusionRay;
     Vec3 wi;
     float distance;
     float pdf;
@@ -48,7 +47,6 @@ __device__ inline LightSample sampleDirectLights(
         const float pdf = sample.solidAnglePDF(hitPoint) * choicePDF;
 
         const LightSample lightSample = {
-            .occlusionRay = Ray(sample.point, normalized(direction)),
             .wi = normalized(direction),
             .distance = distance,
             .pdf = pdf,
@@ -64,7 +62,6 @@ __device__ inline LightSample sampleDirectLights(
         );
 
         const LightSample lightSample = {
-            .occlusionRay = Ray(Vec3(0.f), Vec3(0.f)), // fixme
             .wi = normalized(sample.occlusionRay.direction()),
             .distance = 1e16, // fixme
             .pdf = sample.pdf * choicePDF,
