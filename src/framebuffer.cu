@@ -1,6 +1,6 @@
 #include "framebuffer.h"
 
-#include "color.h"
+#include "core/color.h"
 
 namespace rays {
 

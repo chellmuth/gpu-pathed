@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "camera.h"
-#include "color.h"
+#include "core/color.h"
 #include "frame.h"
 #include "macro_helper.h"
 #include "renderers/optix.h"
