@@ -120,17 +120,19 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
     const float xi2 = rnd(seed);
     const float xi3 = rnd(seed);
 
-    const rays::LightSample lightSample = rays::Sampler::sampleDirectLights(
-        intersection.point,
-        make_float3(xi1, xi2, xi3),
-        params.lightIndices,
-        params.lightIndexSize,
-        params.triangles
-    );
+    // const rays::LightSample lightSample = rays::Sampler::sampleDirectLights(
+    //     intersection.point,
+    //     make_float3(xi1, xi2, xi3),
+    //     params.lightIndices,
+    //     params.lightIndexSize,
+    //     params.triangles
+    // );
+    const rays::LightSample lightSample; // fixme
 
-    const rays::Vec3 lightDirection = (lightSample.point - intersection.point);
-    const rays::Vec3 wiWorld = normalized(lightDirection);
-    const rays::Ray shadowRay(intersection.point, wiWorld);
+    // const rays::Vec3 lightDirection = (lightSample.point - intersection.point);
+    // const rays::Vec3 wiWorld = normalized(lightDirection);
+    // const rays::Ray shadowRay(intersection.point, wiWorld);
+    const rays::Ray shadowRay(lightSample.occlusionRay); // fixme
 
     PerRayData prd;
     prd.done = false;
@@ -142,7 +144,7 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
         vec3_to_float3(shadowRay.origin()),
         vec3_to_float3(shadowRay.direction()),
         1e-4,
-        lightDirection.length() - 2e-4,
+        lightSample.distance - 2e-4,
         0.0f,
         OptixVisibilityMask(255),
         OPTIX_RAY_FLAG_NONE,
@@ -154,13 +156,12 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
 
     const bool isHit = !prd.done;
     if (!isHit) {
-        const rays::Vec3 wi = intersection.frame.toLocal(wiWorld);
-        const float pdf = lightSample.solidAnglePDF(intersection.point);
+        const rays::Vec3 wiLocal = intersection.frame.toLocal(lightSample.wi);
         const rays::Vec3 lightContribution = rays::Vec3(1.f)
-            * getEmit(lightSample.materialID)
-            * f(materialID, intersection.woLocal, wi)
-            * rays::WorldFrame::absCosTheta(intersection.normal, wiWorld)
-            / pdf;
+            // * getEmit(lightSample.materialID) // fixme
+            * f(materialID, intersection.woLocal, wiLocal)
+            * rays::WorldFrame::absCosTheta(intersection.normal, lightSample.wi)
+            / lightSample.pdf;
 
         return lightContribution;
     } else {

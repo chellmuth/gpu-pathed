@@ -53,7 +53,7 @@ add_library(rays STATIC
   src/io/image.cpp
 
   src/materials/lambertian.cu
-  src/materials/material_lookup.cpp
+  src/materials/material_lookup.cu
   src/materials/mirror.cu
 
   src/math/spherical_coordinates.cu

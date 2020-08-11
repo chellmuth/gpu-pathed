@@ -41,6 +41,7 @@ __device__ static Vec3 directSampleBSDF(
     curandState &randState
 ) {
     if (!bsdfSample.isDelta) { return Vec3(0.f); }
+    const float brdfWeight = 1.f;
 
     const Frame intersection(hitRecord.normal);
     const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
@@ -49,12 +50,14 @@ __device__ static Vec3 directSampleBSDF(
     HitRecord brdfRecord;
     const bool hit = world->hit(bounceRay, 1e-3, FLT_MAX, brdfRecord);
     if (!hit) {
-        return world->environmentL(bounceDirection);
+        return world->environmentL(bounceDirection)
+            * brdfWeight
+            * bsdfSample.f
+            * TangentFrame::absCosTheta(bsdfSample.wiLocal)
+            / bsdfSample.pdf;
     }
     const Vec3 emit = world->getEmit(brdfRecord.materialID, brdfRecord);
     if (emit.isZero()) { return Vec3(0.f); }
-
-    const float brdfWeight = 1.f;
 
     const Vec3 brdfContribution = emit
         * brdfWeight
@@ -73,28 +76,28 @@ __device__ static Vec3 directSampleLights(
 ) {
     if (bsdfSample.isDelta) { return 0.f; }
 
-    const LightSample lightSample = world->sampleDirectLights(hitRecord.point, randState);
-
-    const Vec3 wiWorld = normalized(lightSample.point - hitRecord.point);
-    const Ray shadowRay(hitRecord.point, wiWorld);
+    const LightSample lightSample = world->sampleDirectLights(
+        hitRecord.point,
+        Frame(hitRecord.normal),
+        randState
+    );
+    const Ray shadowRay(hitRecord.point, lightSample.wi);
 
     HitRecord occlusionRecord;
     const bool occluded = world->hit(
         shadowRay,
         1e-4,
-        (lightSample.point - hitRecord.point).length() - 2e-4,
+        lightSample.distance - 2e-4,
         occlusionRecord
     );
 
     if (!occluded) {
-        const Vec3 wi = Frame(hitRecord.normal).toLocal(wiWorld);
-        const float pdf = lightSample.solidAnglePDF(hitRecord.point);
-        const Vec3 emit = world->getEmit(lightSample.materialID);
+        const Vec3 wiLocal = Frame(hitRecord.normal).toLocal(lightSample.wi);
         const Vec3 lightContribution = Vec3(1.f)
-            * emit
-            * world->f(hitRecord.materialID, hitRecord.wo, wi)
-            * WorldFrame::absCosTheta(hitRecord.normal, wiWorld)
-            / pdf;
+            * lightSample.emitted
+            * world->f(hitRecord.materialID, hitRecord.wo, wiLocal)
+            * WorldFrame::absCosTheta(hitRecord.normal, lightSample.wi)
+            / lightSample.pdf;
 
         return lightContribution;
     } else {
@@ -202,7 +205,7 @@ __device__ static Vec3 calculateLiNaive(
                 result += emit * beta;
             }
         } else {
-            return result + world->environmentL(bounceRay.direction());
+            return result + world->environmentL(bounceRay.direction()) * beta;
         }
     }
 
