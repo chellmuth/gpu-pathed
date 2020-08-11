@@ -48,6 +48,7 @@ PYBIND11_MODULE(path_tracer, m) {
         .value("Lambertian", MaterialType::Lambertian)
         .value("Mirror", MaterialType::Mirror)
         .value("Glass", MaterialType::Glass)
+        .value("None", MaterialType::None)
         .export_values();
 
     py::class_<MaterialIndex>(m, "MaterialIndex")

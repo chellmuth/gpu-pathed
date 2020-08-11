@@ -48,7 +48,9 @@ __device__ static Vec3 directSampleBSDF(
 
     HitRecord brdfRecord;
     const bool hit = world->hit(bounceRay, 1e-3, FLT_MAX, brdfRecord);
-    if (!hit) { return Vec3(0.f); }
+    if (!hit) {
+        return world->environmentL(bounceDirection);
+    }
     const Vec3 emit = world->getEmit(brdfRecord.materialID, brdfRecord);
     if (emit.isZero()) { return Vec3(0.f); }
 
@@ -178,7 +180,7 @@ __device__ static Vec3 calculateLiNaive(
             result += emit * beta;
         }
     } else {
-        return Vec3(0.f);
+        return world->environmentL(ray.direction());
     }
 
     for (int path = 1; path < maxDepth; path++) {
@@ -200,7 +202,7 @@ __device__ static Vec3 calculateLiNaive(
                 result += emit * beta;
             }
         } else {
-            return result;
+            return result + world->environmentL(bounceRay.direction());
         }
     }
 

@@ -90,12 +90,14 @@ RenderSession::RenderSession(int width, int height)
         m_scene->setNextEventEstimation(attributes.nextEventEstimation);
 
         const int materialID = m_sceneModel->getMaterialID();
-        if (m_scene->getMaterialType(materialID) != attributes.materialType) {
-            m_scene->setMaterialType(materialID, attributes.materialType);
-        } else {
-            m_scene->setColor(materialID, attributes.albedo);
-            m_scene->setEmit(materialID, attributes.emitted);
-            m_scene->setIOR(materialID, attributes.ior);
+        if (materialID >= 0) {
+            if (m_scene->getMaterialType(materialID) != attributes.materialType) {
+                m_scene->setMaterialType(materialID, attributes.materialType);
+            } else {
+                m_scene->setColor(materialID, attributes.albedo);
+                m_scene->setEmit(materialID, attributes.emitted);
+                m_scene->setIOR(materialID, attributes.ior);
+            }
         }
 
         m_scene->setCamera(attributes.camera);

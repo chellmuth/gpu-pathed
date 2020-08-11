@@ -93,6 +93,8 @@ void SceneModel::setIOR(float ior)
 
 float SceneModel::getIOR() const
 {
+    if (m_materialID == -1) { return -1.f; }
+
     return m_scene->getIOR(m_materialID);
 }
 
@@ -108,6 +110,8 @@ void SceneModel::setMaterialID(int materialID)
 
 MaterialType SceneModel::getMaterialType() const
 {
+    if (m_materialID == -1) { return MaterialType::None; }
+
     return m_scene->getMaterialType(m_materialID);
 }
 
