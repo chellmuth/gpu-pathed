@@ -1,7 +1,7 @@
 #pragma once
 
 #include "materials/lambertian.h"
-#include "ray.h"
+#include "core/ray.h"
 #include "core/vec3.h"
 
 namespace rays {

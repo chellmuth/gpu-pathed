@@ -9,7 +9,7 @@
 #include "materials/bsdf_sample.h"
 #include "materials/lambertian.h"
 #include "materials/material_lookup.h"
-#include "ray.h"
+#include "core/ray.h"
 #include "lights/sampler.h"
 #include "sphere.h"
 #include "triangle.h"

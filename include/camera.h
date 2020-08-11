@@ -2,7 +2,7 @@
 
 #include <curand_kernel.h>
 
-#include "ray.h"
+#include "core/ray.h"
 #include "transform.h"
 #include "core/vec3.h"
 

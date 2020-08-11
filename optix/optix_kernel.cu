@@ -6,7 +6,7 @@
 #include "materials/bsdf_sample.h"
 #include "materials/lambertian.h"
 #include "materials/types.h"
-#include "ray.h"
+#include "core/ray.h"
 #include "renderers/float3_helpers.h"
 #include "renderers/optix.h"
 #include "renderers/payload_helpers.h"
