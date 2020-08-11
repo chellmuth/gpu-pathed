@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "camera.h"
+#include "core/camera.h"
 #include "macro_helper.h"
 #include "renderers/optix.h"
 #include "parsers/obj_parser.h"

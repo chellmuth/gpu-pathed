@@ -1,6 +1,6 @@
 #pragma once
 
-#include "camera.h"
+#include "core/camera.h"
 #include "materials/material_lookup.h"
 #include "world.h"
 #include "scene_data.h"

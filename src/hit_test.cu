@@ -4,7 +4,7 @@
 #include <iostream>
 #include <memory>
 
-#include "camera.h"
+#include "core/camera.h"
 #include "macro_helper.h"
 #include "materials/lambertian.h"
 #include "materials/types.h"

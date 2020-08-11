@@ -3,7 +3,7 @@
 #include <cfloat>
 #include <iostream>
 
-#include "camera.h"
+#include "core/camera.h"
 #include "core/color.h"
 #include "frame.h"
 #include "macro_helper.h"

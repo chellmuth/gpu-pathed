@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <optix.h>
 
-#include "camera.h"
+#include "core/camera.h"
 #include "materials/lambertian.h"
 #include "scene.h"
 #include "core/vec3.h"

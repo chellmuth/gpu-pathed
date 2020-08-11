@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "camera.h"
+#include "core/camera.h"
 #include "materials/glass.h"
 #include "materials/lambertian.h"
 #include "materials/mirror.h"

@@ -37,7 +37,6 @@ add_custom_target(
 )
 
 add_library(rays STATIC
-  src/camera.cu
   src/cuda_globals.cu
   src/framebuffer.cu
   src/hit_test.cu
@@ -49,8 +48,7 @@ add_library(rays STATIC
   src/spp_optimizer.cpp
   src/transform.cu
 
-  src/primitives/sphere.cu
-  src/primitives/triangle.cu
+  src/core/camera.cu
 
   src/io/image.cpp
 
@@ -60,15 +58,18 @@ add_library(rays STATIC
 
   src/math/spherical_coordinates.cu
 
+  src/parsers/mtl_parser.cpp
+  src/parsers/obj_parser.cpp
+  src/parsers/string_util.cpp
+
+  src/primitives/sphere.cu
+  src/primitives/triangle.cu
+
   src/renderers/g_buffer.cu
   src/renderers/optix.cpp
   src/renderers/optix_tracer.cu
   src/renderers/path_tracer.cu
   src/renderers/renderer.cpp
-
-  src/parsers/mtl_parser.cpp
-  src/parsers/obj_parser.cpp
-  src/parsers/string_util.cpp
 )
 
 target_include_directories(rays PUBLIC include optix vendor)
