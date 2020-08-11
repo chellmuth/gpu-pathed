@@ -11,7 +11,7 @@
 #include "renderers/optix.h"
 #include "renderers/payload_helpers.h"
 #include "renderers/random.h"
-#include "sampler.h"
+#include "lights/sampler.h"
 #include "tangent_frame.h"
 #include "triangle.h"
 #include "vec3.h"

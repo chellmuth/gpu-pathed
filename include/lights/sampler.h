@@ -26,7 +26,6 @@ struct LightSample {
 
         return pdf * distance2 / projectedArea;
     }
-
 };
 
 }
@@ -54,6 +53,5 @@ namespace rays { namespace Sampler {
         };
         return lightSample;
     }
-
 
 } };

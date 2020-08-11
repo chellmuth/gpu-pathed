@@ -10,7 +10,7 @@
 #include "materials/lambertian.h"
 #include "materials/material_lookup.h"
 #include "ray.h"
-#include "sampler.h"
+#include "lights/sampler.h"
 #include "sphere.h"
 #include "triangle.h"
 #include "vec3.h"
