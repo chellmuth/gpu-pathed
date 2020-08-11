@@ -3,7 +3,7 @@
 #include <string>
 
 #include "math/spherical_coordinates.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays {
 

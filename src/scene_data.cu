@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays { namespace SceneAdapter {
 

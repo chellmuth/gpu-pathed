@@ -14,7 +14,7 @@
 #include "lights/sampler.h"
 #include "tangent_frame.h"
 #include "triangle.h"
-#include "vec3.h"
+#include "core/vec3.h"
 #include "world_frame.h"
 
 extern "C" {

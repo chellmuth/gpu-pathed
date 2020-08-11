@@ -7,7 +7,7 @@
 #include "camera.h"
 #include "materials/lambertian.h"
 #include "scene.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays {
 

@@ -10,7 +10,7 @@
 #include "renderers/random.h"
 #include "tangent_frame.h"
 #include "util.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays {
 

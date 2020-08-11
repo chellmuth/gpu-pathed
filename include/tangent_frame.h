@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays { namespace TangentFrame {
     __device__ inline float cosTheta(const Vec3 &vector)

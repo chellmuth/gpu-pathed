@@ -13,7 +13,7 @@
 #include "lights/sampler.h"
 #include "sphere.h"
 #include "triangle.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays {
 

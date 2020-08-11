@@ -7,7 +7,7 @@
 #include "cuda_globals.h"
 #include "render_record.h"
 #include "scene.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays {
 

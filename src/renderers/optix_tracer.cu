@@ -11,7 +11,7 @@
 #include "world.h"
 #include "materials/lambertian.h"
 #include "scene.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
 

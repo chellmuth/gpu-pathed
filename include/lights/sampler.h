@@ -4,7 +4,7 @@
 
 #include "surface_sample.h"
 #include "triangle.h"
-#include "vec3.h"
+#include "core/vec3.h"
 #include "world_frame.h"
 
 namespace rays {
