@@ -1,5 +1,5 @@
 #include "materials/types.h"
-#include "path_tracer.h"
+#include "renderers/path_tracer.h"
 #include "render_session.h"
 #include "scene_model.h"
 

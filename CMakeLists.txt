@@ -41,7 +41,6 @@ add_library(rays STATIC
   src/cuda_globals.cu
   src/framebuffer.cu
   src/hit_test.cu
-  src/path_tracer.cu
   src/world.cu
   src/render_session.cu
   src/scene.cu
@@ -64,6 +63,7 @@ add_library(rays STATIC
   src/renderers/g_buffer.cu
   src/renderers/optix.cpp
   src/renderers/optix_tracer.cu
+  src/renderers/path_tracer.cu
   src/renderers/renderer.cpp
 
   src/parsers/mtl_parser.cpp

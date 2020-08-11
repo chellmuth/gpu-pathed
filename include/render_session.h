@@ -6,7 +6,7 @@
 #include "hit_test.h"
 #include "io/image.h"
 #include "materials/lambertian.h"
-#include "path_tracer.h"
+#include "renderers/path_tracer.h"
 #include "render_record.h"
 #include "renderers/g_buffer.h"
 #include "renderers/optix_tracer.h"
