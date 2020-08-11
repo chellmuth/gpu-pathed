@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "trig.h"
+#include "core/trig.h"
 #include "core/vec3.h"
 
 namespace rays { namespace Snell {
