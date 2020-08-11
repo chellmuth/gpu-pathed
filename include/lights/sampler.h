@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 
 #include "surface_sample.h"
-#include "triangle.h"
+#include "primitives/triangle.h"
 #include "core/vec3.h"
 #include "world_frame.h"
 

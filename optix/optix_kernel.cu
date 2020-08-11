@@ -13,7 +13,7 @@
 #include "renderers/random.h"
 #include "lights/sampler.h"
 #include "tangent_frame.h"
-#include "triangle.h"
+#include "primitives/triangle.h"
 #include "core/vec3.h"
 #include "world_frame.h"
 

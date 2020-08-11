@@ -14,7 +14,7 @@
 #include "macro_helper.h"
 #include "scene_data.h"
 #include "optix_kernel.h"
-#include "triangle.h"
+#include "primitives/triangle.h"
 
 #define checkCUDA(result) { gpuAssert((result), __FILE__, __LINE__); }
 #define checkOptix(result) { optixAssert((result), __FILE__, __LINE__); }

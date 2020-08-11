@@ -13,9 +13,9 @@
 #include "renderers/renderer.h"
 #include "scene.h"
 #include "scene_model.h"
-#include "sphere.h"
+#include "primitives/sphere.h"
 #include "spp_optimizer.h"
-#include "triangle.h"
+#include "primitives/triangle.h"
 
 namespace rays {
 

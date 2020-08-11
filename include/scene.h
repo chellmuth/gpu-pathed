@@ -8,8 +8,8 @@
 #include "materials/mirror.h"
 #include "world.h"
 #include "scene_data.h"
-#include "sphere.h"
-#include "triangle.h"
+#include "primitives/sphere.h"
+#include "primitives/triangle.h"
 #include "core/vec3.h"
 
 namespace rays {

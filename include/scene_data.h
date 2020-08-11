@@ -9,8 +9,8 @@
 #include "materials/mirror.h"
 #include "materials/params.h"
 #include "parsers/obj_parser.h"
-#include "sphere.h"
-#include "triangle.h"
+#include "primitives/sphere.h"
+#include "primitives/triangle.h"
 
 namespace rays {
 

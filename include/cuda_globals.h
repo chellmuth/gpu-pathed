@@ -4,8 +4,8 @@
 #include "materials/material_lookup.h"
 #include "world.h"
 #include "scene_data.h"
-#include "sphere.h"
-#include "triangle.h"
+#include "primitives/sphere.h"
+#include "primitives/triangle.h"
 
 namespace rays {
 

@@ -11,8 +11,8 @@
 #include "materials/material_lookup.h"
 #include "core/ray.h"
 #include "lights/sampler.h"
-#include "sphere.h"
-#include "triangle.h"
+#include "primitives/sphere.h"
+#include "primitives/triangle.h"
 #include "core/vec3.h"
 
 namespace rays {

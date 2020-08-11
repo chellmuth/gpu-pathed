@@ -1,4 +1,4 @@
-#include "triangle.h"
+#include "primitives/triangle.h"
 
 #include "frame.h"
 
