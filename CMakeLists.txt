@@ -58,6 +58,8 @@ add_library(rays STATIC
   src/materials/material_lookup.cu
   src/materials/mirror.cu
 
+  src/math/distribution.cu
+
   src/parsers/mtl_parser.cpp
   src/parsers/obj_parser.cpp
   src/parsers/string_util.cpp
@@ -94,3 +96,6 @@ add_executable(app
 )
 target_include_directories(app PRIVATE app)
 target_link_libraries(app rays Qt5::Core Qt5::Widgets)
+
+# Catch2 tests
+add_subdirectory(test)
