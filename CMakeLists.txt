@@ -52,6 +52,8 @@ add_library(rays STATIC
 
   src/io/image.cpp
 
+  src/lights/environment_light.cu
+
   src/materials/lambertian.cu
   src/materials/material_lookup.cu
   src/materials/mirror.cu

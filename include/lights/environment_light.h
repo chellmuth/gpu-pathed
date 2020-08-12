@@ -10,18 +10,6 @@
 
 namespace rays {
 
-class EnvironmentLightParams {
-public:
-    EnvironmentLightParams() {}
-
-    EnvironmentLightParams(const std::string &filename)
-        : m_filename(filename)
-    {}
-
-private:
-    std::string m_filename;
-};
-
 struct EnvironmentLightSample {
     Ray occlusionRay;
     float pdf;
@@ -73,6 +61,21 @@ private:
     float *m_data;
     int m_width;
     int m_height;
+};
+
+
+class EnvironmentLightParams {
+public:
+    EnvironmentLightParams() {}
+
+    EnvironmentLightParams(const std::string &filename)
+        : m_filename(filename)
+    {}
+
+    EnvironmentLight createEnvironmentLight() const;
+
+private:
+    std::string m_filename;
 };
 
 }
