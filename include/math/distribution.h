@@ -10,6 +10,8 @@ namespace rays {
 
 class Distribution {
 public:
+    __device__ Distribution() {}
+
     Distribution(float *cmf, size_t size, float totalMass)
         : m_cmf(cmf), m_size(size), m_totalMass(totalMass)
     {}
@@ -72,6 +74,8 @@ public:
         }
     };
 
+    __device__ Distribution2D() {}
+
     Distribution2D(
         Distribution yDistribution,
         Distribution *xDistributions,
@@ -129,9 +133,30 @@ private:
 
 class PhiThetaDistribution {
 public:
+    __device__ PhiThetaDistribution() {}
+
     PhiThetaDistribution(Distribution2D distribution2D)
         : m_distribution2D(distribution2D)
     {}
+
+    __device__ Vec3 sample(float *pdf, float2 xis) const {
+        float localPDF;
+        const auto sample = m_distribution2D.sample(&localPDF, xis);
+
+        const int width = m_distribution2D.getWidth();
+        const int height = m_distribution2D.getHeight();
+
+        const float phiCanonical = (sample.x + 0.5f) / width;
+        const float thetaCanonical = (sample.y + 0.5f) / height;
+
+        const float phi = phiCanonical * M_PI * 2.f;
+        const float theta = thetaCanonical * M_PI;
+
+        const Vec3 wi = Coordinates::sphericalToCartesian(phi, theta);
+        *pdf = this->pdf(wi);
+
+        return wi;
+    }
 
     __device__ float pdf(const Vec3 &wi) const {
         float phi, theta;

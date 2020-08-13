@@ -38,11 +38,17 @@ EnvironmentLight EnvironmentLightParams::createEnvironmentLight() const {
     ));
 
 
-    PhiThetaDistributionBuilder distributionBuilder(data, width, height);
+    std::vector<float> intensities(width * height);
+    for (int i = 0; i < width * height; i++) {
+        intensities[i] = data[i * 4 + 0] + data[i * 4 + 1] + data[i * 4 + 2];
+    }
+
+    PhiThetaDistributionBuilder distributionBuilder(intensities.data(), width, height);
+    auto distribution = distributionBuilder.buildPhiThetaDistribution();
 
     free(data);
 
-    const EnvironmentLight environmentLight(d_data, width, height);
+    const EnvironmentLight environmentLight(d_data, distribution, width, height);
     return environmentLight;
 }
 

@@ -28,6 +28,9 @@ Distribution DistributionParams::createDistribution() const
         }
     }
 
+    assert(fabsf(cmf[cmf.size() - 1] - 1.f) < 1e-3);
+    cmf[cmf.size() - 1] = 1.f;
+
     float *d_cmf;
     const size_t cmfSize = m_values.size() * sizeof(float);
     checkCUDA(cudaMalloc((void **)&d_cmf, cmfSize));

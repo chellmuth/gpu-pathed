@@ -3,6 +3,7 @@
 #include <string>
 
 #include "frame.h"
+#include "math/distribution.h"
 #include "math/spherical_coordinates.h"
 #include "core/ray.h"
 #include "core/sample.h"
@@ -20,11 +21,12 @@ class EnvironmentLight {
 public:
     __device__ EnvironmentLight() {}
 
-    EnvironmentLight(float *data, int width, int height)
+    EnvironmentLight(float *data, PhiThetaDistribution distribution, int width, int height)
         : m_data(data),
-          m_width(width),
-          m_height(height)
-    {}
+            m_distribution(distribution),
+            m_width(width),
+            m_height(height)
+        {}
 
     __device__ EnvironmentLightSample sample(
         const Vec3 &point,
@@ -32,11 +34,13 @@ public:
         float xi1,
         float xi2
     ) const {
-        const Vec3 wiLocal = Sample::uniformHemisphere(xi1, xi2);
-        const Vec3 wi = frame.toWorld(wiLocal);
+        float pdf;
+        float2 xis{xi1, xi2};
+        const Vec3 wi = m_distribution.sample(&pdf, xis);
+
         const EnvironmentLightSample sample = {
             .occlusionRay = Ray(point, wi),
-            .pdf = Sample::uniformHemispherePDF(wiLocal),
+            .pdf = pdf,
             .emitted = getEmit(wi)
         };
         return sample;
@@ -59,6 +63,7 @@ public:
 
 private:
     float *m_data;
+    PhiThetaDistribution m_distribution;
     int m_width;
     int m_height;
 };
