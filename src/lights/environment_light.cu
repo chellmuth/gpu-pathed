@@ -4,6 +4,7 @@
 
 #include "tinyexr.h"
 
+#include "math/distribution.h"
 #include "macro_helper.h"
 
 #define checkCUDA(result) { gpuAssert((result), __FILE__, __LINE__); }
@@ -35,6 +36,10 @@ EnvironmentLight EnvironmentLightParams::createEnvironmentLight() const {
         dataSize,
         cudaMemcpyHostToDevice
     ));
+
+
+    PhiThetaDistributionBuilder distributionBuilder(data, width, height);
+
     free(data);
 
     const EnvironmentLight environmentLight(d_data, width, height);
