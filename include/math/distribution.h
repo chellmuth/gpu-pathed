@@ -17,13 +17,27 @@ public:
     {}
 
     __device__ size_t sample(float *pmf, float xi) const {
-        if (m_totalMass == 0.f) { assert(0); }
+        if (m_totalMass == 0.f) {
+            assert(0);
+        }
 
         for (size_t i = 0; i < m_size; i++) {
-            if (xi <= m_cmf[i]) {
+            if (xi < m_cmf[i]) {
                 *pmf = this->pmf(i);
 
                 return i;
+            }
+        }
+
+        // curand will return (0, 1]
+        // tea will return [0, 1)
+        if (xi == 1.f) {
+            for (size_t i = 0; i < m_size; i++) {
+                if (m_cmf[i] == 1.f) {
+                    *pmf = this->pmf(i);
+
+                    return i;
+                }
             }
         }
 
@@ -88,6 +102,7 @@ public:
 
     __device__ Sample sample(float *pmf, float2 xis) const {
         float xPMF, yPMF;
+
         int y = m_yDistribution.sample(&yPMF, xis.x);
         int x = m_xDistributions[y].sample(&xPMF, xis.y);
 

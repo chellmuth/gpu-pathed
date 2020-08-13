@@ -20,16 +20,26 @@ Distribution DistributionParams::createDistribution() const
 {
     const float totalMass = getTotalMass();
 
+    int lastIndex = -1;
     std::vector<float> cmf(m_values.size());
     for (int i = 0; i < cmf.size(); i++) {
-        cmf[i] = m_values[i] / totalMass;
+        const float mass = m_values[i] / totalMass;
+        if (mass > 0.f) {
+            lastIndex = i;
+        }
+
+        cmf[i] = mass;
         if (i > 0) {
             cmf[i] += cmf[i - 1];
         }
     }
 
-    assert(fabsf(cmf[cmf.size() - 1] - 1.f) < 1e-3);
-    cmf[cmf.size() - 1] = 1.f;
+    if (totalMass > 0.f) {
+        assert(fabsf(cmf[cmf.size() - 1] - 1.f) < 1e-3);
+        for (int i = lastIndex; i < cmf.size(); i++) {
+            cmf[i] = 1.f;
+        }
+    }
 
     float *d_cmf;
     const size_t cmfSize = m_values.size() * sizeof(float);
