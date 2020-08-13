@@ -131,14 +131,15 @@ TEST_CASE("Distribution can be sampled", "[distribution]") {
         0.f
     };
 
+    const float eta = 1e-5;
     const std::vector<float> xis = {
         0.f,
-        0.1f,
-        0.2f,
-        0.3f,
-        0.4f,
-        0.5f,
-        0.6f,
+        0.1f - eta,
+        0.2f - eta,
+        0.3f - eta,
+        0.4f - eta,
+        0.5f - eta,
+        0.6f - eta,
         1.f,
     };
 
@@ -310,12 +311,13 @@ TEST_CASE("2d Distribution can be sampled", "[distribution]") {
         3.f, 1.f,
     };
 
+    const float eta = 1e-5;
     const std::vector<float> xis = {
-        0.f, 0.2f,
-        0.1f, 0.3f,
+        0.f, 0.2f - eta,
+        0.1f - eta, 0.3f - eta,
         0.51f, 1.f,
-        0.7f, 0.75f,
-        0.7f, 0.76f,
+        0.7f - eta, 0.75f - eta,
+        0.7f - eta, 0.76f,
     };
 
     const std::vector<Distribution2D::Sample> expectedIndices = {
