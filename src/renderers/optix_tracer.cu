@@ -3,15 +3,15 @@
 #include <cfloat>
 #include <iostream>
 
-#include "camera.h"
-#include "color.h"
+#include "core/camera.h"
+#include "core/color.h"
 #include "frame.h"
 #include "macro_helper.h"
 #include "renderers/optix.h"
-#include "primitive.h"
+#include "world.h"
 #include "materials/lambertian.h"
 #include "scene.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
 

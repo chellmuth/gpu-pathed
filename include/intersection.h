@@ -1,7 +1,7 @@
 #pragma once
 
 #include "frame.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays {
 

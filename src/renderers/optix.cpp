@@ -14,7 +14,7 @@
 #include "macro_helper.h"
 #include "scene_data.h"
 #include "optix_kernel.h"
-#include "triangle.h"
+#include "primitives/triangle.h"
 
 #define checkCUDA(result) { gpuAssert((result), __FILE__, __LINE__); }
 #define checkOptix(result) { optixAssert((result), __FILE__, __LINE__); }
@@ -511,6 +511,9 @@ void Optix::init(int width, int height, const Scene &scene)
         cudaMemcpyHostToDevice
     ));
 
+    const auto &environmentLightParams = scene.getSceneData().environmentLightParams;
+    const EnvironmentLight environmentLight = environmentLightParams.createEnvironmentLight();
+
     m_params.passRadiances = d_passRadiances;
     m_params.launchCount = 0;
     m_params.samplesPerPass = 0;
@@ -521,6 +524,7 @@ void Optix::init(int width, int height, const Scene &scene)
     m_params.triangles = d_triangles;
     m_params.lightIndices = d_lightIndices;
     m_params.lightIndexSize = lightIndices.size();
+    m_params.environmentLight = environmentLight;
     m_params.handle = gasHandle;
     updateMaxDepth(scene);
     updateNextEventEstimation(scene);

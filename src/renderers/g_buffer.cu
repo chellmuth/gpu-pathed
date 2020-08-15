@@ -3,14 +3,14 @@
 #include <cfloat>
 #include <iostream>
 
-#include "camera.h"
+#include "core/camera.h"
 #include "frame.h"
 #include "framebuffer.h"
 #include "macro_helper.h"
-#include "primitive.h"
+#include "world.h"
 #include "materials/lambertian.h"
 #include "scene.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
 
@@ -26,7 +26,7 @@ GBuffer::GBuffer(BufferType bufferType)
 
 __device__ static Vec3 calculateGBuffer(
     const Ray &ray,
-    const PrimitiveList *world
+    const World *world
 ) {
     HitRecord record;
 
@@ -41,7 +41,7 @@ __device__ static Vec3 calculateGBuffer(
 __global__ static void renderKernel(
     Vec3 *passRadiances,
     int width, int height,
-    PrimitiveList *world,
+    World *world,
     Camera *camera
 ) {
     const int row = threadIdx.y + blockIdx.y * blockDim.y;

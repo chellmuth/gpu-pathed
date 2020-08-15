@@ -1,4 +1,4 @@
-#include "sphere.h"
+#include "primitives/sphere.h"
 
 #include "frame.h"
 

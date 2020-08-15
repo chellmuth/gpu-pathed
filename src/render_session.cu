@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "camera.h"
+#include "core/camera.h"
 #include "macro_helper.h"
 #include "renderers/optix.h"
 #include "parsers/obj_parser.h"
@@ -66,7 +66,7 @@ RenderSession::RenderSession(int width, int height)
     }
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
 
-    constexpr int sceneIndex = 0;
+    constexpr int sceneIndex = 2;
     SceneData sceneData = SceneParameters::getSceneData(sceneIndex);
     Camera camera = SceneParameters::getCamera(sceneIndex, { width, height });
 
@@ -90,12 +90,14 @@ RenderSession::RenderSession(int width, int height)
         m_scene->setNextEventEstimation(attributes.nextEventEstimation);
 
         const int materialID = m_sceneModel->getMaterialID();
-        if (m_scene->getMaterialType(materialID) != attributes.materialType) {
-            m_scene->setMaterialType(materialID, attributes.materialType);
-        } else {
-            m_scene->setColor(materialID, attributes.albedo);
-            m_scene->setEmit(materialID, attributes.emitted);
-            m_scene->setIOR(materialID, attributes.ior);
+        if (materialID >= 0) {
+            if (m_scene->getMaterialType(materialID) != attributes.materialType) {
+                m_scene->setMaterialType(materialID, attributes.materialType);
+            } else {
+                m_scene->setColor(materialID, attributes.albedo);
+                m_scene->setEmit(materialID, attributes.emitted);
+                m_scene->setIOR(materialID, attributes.ior);
+            }
         }
 
         m_scene->setCamera(attributes.camera);

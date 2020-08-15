@@ -3,28 +3,31 @@
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 
+#include "core/ray.h"
+#include "core/vec3.h"
+#include "frame.h"
 #include "hit_record.h"
+#include "lights/environment_light.h"
+#include "lights/sampler.h"
 #include "materials/bsdf.h"
 #include "materials/bsdf_sample.h"
 #include "materials/lambertian.h"
 #include "materials/material_lookup.h"
-#include "ray.h"
-#include "sampler.h"
-#include "sphere.h"
-#include "triangle.h"
-#include "vec3.h"
+#include "primitives/sphere.h"
+#include "primitives/triangle.h"
 
 namespace rays {
 
-class PrimitiveList {
+class World {
 public:
-    __device__ PrimitiveList(
+    __device__ World(
         Triangle *triangles,
         size_t triangleSize,
         Sphere *spheres,
         size_t sphereSize,
         int *lightIndices,
         size_t lightIndexSize,
+        EnvironmentLight *environmentLight,
         MaterialLookup *materialLookup
     ) : m_triangles(triangles),
         m_triangleSize(triangleSize),
@@ -32,6 +35,7 @@ public:
         m_sphereSize(sphereSize),
         m_lightIndices(lightIndices),
         m_lightIndexSize(lightIndexSize),
+        m_environmentLight(environmentLight),
         m_materialLookup(materialLookup)
     {}
 
@@ -42,44 +46,35 @@ public:
         HitRecord& record
     ) const;
 
-    __device__ LightSample sampleDirectLights(Vec3 hitPoint, curandState &randState) const {
+    __device__ LightSample sampleDirectLights(
+        const Vec3 &hitPoint,
+        const Frame &frame,
+        curandState &randState
+    ) const {
         const float xi1 = curand_uniform(&randState);
         const float xi2 = curand_uniform(&randState);
         const float xi3 = curand_uniform(&randState);
 
         return Sampler::sampleDirectLights(
             hitPoint,
+            frame,
             make_float3(xi1, xi2, xi3),
             m_lightIndices,
             m_lightIndexSize,
-            m_triangles
+            m_triangles,
+            *m_environmentLight,
+            *m_materialLookup
         );
     }
 
     __device__ Vec3 getEmit(const int materialID) const {
-        MaterialIndex index = m_materialLookup->indices[materialID];
-        return getEmit(index);
+        return m_materialLookup->getEmit(materialID);
     }
 
 
     __device__ Vec3 getEmit(const int materialID, const HitRecord &record) const {
         MaterialIndex index = m_materialLookup->indices[materialID];
         return getEmit(index, record);
-    }
-
-    __device__ Vec3 getEmit(const MaterialIndex index) const {
-        switch(index.materialType) {
-        case MaterialType::Lambertian: {
-            return m_materialLookup->lambertians[index.index].getEmit();
-        }
-        case MaterialType::Mirror: {
-            return m_materialLookup->mirrors[index.index].getEmit();
-        }
-        case MaterialType::Glass: {
-            return m_materialLookup->glasses[index.index].getEmit();
-        }
-        }
-        return Vec3(0.f);
     }
 
     __device__ Vec3 getEmit(const MaterialIndex index, const HitRecord &record) const {
@@ -111,6 +106,10 @@ public:
         return bsdf.sample(record, randState);
     }
 
+    __device__ Vec3 environmentL(const Vec3 &wi) const {
+        return m_environmentLight->getEmit(wi);
+    }
+
 private:
     Triangle *m_triangles;
     size_t m_triangleSize;
@@ -120,6 +119,8 @@ private:
 
     int *m_lightIndices;
     size_t m_lightIndexSize;
+
+    EnvironmentLight *m_environmentLight;
 
     MaterialLookup *m_materialLookup;
 };

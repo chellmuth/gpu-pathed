@@ -1,5 +1,5 @@
 #include "materials/types.h"
-#include "path_tracer.h"
+#include "renderers/path_tracer.h"
 #include "render_session.h"
 #include "scene_model.h"
 
@@ -48,6 +48,7 @@ PYBIND11_MODULE(path_tracer, m) {
         .value("Lambertian", MaterialType::Lambertian)
         .value("Mirror", MaterialType::Mirror)
         .value("Glass", MaterialType::Glass)
+        .value("None", MaterialType::None)
         .export_values();
 
     py::class_<MaterialIndex>(m, "MaterialIndex")

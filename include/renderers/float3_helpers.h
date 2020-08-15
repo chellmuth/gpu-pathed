@@ -1,7 +1,7 @@
 #pragma once
 
 #include "renderers/random.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 
 __forceinline__ __device__ float2 sample_float2(unsigned int &seed)

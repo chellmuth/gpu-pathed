@@ -5,9 +5,9 @@
 
 #include "materials/lambertian.h"
 #include "materials/types.h"
-#include "path_tracer.h"
+#include "renderers/path_tracer.h"
 #include "scene.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays {
 

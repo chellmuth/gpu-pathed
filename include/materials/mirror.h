@@ -6,7 +6,7 @@
 #include "hit_record.h"
 #include "materials/bsdf_sample.h"
 #include "materials/params.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays {
 

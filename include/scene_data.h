@@ -3,13 +3,14 @@
 #include <memory>
 #include <vector>
 
+#include "lights/environment_light.h"
 #include "materials/glass.h"
 #include "materials/lambertian.h"
 #include "materials/mirror.h"
 #include "materials/params.h"
 #include "parsers/obj_parser.h"
-#include "sphere.h"
-#include "triangle.h"
+#include "primitives/sphere.h"
+#include "primitives/triangle.h"
 
 namespace rays {
 
@@ -19,6 +20,7 @@ struct SceneData {
     std::vector<int> lightIndices;
 
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
+    EnvironmentLightParams environmentLightParams;
 
     SceneData() = default;
     SceneData(SceneData&&) = default;
@@ -44,6 +46,7 @@ struct ParseRequest {
     std::vector<ObjParser> objParsers;
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
     std::vector<int> defaultMaterialIDs;
+    EnvironmentLightParams environmentLightParams;
 };
 
 SceneData createSceneData(ParseRequest &request);

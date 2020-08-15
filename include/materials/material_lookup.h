@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "core/vec3.h"
 #include "materials/glass.h"
 #include "materials/lambertian.h"
 #include "materials/mirror.h"
@@ -17,9 +18,31 @@ struct MaterialLookup {
     Mirror *mirrors;
     Glass *glasses;
 
+    __device__ Vec3 getEmit(const int materialID) const {
+        MaterialIndex index = indices[materialID];
+        return getEmit(index);
+    }
+
     void mallocMaterials(const SceneData &sceneData);
     void copyMaterials(const SceneData &sceneData);
     void freeMaterials();
+
+private:
+
+    __device__ Vec3 getEmit(const MaterialIndex index) const {
+        switch(index.materialType) {
+        case MaterialType::Lambertian: {
+            return lambertians[index.index].getEmit();
+        }
+        case MaterialType::Mirror: {
+            return mirrors[index.index].getEmit();
+        }
+        case MaterialType::Glass: {
+            return glasses[index.index].getEmit();
+        }
+        }
+        return Vec3(0.f);
+    }
 };
 
 }

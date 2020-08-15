@@ -1,7 +1,7 @@
 #include "renderers/renderer.h"
 
 #include "macro_helper.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
 

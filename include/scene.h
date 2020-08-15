@@ -2,15 +2,15 @@
 
 #include <vector>
 
-#include "camera.h"
+#include "core/camera.h"
 #include "materials/glass.h"
 #include "materials/lambertian.h"
 #include "materials/mirror.h"
-#include "primitive.h"
+#include "world.h"
 #include "scene_data.h"
-#include "sphere.h"
-#include "triangle.h"
-#include "vec3.h"
+#include "primitives/sphere.h"
+#include "primitives/triangle.h"
+#include "core/vec3.h"
 
 namespace rays {
 
@@ -25,7 +25,7 @@ public:
     ) : m_camera(camera),
         m_sceneData(std::move(sceneData)),
         m_maxDepth(defaultMaxDepth),
-        m_nextEventEstimation(true)
+        m_nextEventEstimation(false)
     {}
 
     const Camera &getCamera() const { return m_camera; }

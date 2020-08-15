@@ -6,16 +6,16 @@
 #include "hit_test.h"
 #include "io/image.h"
 #include "materials/lambertian.h"
-#include "path_tracer.h"
+#include "renderers/path_tracer.h"
 #include "render_record.h"
 #include "renderers/g_buffer.h"
 #include "renderers/optix_tracer.h"
 #include "renderers/renderer.h"
 #include "scene.h"
 #include "scene_model.h"
-#include "sphere.h"
+#include "primitives/sphere.h"
 #include "spp_optimizer.h"
-#include "triangle.h"
+#include "primitives/triangle.h"
 
 namespace rays {
 
@@ -84,12 +84,20 @@ public:
             m_pboManager.swapPBOs();
             m_sceneModel->updateSpp(m_pathTracer->getSpp());
 
-            const int sppThreshold = 128;
-            if (m_pathTracer->getSpp() >= sppThreshold
-                && m_pathTracer->getSpp() - m_currentRecord.spp < sppThreshold
-            ) {
-                std::vector<float> radiances = m_pathTracer->getRadianceBuffer();
-                Image::save(m_width, m_height, radiances, "out.exr");
+            constexpr int thresholds[] = {
+                2, 4, 8, 16, 32, 64, 128, 256, 512, 1024,
+                2048, 4096, 8192, 16384, 32768, 65536, 131072,
+                262144, 524288, 1048576
+            };
+
+            for (int sppThreshold : thresholds) {
+                if (m_pathTracer->getSpp() >= sppThreshold
+                    && m_pathTracer->getSpp() - m_currentRecord.spp < sppThreshold
+                ) {
+                    std::vector<float> radiances = m_pathTracer->getRadianceBuffer();
+                    Image::save(m_width, m_height, radiances, "out.exr");
+                    break;
+                }
             }
 
             if (m_resetRenderer) {

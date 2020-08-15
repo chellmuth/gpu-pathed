@@ -6,15 +6,15 @@
 #include "materials/bsdf_sample.h"
 #include "materials/lambertian.h"
 #include "materials/types.h"
-#include "ray.h"
+#include "core/ray.h"
 #include "renderers/float3_helpers.h"
 #include "renderers/optix.h"
 #include "renderers/payload_helpers.h"
 #include "renderers/random.h"
-#include "sampler.h"
+#include "lights/sampler.h"
 #include "tangent_frame.h"
-#include "triangle.h"
-#include "vec3.h"
+#include "primitives/triangle.h"
+#include "core/vec3.h"
 #include "world_frame.h"
 
 extern "C" {
@@ -68,6 +68,8 @@ __forceinline__ __device__ static rays::Vec3 directSampleBSDF(
 ) {
     if (!bsdfSample.isDelta) { return rays::Vec3(0.f); }
 
+    const float bsdfWeight = 1.f;
+
     const rays::Vec3 bounceDirection = intersection.frame.toWorld(bsdfSample.wiLocal);
     const rays::Ray bounceRay(intersection.point, bounceDirection);
 
@@ -85,27 +87,25 @@ __forceinline__ __device__ static rays::Vec3 directSampleBSDF(
         0.0f,
         OptixVisibilityMask(255),
         OPTIX_RAY_FLAG_NONE,
-        0,                   // SBT offset   -- See SBT discussion
-        1,                   // SBT stride   -- See SBT discussion
-        0,                   // missSBTIndex -- See SBT discussion
+        0, 1, 0, // sbt offset, stride, miss index
         p0, p1
     );
 
+    rays::Vec3 emit(0.f);
     const bool hit = !prd.done;
-    if (!hit) { return rays::Vec3(0.f); }
+    if (hit) {
+        emit = getEmit(prd.materialID);
+    } else {
+        emit = params.environmentLight.getEmit(bounceRay.direction());
+    }
 
-    const rays::Vec3 emit = getEmit(prd.materialID);
     if (emit.isZero()) { return rays::Vec3(0.f); }
 
-    const float bsdfWeight = 1.f;
-
-    const rays::Vec3 bsdfContribution = emit
+    return emit
         * bsdfWeight
         * bsdfSample.f
         * rays::TangentFrame::absCosTheta(bsdfSample.wiLocal)
         / bsdfSample.pdf;
-
-    return bsdfContribution;
 }
 
 __forceinline__ __device__ static rays::Vec3 directSampleLights(
@@ -122,15 +122,19 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
 
     const rays::LightSample lightSample = rays::Sampler::sampleDirectLights(
         intersection.point,
+        intersection.frame,
         make_float3(xi1, xi2, xi3),
         params.lightIndices,
         params.lightIndexSize,
-        params.triangles
+        params.triangles,
+        params.environmentLight,
+        *params.materialLookup
     );
 
-    const rays::Vec3 lightDirection = (lightSample.point - intersection.point);
-    const rays::Vec3 wiWorld = normalized(lightDirection);
-    const rays::Ray shadowRay(intersection.point, wiWorld);
+    const rays::Ray shadowRay(
+        intersection.point,
+        lightSample.wi
+    );
 
     PerRayData prd;
     prd.done = false;
@@ -142,7 +146,7 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
         vec3_to_float3(shadowRay.origin()),
         vec3_to_float3(shadowRay.direction()),
         1e-4,
-        lightDirection.length() - 2e-4,
+        lightSample.distance - 2e-4,
         0.0f,
         OptixVisibilityMask(255),
         OPTIX_RAY_FLAG_NONE,
@@ -153,18 +157,17 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
     );
 
     const bool isHit = !prd.done;
-    if (!isHit) {
-        const rays::Vec3 wi = intersection.frame.toLocal(wiWorld);
-        const float pdf = lightSample.solidAnglePDF(intersection.point);
+    if (isHit) {
+        return rays::Vec3(0.f);
+    } else {
+        const rays::Vec3 wiLocal = intersection.frame.toLocal(lightSample.wi);
         const rays::Vec3 lightContribution = rays::Vec3(1.f)
-            * getEmit(lightSample.materialID)
-            * f(materialID, intersection.woLocal, wi)
-            * rays::WorldFrame::absCosTheta(intersection.normal, wiWorld)
-            / pdf;
+            * lightSample.emitted
+            * f(materialID, intersection.woLocal, wiLocal)
+            * rays::WorldFrame::absCosTheta(intersection.normal, lightSample.wi)
+            / lightSample.pdf;
 
         return lightContribution;
-    } else {
-        return rays::Vec3(0.f);
     }
 }
 
@@ -215,7 +218,9 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
         p0, p1
     );
 
-    if (!prd.done) {
+    if (prd.done) {
+        return params.environmentLight.getEmit(direction);
+    } else {
         const rays::Intersection &intersection = prd.intersection;
         if (intersection.isFront()) {
             result += getEmit(prd.materialID);
@@ -228,12 +233,11 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
         const rays::Intersection &intersection = prd.intersection;
         const rays::BSDFSample bsdfSample = sample(prd.materialID, intersection, seed);
 
-        result += direct(intersection, bsdfSample, prd.materialID, seed) * beta;
+        result += beta * direct(intersection, bsdfSample, prd.materialID, seed);
 
         const rays::Frame &frame = intersection.frame;
         const rays::Vec3 bounceWorld = normalized(frame.toWorld(bsdfSample.wiLocal));
 
-        const float3 normal = vec3_to_float3(intersection.normal);
         beta *= bsdfSample.f
             * rays::TangentFrame::absCosTheta(bsdfSample.wiLocal)
             / bsdfSample.pdf;
@@ -248,9 +252,7 @@ __forceinline__ __device__ static rays::Vec3 LiNEE(
             0.0f,
             OptixVisibilityMask(255),
             OPTIX_RAY_FLAG_NONE,
-            0,
-            1,
-            0,
+            0, 1, 0,
             p0, p1
         );
     }
@@ -291,7 +293,9 @@ __forceinline__ __device__ static rays::Vec3 LiNaive(
         p0, p1
     );
 
-    if (!prd.done) {
+    if (prd.done) {
+        return params.environmentLight.getEmit(direction);
+    } else {
         const rays::Intersection &intersection = prd.intersection;
         if (intersection.isFront()) {
             result += getEmit(prd.materialID);
@@ -328,7 +332,10 @@ __forceinline__ __device__ static rays::Vec3 LiNaive(
             p0, p1
         );
 
-        if (prd.done) { break; }
+        if (prd.done) {
+            result += beta * params.environmentLight.getEmit(bounceWorld);
+            break;
+        }
 
         if (intersection.isFront()) {
             result += getEmit(prd.materialID) * beta;

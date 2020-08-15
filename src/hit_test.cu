@@ -4,13 +4,13 @@
 #include <iostream>
 #include <memory>
 
-#include "camera.h"
+#include "core/camera.h"
 #include "macro_helper.h"
 #include "materials/lambertian.h"
 #include "materials/types.h"
-#include "primitive.h"
+#include "world.h"
 #include "scene.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
 
@@ -25,7 +25,7 @@ struct HitTest {
 __global__ static void hitTestKernel(
     int pixelX,
     int pixelY,
-    PrimitiveList *world,
+    World *world,
     Camera *camera,
     HitTest *hitTest
 ) {

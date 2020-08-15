@@ -1,15 +1,15 @@
-#include "path_tracer.h"
+#include "renderers/path_tracer.h"
 
 #include <cfloat>
 #include <iostream>
 
-#include "camera.h"
+#include "core/camera.h"
 #include "frame.h"
 #include "framebuffer.h"
 #include "macro_helper.h"
-#include "primitive.h"
+#include "world.h"
 #include "scene.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
 
@@ -37,10 +37,11 @@ __global__ static void renderInit(int width, int height, curandState *randState)
 __device__ static Vec3 directSampleBSDF(
     const HitRecord &hitRecord,
     const BSDFSample &bsdfSample,
-    const PrimitiveList *world,
+    const World *world,
     curandState &randState
 ) {
     if (!bsdfSample.isDelta) { return Vec3(0.f); }
+    const float brdfWeight = 1.f;
 
     const Frame intersection(hitRecord.normal);
     const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
@@ -48,11 +49,15 @@ __device__ static Vec3 directSampleBSDF(
 
     HitRecord brdfRecord;
     const bool hit = world->hit(bounceRay, 1e-3, FLT_MAX, brdfRecord);
-    if (!hit) { return Vec3(0.f); }
+    if (!hit) {
+        return world->environmentL(bounceDirection)
+            * brdfWeight
+            * bsdfSample.f
+            * TangentFrame::absCosTheta(bsdfSample.wiLocal)
+            / bsdfSample.pdf;
+    }
     const Vec3 emit = world->getEmit(brdfRecord.materialID, brdfRecord);
     if (emit.isZero()) { return Vec3(0.f); }
-
-    const float brdfWeight = 1.f;
 
     const Vec3 brdfContribution = emit
         * brdfWeight
@@ -66,33 +71,33 @@ __device__ static Vec3 directSampleBSDF(
 __device__ static Vec3 directSampleLights(
     const HitRecord &hitRecord,
     const BSDFSample &bsdfSample,
-    const PrimitiveList *world,
+    const World *world,
     curandState &randState
 ) {
     if (bsdfSample.isDelta) { return 0.f; }
 
-    const LightSample lightSample = world->sampleDirectLights(hitRecord.point, randState);
-
-    const Vec3 wiWorld = normalized(lightSample.point - hitRecord.point);
-    const Ray shadowRay(hitRecord.point, wiWorld);
+    const LightSample lightSample = world->sampleDirectLights(
+        hitRecord.point,
+        Frame(hitRecord.normal),
+        randState
+    );
+    const Ray shadowRay(hitRecord.point, lightSample.wi);
 
     HitRecord occlusionRecord;
     const bool occluded = world->hit(
         shadowRay,
         1e-4,
-        (lightSample.point - hitRecord.point).length() - 2e-4,
+        lightSample.distance - 2e-4,
         occlusionRecord
     );
 
     if (!occluded) {
-        const Vec3 wi = Frame(hitRecord.normal).toLocal(wiWorld);
-        const float pdf = lightSample.solidAnglePDF(hitRecord.point);
-        const Vec3 emit = world->getEmit(lightSample.materialID);
+        const Vec3 wiLocal = Frame(hitRecord.normal).toLocal(lightSample.wi);
         const Vec3 lightContribution = Vec3(1.f)
-            * emit
-            * world->f(hitRecord.materialID, hitRecord.wo, wi)
-            * WorldFrame::absCosTheta(hitRecord.normal, wiWorld)
-            / pdf;
+            * lightSample.emitted
+            * world->f(hitRecord.materialID, hitRecord.wo, wiLocal)
+            * WorldFrame::absCosTheta(hitRecord.normal, lightSample.wi)
+            / lightSample.pdf;
 
         return lightContribution;
     } else {
@@ -103,7 +108,7 @@ __device__ static Vec3 directSampleLights(
 __device__ static Vec3 direct(
     const HitRecord &hitRecord,
     const BSDFSample &bsdfSample,
-    const PrimitiveList *world,
+    const World *world,
     curandState &randState
 ) {
     Vec3 result(0.f);
@@ -116,7 +121,7 @@ __device__ static Vec3 direct(
 
 __device__ static Vec3 calculateLiNEE(
     const Ray& ray,
-    const PrimitiveList *world,
+    const World *world,
     int maxDepth,
     curandState &randState
 ) {
@@ -134,7 +139,7 @@ __device__ static Vec3 calculateLiNEE(
             result += emit * beta;
         }
     } else {
-        return Vec3(0.f);
+        return world->environmentL(ray.direction());
     }
 
     for (int path = 1; path < maxDepth; path++) {
@@ -160,7 +165,7 @@ __device__ static Vec3 calculateLiNEE(
 
 __device__ static Vec3 calculateLiNaive(
     const Ray& ray,
-    const PrimitiveList *world,
+    const World *world,
     int maxDepth,
     curandState &randState
 ) {
@@ -178,7 +183,7 @@ __device__ static Vec3 calculateLiNaive(
             result += emit * beta;
         }
     } else {
-        return Vec3(0.f);
+        return world->environmentL(ray.direction());
     }
 
     for (int path = 1; path < maxDepth; path++) {
@@ -200,7 +205,7 @@ __device__ static Vec3 calculateLiNaive(
                 result += emit * beta;
             }
         } else {
-            return result;
+            return result + world->environmentL(bounceRay.direction()) * beta;
         }
     }
 
@@ -211,7 +216,7 @@ __global__ static void renderKernel(
     Vec3 *passRadiances,
     int width, int height,
     curandState *randState,
-    PrimitiveList *world,
+    World *world,
     Camera *camera,
     int maxDepth,
     int spp,

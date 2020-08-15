@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays { namespace SceneAdapter {
 
@@ -57,6 +57,7 @@ SceneData createSceneData(ParseRequest &request)
     }
 
     sceneData.materialParams = std::move(request.materialParams);
+    sceneData.environmentLightParams = request.environmentLightParams;
 
     // Post-process lights
     size_t triangleCount = sceneData.triangles.size();

@@ -37,35 +37,41 @@ add_custom_target(
 )
 
 add_library(rays STATIC
-  src/camera.cu
   src/cuda_globals.cu
   src/framebuffer.cu
   src/hit_test.cu
-  src/path_tracer.cu
-  src/primitive.cu
+  src/world.cu
   src/render_session.cu
   src/scene.cu
   src/scene_data.cu
   src/scene_model.cu
-  src/sphere.cu
   src/spp_optimizer.cpp
   src/transform.cu
-  src/triangle.cu
+
+  src/core/camera.cu
 
   src/io/image.cpp
 
+  src/lights/environment_light.cu
+
   src/materials/lambertian.cu
-  src/materials/material_lookup.cpp
+  src/materials/material_lookup.cu
   src/materials/mirror.cu
 
-  src/renderers/g_buffer.cu
-  src/renderers/optix.cpp
-  src/renderers/optix_tracer.cu
-  src/renderers/renderer.cpp
+  src/math/distribution.cu
 
   src/parsers/mtl_parser.cpp
   src/parsers/obj_parser.cpp
   src/parsers/string_util.cpp
+
+  src/primitives/sphere.cu
+  src/primitives/triangle.cu
+
+  src/renderers/g_buffer.cu
+  src/renderers/optix.cpp
+  src/renderers/optix_tracer.cu
+  src/renderers/path_tracer.cu
+  src/renderers/renderer.cpp
 )
 
 target_include_directories(rays PUBLIC include optix vendor)
@@ -90,3 +96,6 @@ add_executable(app
 )
 target_include_directories(app PRIVATE app)
 target_link_libraries(app rays Qt5::Core Qt5::Widgets)
+
+# Catch2 tests
+add_subdirectory(test)

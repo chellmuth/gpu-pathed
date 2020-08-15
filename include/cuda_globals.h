@@ -1,15 +1,11 @@
 #pragma once
 
-#include "camera.h"
-#include "materials/glass.h"
-#include "materials/lambertian.h"
+#include "core/camera.h"
 #include "materials/material_lookup.h"
-#include "materials/mirror.h"
-#include "materials/types.h"
-#include "primitive.h"
+#include "world.h"
 #include "scene_data.h"
-#include "sphere.h"
-#include "triangle.h"
+#include "primitives/sphere.h"
+#include "primitives/triangle.h"
 
 namespace rays {
 
@@ -21,19 +17,17 @@ public:
     void initMaterials(const SceneData &sceneData);
     void updateMaterials(const SceneData &sceneData);
 
-    void copySceneData(const SceneData &sceneData);
     void mallocWorld(const SceneData &sceneData);
+    void copySceneData(const SceneData &sceneData);
 
     MaterialLookup m_materialLookup;
+    MaterialLookup *d_materialLookup;
+
+    EnvironmentLight m_environmentLight;
+    EnvironmentLight *d_environmentLight;
 
     Camera *d_camera;
-    PrimitiveList *d_world;
-
-    MaterialLookup *d_materialLookup;
-    MaterialIndex *d_materialIndices;
-    Lambertian *d_lambertians;
-    Mirror *d_mirrors;
-    Glass *d_glasses;
+    World *d_world;
 
     Triangle *d_triangles;
     Sphere *d_spheres;

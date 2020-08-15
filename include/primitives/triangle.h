@@ -3,9 +3,9 @@
 #include <curand_kernel.h>
 
 #include "hit_record.h"
-#include "ray.h"
+#include "core/ray.h"
 #include "surface_sample.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays {
 

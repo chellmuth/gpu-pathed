@@ -2,9 +2,9 @@
 
 #include <curand_kernel.h>
 
-#include "ray.h"
+#include "core/ray.h"
 #include "transform.h"
-#include "vec3.h"
+#include "core/vec3.h"
 
 namespace rays {
 

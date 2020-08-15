@@ -23,25 +23,27 @@ void CUDAGlobals::copyCamera(const Camera &camera)
 }
 
 __global__ static void initWorldKernel(
-    PrimitiveList *world,
+    World *world,
     Triangle *triangles,
     int triangleSize,
     Sphere *spheres,
     int sphereSize,
     int *lightIndices,
     int lightIndexSize,
+    EnvironmentLight *environmentLight,
     MaterialLookup *materialLookup
 ) {
     if (blockIdx.x != 0 || blockIdx.y != 0) { return; }
     if (threadIdx.x != 0 || threadIdx.y != 0) { return; }
 
-    *world = PrimitiveList(
+    *world = World(
         triangles,
         triangleSize,
         spheres,
         sphereSize,
         lightIndices,
         lightIndexSize,
+        environmentLight,
         materialLookup
     );
 }
@@ -75,7 +77,6 @@ void CUDAGlobals::updateMaterials(const SceneData &sceneData)
     ));
 }
 
-
 void CUDAGlobals::mallocWorld(const SceneData &sceneData)
 {
     const int triangleSize = sceneData.triangles.size();
@@ -85,8 +86,9 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
     checkCudaErrors(cudaMalloc((void **)&d_triangles, triangleSize * sizeof(Triangle)));
     checkCudaErrors(cudaMalloc((void **)&d_spheres, sphereSize * sizeof(Sphere)));
     checkCudaErrors(cudaMalloc((void **)&d_lightIndices, lightIndexSize * sizeof(int)));
+    checkCudaErrors(cudaMalloc((void **)&d_environmentLight, sizeof(EnvironmentLight)));
 
-    checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(PrimitiveList)));
+    checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(World)));
 
     initWorldKernel<<<1, 1>>>(
         d_world,
@@ -96,9 +98,13 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
         sphereSize,
         d_lightIndices,
         lightIndexSize,
+        d_environmentLight,
         d_materialLookup
     );
     checkCudaErrors(cudaDeviceSynchronize());
+
+    const auto &environmentLightParams = sceneData.environmentLightParams;
+    m_environmentLight = environmentLightParams.createEnvironmentLight();
 }
 
 void CUDAGlobals::copySceneData(const SceneData &sceneData)
@@ -121,6 +127,13 @@ void CUDAGlobals::copySceneData(const SceneData &sceneData)
         d_lightIndices,
         sceneData.lightIndices.data(),
         sceneData.lightIndices.size() * sizeof(int),
+        cudaMemcpyHostToDevice
+    ));
+
+    checkCudaErrors(cudaMemcpy(
+        d_environmentLight,
+        &m_environmentLight,
+        sizeof(EnvironmentLight),
         cudaMemcpyHostToDevice
     ));
 }
