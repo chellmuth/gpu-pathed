@@ -42,7 +42,7 @@ SceneData getSceneData(int index)
             ObjParser objParser(sceneFilename);
             request.objParsers.push_back(objParser);
 
-            auto ballParams = std::make_unique<MicrofacetParams>(0.f);
+            auto ballParams = std::make_unique<MicrofacetParams>(0.3f);
             request.materialParams.push_back(std::move(ballParams));
             request.defaultMaterialIDs.push_back(2);
         }

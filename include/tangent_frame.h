@@ -13,4 +13,19 @@ namespace rays { namespace TangentFrame {
         return fabsf(vector.z());
     }
 
+    __device__ inline float cos2Theta(const Vec3 &vector)
+    {
+        return vector.z() * vector.z();
+    }
+
+    __device__ inline float sin2Theta(const Vec3 &vector)
+    {
+        return 1.f - cos2Theta(vector);
+    }
+
+    __device__ inline float tan2Theta(const Vec3 &vector)
+    {
+        return sin2Theta(vector) / cos2Theta(vector);
+    }
+
 } }
