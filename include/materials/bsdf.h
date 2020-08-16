@@ -28,6 +28,9 @@ public:
         case MaterialType::Glass: {
             return m_materialLookupPtr->glasses[index.index].f(wo, wi);
         }
+        case MaterialType::Microfacet: {
+            return m_materialLookupPtr->microfacets[index.index].f(wo, wi);
+        }
         }
         return Vec3(0.f);
     }
@@ -46,6 +49,9 @@ public:
         }
         case MaterialType::Glass: {
             return m_materialLookupPtr->glasses[index.index].sample(intersection.woLocal, seed);
+        }
+        case MaterialType::Microfacet: {
+            return m_materialLookupPtr->microfacets[index.index].sample(intersection.woLocal, seed);
         }
         }
         return {};
@@ -66,6 +72,9 @@ public:
         case MaterialType::Glass: {
             return m_materialLookupPtr->glasses[index.index].sample(record.wo, randState);
         }
+        case MaterialType::Microfacet: {
+            return m_materialLookupPtr->microfacets[index.index].sample(record.wo, randState);
+        }
         }
         return {};
     }
@@ -81,6 +90,9 @@ public:
         }
         case MaterialType::Glass: {
             return m_materialLookupPtr->glasses[index.index].getEmit();
+        }
+        case MaterialType::Microfacet: {
+            return m_materialLookupPtr->microfacets[index.index].getEmit();
         }
         }
         return Vec3(0.f);

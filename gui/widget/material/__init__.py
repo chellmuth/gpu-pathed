@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
 
 from gui.widget.material.glass import GlassWidget
 from gui.widget.material.lambertian import LambertianWidget
+from gui.widget.material.microfacet import MicrofacetWidget
 from gui.widget.material.mirror import MirrorWidget
 from path_tracer import MaterialType
 
@@ -56,6 +57,7 @@ class MaterialWidget(QGroupBox):
                 MaterialType.Lambertian: LambertianWidget,
                 MaterialType.Mirror: MirrorWidget,
                 MaterialType.Glass: GlassWidget,
+                MaterialType.Microfacet: MicrofacetWidget,
             }
             oldWidget = self.materialWidget
             self.materialWidget = widgets[materialType](self.model, self)
@@ -88,6 +90,7 @@ class MaterialTypeWidget(QWidget):
         menu.addAction("Lambertian", lambda: self.handleStateChanged(MaterialType.Lambertian))
         menu.addAction("Mirror", lambda: self.handleStateChanged(MaterialType.Mirror))
         menu.addAction("Glass", lambda: self.handleStateChanged(MaterialType.Glass))
+        menu.addAction("Microfacet", lambda: self.handleStateChanged(MaterialType.Microfacet))
         self.materialButton.setMenu(menu)
 
         layout.addWidget(self.materialButton)
@@ -103,6 +106,8 @@ class MaterialTypeWidget(QWidget):
             self.materialButton.setText("Mirror")
         elif materialType == MaterialType.Glass:
             self.materialButton.setText("Glass")
+        elif materialType == MaterialType.Microfacet:
+            self.materialButton.setText("Microfacet")
         else:
             print("Error, unsupported material type")
             exit(1)

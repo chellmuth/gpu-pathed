@@ -5,6 +5,7 @@
 #include "core/vec3.h"
 #include "materials/glass.h"
 #include "materials/lambertian.h"
+#include "materials/microfacet.h"
 #include "materials/mirror.h"
 #include "materials/types.h"
 #include "scene_data.h"
@@ -17,6 +18,7 @@ struct MaterialLookup {
     Lambertian *lambertians;
     Mirror *mirrors;
     Glass *glasses;
+    Microfacet *microfacets;
 
     __device__ Vec3 getEmit(const int materialID) const {
         MaterialIndex index = indices[materialID];
@@ -39,6 +41,9 @@ private:
         }
         case MaterialType::Glass: {
             return glasses[index.index].getEmit();
+        }
+        case MaterialType::Microfacet: {
+            return microfacets[index.index].getEmit();
         }
         }
         return Vec3(0.f);

@@ -48,6 +48,7 @@ PYBIND11_MODULE(path_tracer, m) {
         .value("Lambertian", MaterialType::Lambertian)
         .value("Mirror", MaterialType::Mirror)
         .value("Glass", MaterialType::Glass)
+        .value("Microfacet", MaterialType::Microfacet)
         .value("None", MaterialType::None)
         .export_values();
 
@@ -64,6 +65,8 @@ PYBIND11_MODULE(path_tracer, m) {
         .def("getEmit", &SceneModel::getEmit)
         .def("getIOR", &SceneModel::getIOR)
         .def("setIOR", &SceneModel::setIOR)
+        .def("getAlpha", &SceneModel::getAlpha)
+        .def("setAlpha", &SceneModel::setAlpha)
         .def("getMaterialID", &SceneModel::getMaterialID)
         .def("getMaterialType", &SceneModel::getMaterialType)
         .def("setMaterialType", &SceneModel::setMaterialType)

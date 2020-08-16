@@ -6,6 +6,7 @@ enum class MaterialType {
     Lambertian = 0,
     Mirror = 1,
     Glass = 2,
+    Microfacet = 3,
     None
 };
 

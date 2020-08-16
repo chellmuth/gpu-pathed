@@ -51,6 +51,10 @@ public:
             newParams = std::make_unique<GlassParams>(1.4f);
             break;
         }
+        case MaterialType::Microfacet: {
+            newParams = std::make_unique<MicrofacetParams>(0.1f);
+            break;
+        }
         }
 
         m_sceneData.materialParams[materialID] = std::move(newParams);
@@ -78,6 +82,14 @@ public:
 
     void setIOR(int materialID, float ior) {
         m_sceneData.materialParams[materialID]->setIOR(ior);
+    }
+
+    float getAlpha(int materialID) const {
+        return m_sceneData.materialParams[materialID]->getAlpha();
+    }
+
+    void setAlpha(int materialID, float alpha) {
+        m_sceneData.materialParams[materialID]->setAlpha(alpha);
     }
 
     MaterialType getMaterialType(int materialID) const {

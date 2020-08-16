@@ -66,7 +66,7 @@ RenderSession::RenderSession(int width, int height)
     }
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
 
-    constexpr int sceneIndex = 2;
+    constexpr int sceneIndex = 0;
     SceneData sceneData = SceneParameters::getSceneData(sceneIndex);
     Camera camera = SceneParameters::getCamera(sceneIndex, { width, height });
 
@@ -97,6 +97,7 @@ RenderSession::RenderSession(int width, int height)
                 m_scene->setColor(materialID, attributes.albedo);
                 m_scene->setEmit(materialID, attributes.emitted);
                 m_scene->setIOR(materialID, attributes.ior);
+                m_scene->setAlpha(materialID, attributes.alpha);
             }
         }
 

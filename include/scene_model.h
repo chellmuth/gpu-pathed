@@ -23,6 +23,7 @@ struct SceneModelAttributes {
     Vec3 albedo;
     Vec3 emitted;
     float ior;
+    float alpha;
     Camera camera;
     RendererType rendererType;
     int maxDepth;
@@ -54,6 +55,9 @@ public:
 
     void setIOR(float ior);
     float getIOR() const;
+
+    void setAlpha(float alpha);
+    float getAlpha() const;
 
     int getMaterialID() const;
     void setMaterialID(int materialID);

@@ -8,7 +8,8 @@ namespace rays {
 enum class MaterialParam {
     Albedo,
     Emit,
-    IOR
+    IOR,
+    Alpha
 };
 
 class MaterialParams {
@@ -23,6 +24,9 @@ public:
 
     virtual float getIOR() const { return 0.f; }
     virtual void setIOR(float ior) {}
+
+    virtual float getAlpha() const { return 0.f; }
+    virtual void setAlpha(float ior) {}
 };
 
 class LambertianParams : public MaterialParams {
@@ -80,6 +84,26 @@ public:
     }
 private:
     float m_ior;
+};
+
+class MicrofacetParams : public MaterialParams {
+public:
+    MicrofacetParams(float alpha) : m_alpha(alpha) {}
+
+    MaterialType getMaterialType() const override {
+        return MaterialType::Microfacet;
+    }
+
+    float getAlpha() const override {
+        return m_alpha;
+    }
+
+    void setAlpha(float alpha) override {
+        m_alpha = alpha;
+    }
+
+private:
+    float m_alpha;
 };
 
 }
