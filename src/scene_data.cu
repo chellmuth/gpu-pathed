@@ -56,6 +56,7 @@ SceneData createSceneData(ParseRequest &request)
         }
     }
 
+    sceneData.spheres = request.spheres;
     sceneData.materialParams = std::move(request.materialParams);
     sceneData.environmentLightParams = request.environmentLightParams;
 
