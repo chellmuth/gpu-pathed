@@ -8,6 +8,8 @@
 #include "core/vec3.h"
 #include "lights/environment_light.h"
 #include "materials/lambertian.h"
+#include "primitives/sphere.h"
+#include "primitives/triangle.h"
 #include "scene.h"
 
 namespace rays {
@@ -24,6 +26,7 @@ struct Params
     bool useNextEventEstimation;
     MaterialLookup *materialLookup;
     Triangle *triangles;
+    Sphere *spheres;
     int *lightIndices;
     int lightIndexSize;
     EnvironmentLight environmentLight;

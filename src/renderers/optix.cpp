@@ -1,5 +1,6 @@
 #include "renderers/optix.h"
 
+#include <algorithm>
 #include <assert.h>
 #include <iomanip>
 #include <iostream>
@@ -58,7 +59,130 @@ static void initContext(OptixDeviceContext &context)
     checkOptix(optixDeviceContextCreate(cuContext, &options, &context));
 }
 
-static void initAcceleration(
+static void initSphereAcceleration(
+    OptixDeviceContext &context,
+    OptixTraversableHandle &gasHandle,
+    CUdeviceptr &d_gasOutputBuffer,
+    const SceneData &sceneData
+) {
+    // Use default options for simplicity
+    OptixAccelBuildOptions accelOptions = {};
+    accelOptions.buildFlags = OPTIX_BUILD_FLAG_NONE;
+    accelOptions.operation = OPTIX_BUILD_OPERATION_BUILD;
+
+    OptixAabb aabb;
+    aabb.minX = std::numeric_limits<float>::max();
+    aabb.maxX = std::numeric_limits<float>::lowest();
+    aabb.minY = std::numeric_limits<float>::max();
+    aabb.maxY = std::numeric_limits<float>::lowest();
+    aabb.minZ = std::numeric_limits<float>::max();
+    aabb.maxZ = std::numeric_limits<float>::lowest();
+
+    // fixme
+    for (const auto &sphere : sceneData.spheres) {
+        const Vec3 center = sphere.getCenter();
+        const float radius = sphere.getRadius();
+
+        aabb.minX = std::min(center.x() - radius, aabb.minX);
+        aabb.minY = std::min(center.y() - radius, aabb.minY);
+        aabb.minZ = std::min(center.z() - radius, aabb.minZ);
+
+        aabb.maxX = std::max(center.x() + radius, aabb.maxX);
+        aabb.maxY = std::max(center.y() + radius, aabb.maxY);
+        aabb.maxZ = std::max(center.z() + radius, aabb.maxZ);
+    }
+
+    CUdeviceptr d_aabbBuffer = 0;
+    checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_aabbBuffer), sizeof(OptixAabb)));
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(d_aabbBuffer),
+        &aabb,
+        sizeof(OptixAabb),
+        cudaMemcpyHostToDevice
+    ));
+
+    std::vector<int> materialIDs;
+    for (const auto &sphere : sceneData.spheres) {
+        materialIDs.push_back(sphere.materialID());
+    }
+
+    // const size_t verticesSize = sizeof(float3) * vertices.size();
+    // CUdeviceptr d_vertices = 0;
+    // checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_vertices), verticesSize));
+    // checkCUDA(cudaMemcpy(
+    //     reinterpret_cast<void *>(d_vertices),
+    //     vertices.data(),
+    //     verticesSize,
+    //     cudaMemcpyHostToDevice
+    // ));
+
+    CUdeviceptr d_materialIDs = 0;
+    const size_t materialIDsSizeInBytes = materialIDs.size() * sizeof(int);
+    checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_materialIDs), materialIDsSizeInBytes));
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(d_materialIDs),
+        materialIDs.data(),
+        materialIDsSizeInBytes,
+        cudaMemcpyHostToDevice
+    ));
+
+    const int materialIDsCount = sceneData.materialIDsCount();
+    std::vector<uint32_t> sphereInputFlags;
+    sphereInputFlags.reserve(materialIDsCount);
+    for (int i = 0; i < materialIDsCount; i++) {
+        sphereInputFlags.push_back(OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT);
+    }
+
+    // Build input is list of non-indexed triangle vertices
+    OptixBuildInput sphereInput = {};
+    sphereInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    sphereInput.customPrimitiveArray.aabbBuffers = &d_aabbBuffer;
+    sphereInput.customPrimitiveArray.flags = sphereInputFlags.data();
+    sphereInput.customPrimitiveArray.numSbtRecords = materialIDsCount;
+    sphereInput.customPrimitiveArray.numPrimitives = sceneData.spheres.size();
+    sphereInput.customPrimitiveArray.sbtIndexOffsetBuffer = d_materialIDs;
+    sphereInput.customPrimitiveArray.sbtIndexOffsetSizeInBytes = sizeof(int);
+    sphereInput.customPrimitiveArray.sbtIndexOffsetStrideInBytes = 0;
+    sphereInput.customPrimitiveArray.primitiveIndexOffset = 0;
+
+    OptixAccelBufferSizes gasBufferSizes;
+    checkOptix(optixAccelComputeMemoryUsage(
+        context,
+        &accelOptions,
+        &sphereInput,
+        1, // Number of build inputs
+        &gasBufferSizes
+    ));
+
+    CUdeviceptr d_tempBufferGas;
+    checkCUDA(cudaMalloc(
+        reinterpret_cast<void **>(&d_tempBufferGas),
+        gasBufferSizes.tempSizeInBytes
+    ));
+    checkCUDA(cudaMalloc(
+        reinterpret_cast<void **>(&d_gasOutputBuffer),
+        gasBufferSizes.outputSizeInBytes
+    ));
+
+    checkOptix(optixAccelBuild(
+        context,
+        0,                  // CUDA stream
+        &accelOptions,
+        &sphereInput,
+        1,                  // num build inputs
+        d_tempBufferGas,
+        gasBufferSizes.tempSizeInBytes,
+        d_gasOutputBuffer,
+        gasBufferSizes.outputSizeInBytes,
+        &gasHandle,
+        nullptr,            // emitted property list
+        0                   // num emitted properties
+    ));
+
+    checkCUDA(cudaFree(reinterpret_cast<void *>(d_tempBufferGas)));
+}
+
+static void initTriangleAcceleration(
     OptixDeviceContext &context,
     OptixTraversableHandle &gasHandle,
     CUdeviceptr &d_gasOutputBuffer,
@@ -175,7 +299,7 @@ static void createModule(
     pipelineCompileOptions.usesMotionBlur = false;
     pipelineCompileOptions.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
     pipelineCompileOptions.numPayloadValues = 3;
-    pipelineCompileOptions.numAttributeValues = 3;
+    pipelineCompileOptions.numAttributeValues = 6; // fixme
 #ifdef DEBUG
     pipelineCompileOptions.exceptionFlags = OPTIX_EXCEPTION_FLAG_DEBUG | OPTIX_EXCEPTION_FLAG_TRACE_DEPTH | OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW;
 #else
@@ -243,12 +367,14 @@ static void createProgramGroup(
     OptixProgramGroupDesc hitgroupProgramGroupDesc = {};
     hitgroupProgramGroupDesc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
     hitgroupProgramGroupDesc.hitgroup.moduleCH = module;
-    hitgroupProgramGroupDesc.hitgroup.entryFunctionNameCH = "__closesthit__ch";
+    hitgroupProgramGroupDesc.hitgroup.entryFunctionNameCH = "__closesthit__sphere";
+    hitgroupProgramGroupDesc.hitgroup.moduleIS = module;
+    hitgroupProgramGroupDesc.hitgroup.entryFunctionNameIS = "__intersection__sphere";
     sizeofLog = sizeof(log);
     checkOptix(optixProgramGroupCreate(
         context,
         &hitgroupProgramGroupDesc,
-        1,   // num program groups
+        2,   // num program groups
         &programGroupOptions,
         log,
         &sizeofLog,
@@ -438,7 +564,8 @@ void Optix::init(int width, int height, const Scene &scene)
 
     OptixTraversableHandle gasHandle;
     CUdeviceptr d_gasOutputBuffer;
-    initAcceleration(context, gasHandle, d_gasOutputBuffer, scene.getSceneData());
+    // initTriangleAcceleration(context, gasHandle, d_gasOutputBuffer, scene.getSceneData());
+    initSphereAcceleration(context, gasHandle, d_gasOutputBuffer, scene.getSceneData());
 
     OptixModule module = nullptr;
     OptixPipelineCompileOptions pipelineCompileOptions = {};
@@ -500,6 +627,17 @@ void Optix::init(int width, int height, const Scene &scene)
         cudaMemcpyHostToDevice
     ));
 
+    const std::vector<Sphere> &spheres = scene.getSceneData().spheres;
+    Sphere *d_spheres = 0;
+    const size_t spheresSizeInBytes = spheres.size() * sizeof(Sphere);
+    checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_spheres), spheresSizeInBytes));
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(d_spheres),
+        spheres.data(),
+        spheresSizeInBytes,
+        cudaMemcpyHostToDevice
+    ));
+
     const std::vector<int> &lightIndices = scene.getSceneData().lightIndices;
     int *d_lightIndices = 0;
     const size_t lightIndicesSizeInBytes = lightIndices.size() * sizeof(int);
@@ -522,6 +660,7 @@ void Optix::init(int width, int height, const Scene &scene)
     m_params.camera = scene.getCamera();
     m_params.materialLookup = d_materialLookup;
     m_params.triangles = d_triangles;
+    m_params.spheres = d_spheres;
     m_params.lightIndices = d_lightIndices;
     m_params.lightIndexSize = lightIndices.size();
     m_params.environmentLight = environmentLight;

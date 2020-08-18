@@ -25,6 +25,16 @@ public:
         HitRecord& record
     ) const;
 
+    __host__ __device__ int materialID() const { return m_materialID; }
+
+    __host__ __device__ Vec3 getCenter() const {
+        return m_center;
+    }
+
+    __host__ __device__ float getRadius() const {
+        return m_radius;
+    }
+
 private:
     Vec3 m_center;
     float m_radius;

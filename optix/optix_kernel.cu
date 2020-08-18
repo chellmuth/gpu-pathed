@@ -401,3 +401,85 @@ extern "C" __global__ void __closesthit__ch()
     prd->intersection = intersection;
     prd->materialID = hitgroupData->materialID;
 }
+
+extern "C" __global__ void __closesthit__sphere()
+{
+    PerRayData *prd = getPRD();
+    prd->done = false;
+
+    // fixme
+    // const int primitiveIndex = optixGetPrimitiveIndex();
+    // const rays::Sphere &sphere = params.spheres[primitiveIndex];
+
+    rays::HitGroupData* hitgroupData = reinterpret_cast<rays::HitGroupData *>(optixGetSbtDataPointer());
+
+    const rays::Vec3 point(
+        int_as_float(optixGetAttribute_0()),
+        int_as_float(optixGetAttribute_1()),
+        int_as_float(optixGetAttribute_2())
+    );
+
+    const rays::Vec3 normal(
+        int_as_float(optixGetAttribute_3()),
+        int_as_float(optixGetAttribute_4()),
+        int_as_float(optixGetAttribute_5())
+    );
+
+    rays::Intersection intersection;
+    intersection.point = point;
+    intersection.normal = normalized(normal);
+    intersection.frame = rays::Frame(intersection.normal);
+    intersection.woLocal = intersection.frame.toLocal(
+        float3_to_vec3(-optixGetWorldRayDirection())
+    );
+
+    prd->intersection = intersection;
+    prd->materialID = hitgroupData->materialID;
+}
+
+extern "C" __global__ void __intersection__sphere()
+{
+    const float tMax = optixGetRayTmax();
+    const float tMin = optixGetRayTmin();
+
+    const rays::Ray ray(
+        float3_to_vec3(optixGetObjectRayOrigin()),
+        float3_to_vec3(optixGetObjectRayDirection())
+    );
+
+    const int primitiveIndex = optixGetPrimitiveIndex();
+    const rays::Sphere &sphere = params.spheres[primitiveIndex];
+    const rays::Vec3 center = sphere.getCenter();
+    const float radius = sphere.getRadius();
+
+    const rays::Vec3 oc = ray.origin() - center;
+    const float a = dot(ray.direction(), ray.direction());
+    const float b = dot(oc, ray.direction());
+    const float c = dot(oc, oc) - radius * radius;
+    const float discriminant = b*b - a*c;
+    if (discriminant > 0) {
+        float temp = (-b - sqrt(discriminant))/a;
+        if (temp < tMax && temp > tMin) {
+            const rays::Vec3 point = ray.at(temp);
+            const rays::Vec3 normal = normalized((point - center) / radius);
+            const rays::Frame f(normal);
+
+            unsigned int p0, p1, p2;
+            p0 = float_as_int( point.x() );
+            p1 = float_as_int( point.y() );
+            p2 = float_as_int( point.z() );
+
+            unsigned int n0, n1, n2;
+            n0 = float_as_int( normal.x() );
+            n1 = float_as_int( normal.y() );
+            n2 = float_as_int( normal.z() );
+
+            optixReportIntersection(
+                temp,       // t hit
+                0,          // user hit kind
+                p0, p1, p2,
+                n0, n1, n2
+            );
+        }
+    }
+}

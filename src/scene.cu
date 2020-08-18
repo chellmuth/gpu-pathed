@@ -18,7 +18,7 @@ SceneData getSceneData(int index)
         SceneAdapter::ParseRequest request;
 
         auto defaultMaterial = std::make_unique<LambertianParams>(
-            Vec3(0.f), Vec3(0.f)
+            Vec3(1.f, 0.f, 0.f), Vec3(0.f)
         );
         request.materialParams.push_back(std::move(defaultMaterial));
         {
