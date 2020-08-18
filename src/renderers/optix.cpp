@@ -61,7 +61,6 @@ static void initContext(OptixDeviceContext &context)
 static void initSphereAcceleration(
     OptixDeviceContext &context,
     OptixTraversableHandle &gasHandle,
-    CUdeviceptr &d_gasOutputBuffer,
     const SceneData &sceneData
 ) {
     // Use default options for simplicity
@@ -142,6 +141,7 @@ static void initSphereAcceleration(
     ));
 
     CUdeviceptr d_tempBufferGas;
+    CUdeviceptr d_gasOutputBuffer;
     checkCUDA(cudaMalloc(
         reinterpret_cast<void **>(&d_tempBufferGas),
         gasBufferSizes.tempSizeInBytes
@@ -550,9 +550,8 @@ void Optix::init(int width, int height, const Scene &scene)
     initContext(context);
 
     OptixTraversableHandle gasHandle;
-    CUdeviceptr d_gasOutputBuffer;
     // initTriangleAcceleration(context, gasHandle, d_gasOutputBuffer, scene.getSceneData());
-    initSphereAcceleration(context, gasHandle, d_gasOutputBuffer, scene.getSceneData());
+    initSphereAcceleration(context, gasHandle, scene.getSceneData());
 
     OptixModule module = nullptr;
     OptixPipelineCompileOptions pipelineCompileOptions = {};
