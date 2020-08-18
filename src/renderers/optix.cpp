@@ -1,6 +1,5 @@
 #include "renderers/optix.h"
 
-#include <algorithm>
 #include <assert.h>
 #include <iomanip>
 #include <iostream>
@@ -70,34 +69,33 @@ static void initSphereAcceleration(
     accelOptions.buildFlags = OPTIX_BUILD_FLAG_NONE;
     accelOptions.operation = OPTIX_BUILD_OPERATION_BUILD;
 
-    OptixAabb aabb;
-    aabb.minX = std::numeric_limits<float>::max();
-    aabb.maxX = std::numeric_limits<float>::lowest();
-    aabb.minY = std::numeric_limits<float>::max();
-    aabb.maxY = std::numeric_limits<float>::lowest();
-    aabb.minZ = std::numeric_limits<float>::max();
-    aabb.maxZ = std::numeric_limits<float>::lowest();
-
-    // fixme
+    std::vector<OptixAabb> aabbs;
     for (const auto &sphere : sceneData.spheres) {
+        OptixAabb aabb;
+
         const Vec3 center = sphere.getCenter();
         const float radius = sphere.getRadius();
 
-        aabb.minX = std::min(center.x() - radius, aabb.minX);
-        aabb.minY = std::min(center.y() - radius, aabb.minY);
-        aabb.minZ = std::min(center.z() - radius, aabb.minZ);
+        aabb.minX = center.x() - radius;
+        aabb.minY = center.y() - radius;
+        aabb.minZ = center.z() - radius;
 
-        aabb.maxX = std::max(center.x() + radius, aabb.maxX);
-        aabb.maxY = std::max(center.y() + radius, aabb.maxY);
-        aabb.maxZ = std::max(center.z() + radius, aabb.maxZ);
+        aabb.maxX = center.x() + radius;
+        aabb.maxY = center.y() + radius;
+        aabb.maxZ = center.z() + radius;
+
+        aabbs.push_back(aabb);
     }
 
     CUdeviceptr d_aabbBuffer = 0;
-    checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_aabbBuffer), sizeof(OptixAabb)));
+    checkCUDA(cudaMalloc(
+        reinterpret_cast<void **>(&d_aabbBuffer),
+        aabbs.size() * sizeof(OptixAabb)
+    ));
     checkCUDA(cudaMemcpy(
         reinterpret_cast<void *>(d_aabbBuffer),
-        &aabb,
-        sizeof(OptixAabb),
+        aabbs.data(),
+        aabbs.size() * sizeof(OptixAabb),
         cudaMemcpyHostToDevice
     ));
 
@@ -105,16 +103,6 @@ static void initSphereAcceleration(
     for (const auto &sphere : sceneData.spheres) {
         materialIDs.push_back(sphere.materialID());
     }
-
-    // const size_t verticesSize = sizeof(float3) * vertices.size();
-    // CUdeviceptr d_vertices = 0;
-    // checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_vertices), verticesSize));
-    // checkCUDA(cudaMemcpy(
-    //     reinterpret_cast<void *>(d_vertices),
-    //     vertices.data(),
-    //     verticesSize,
-    //     cudaMemcpyHostToDevice
-    // ));
 
     CUdeviceptr d_materialIDs = 0;
     const size_t materialIDsSizeInBytes = materialIDs.size() * sizeof(int);
@@ -133,7 +121,6 @@ static void initSphereAcceleration(
         sphereInputFlags.push_back(OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT);
     }
 
-    // Build input is list of non-indexed triangle vertices
     OptixBuildInput sphereInput = {};
     sphereInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
     sphereInput.customPrimitiveArray.aabbBuffers = &d_aabbBuffer;
@@ -374,7 +361,7 @@ static void createProgramGroup(
     checkOptix(optixProgramGroupCreate(
         context,
         &hitgroupProgramGroupDesc,
-        2,   // num program groups
+        1,   // num program groups
         &programGroupOptions,
         log,
         &sizeofLog,

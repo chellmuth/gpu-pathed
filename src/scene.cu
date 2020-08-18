@@ -55,6 +55,15 @@ SceneData getSceneData(int index)
             Sphere sphere(Vec3(0.f, 0.7, 0.f), 0.2f, request.materialParams.size() - 1);
             request.spheres.push_back(sphere);
         }
+        {
+            auto sphereMaterial = std::make_unique<LambertianParams>(
+                Vec3(0.f, 1.f, 0.f), Vec3(0.f)
+            );
+            request.materialParams.push_back(std::move(sphereMaterial));
+
+            Sphere sphere(Vec3(0.4f, 0.8, 0.f), 0.15f, request.materialParams.size() - 1);
+            request.spheres.push_back(sphere);
+        }
 
         request.environmentLightParams = EnvironmentLightParams(
             "../scenes/assets/20060807_wells6_hd.exr"
