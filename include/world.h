@@ -26,7 +26,7 @@ public:
         size_t triangleSize,
         Sphere *spheres,
         size_t sphereSize,
-        int *lightIndices,
+        LightIndex *lightIndices,
         size_t lightIndexSize,
         EnvironmentLight *environmentLight,
         MaterialLookup *materialLookup
@@ -63,6 +63,7 @@ public:
             m_lightIndices,
             m_lightIndexSize,
             m_triangles,
+            m_spheres,
             *m_environmentLight,
             *m_materialLookup
         );
@@ -118,7 +119,7 @@ private:
     Sphere *m_spheres;
     size_t m_sphereSize;
 
-    int *m_lightIndices;
+    LightIndex *m_lightIndices;
     size_t m_lightIndexSize;
 
     EnvironmentLight *m_environmentLight;

@@ -28,7 +28,7 @@ __global__ static void initWorldKernel(
     int triangleSize,
     Sphere *spheres,
     int sphereSize,
-    int *lightIndices,
+    LightIndex *lightIndices,
     int lightIndexSize,
     EnvironmentLight *environmentLight,
     MaterialLookup *materialLookup
@@ -85,7 +85,7 @@ void CUDAGlobals::mallocWorld(const SceneData &sceneData)
 
     checkCudaErrors(cudaMalloc((void **)&d_triangles, triangleSize * sizeof(Triangle)));
     checkCudaErrors(cudaMalloc((void **)&d_spheres, sphereSize * sizeof(Sphere)));
-    checkCudaErrors(cudaMalloc((void **)&d_lightIndices, lightIndexSize * sizeof(int)));
+    checkCudaErrors(cudaMalloc((void **)&d_lightIndices, lightIndexSize * sizeof(LightIndex)));
     checkCudaErrors(cudaMalloc((void **)&d_environmentLight, sizeof(EnvironmentLight)));
 
     checkCudaErrors(cudaMalloc((void **)&d_world, sizeof(World)));
@@ -126,7 +126,7 @@ void CUDAGlobals::copySceneData(const SceneData &sceneData)
     checkCudaErrors(cudaMemcpy(
         d_lightIndices,
         sceneData.lightIndices.data(),
-        sceneData.lightIndices.size() * sizeof(int),
+        sceneData.lightIndices.size() * sizeof(LightIndex),
         cudaMemcpyHostToDevice
     ));
 

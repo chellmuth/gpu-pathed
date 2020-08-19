@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "lights/environment_light.h"
+#include "lights/types.h"
 #include "materials/glass.h"
 #include "materials/lambertian.h"
 #include "materials/mirror.h"
@@ -18,7 +19,7 @@ namespace rays {
 struct SceneData {
     std::vector<Triangle> triangles;
     std::vector<Sphere> spheres;
-    std::vector<int> lightIndices;
+    std::vector<LightIndex> lightIndices;
 
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
     EnvironmentLightParams environmentLightParams;

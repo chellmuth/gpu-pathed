@@ -7,6 +7,7 @@
 #include "core/camera.h"
 #include "core/vec3.h"
 #include "lights/environment_light.h"
+#include "lights/types.h"
 #include "materials/lambertian.h"
 #include "primitives/sphere.h"
 #include "primitives/triangle.h"
@@ -27,7 +28,7 @@ struct Params
     MaterialLookup *materialLookup;
     Triangle *triangles;
     Sphere *spheres;
-    int *lightIndices;
+    LightIndex *lightIndices;
     int lightIndexSize;
     EnvironmentLight environmentLight;
     OptixTraversableHandle handle;

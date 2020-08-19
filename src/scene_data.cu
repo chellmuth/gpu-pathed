@@ -90,11 +90,27 @@ SceneData createSceneData(ParseRequest &request)
     sceneData.environmentLightParams = request.environmentLightParams;
 
     // Post-process lights
-    size_t triangleCount = sceneData.triangles.size();
-    for (size_t i = 0; i < triangleCount; i++) {
+    int triangleCount = sceneData.triangles.size();
+    for (int i = 0; i < triangleCount; i++) {
         int materialID = sceneData.triangles[i].materialID();
         if (sceneData.isEmitter(materialID)) {
-            sceneData.lightIndices.push_back(i);
+            const LightIndex index {
+                PrimitiveType::Triangle,
+                i
+            };
+            sceneData.lightIndices.push_back(index);
+        }
+    }
+
+    int sphereCount = sceneData.spheres.size();
+    for (int i = 0; i < sphereCount; i++) {
+        int materialID = sceneData.spheres[i].materialID();
+        if (sceneData.isEmitter(materialID)) {
+            const LightIndex index {
+                PrimitiveType::Sphere,
+                i
+            };
+            sceneData.lightIndices.push_back(index);
         }
     }
 

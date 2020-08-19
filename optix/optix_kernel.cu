@@ -127,6 +127,7 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
         params.lightIndices,
         params.lightIndexSize,
         params.triangles,
+        params.spheres,
         params.environmentLight,
         *params.materialLookup
     );

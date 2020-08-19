@@ -721,9 +721,9 @@ void Optix::init(int width, int height, const Scene &scene)
         cudaMemcpyHostToDevice
     ));
 
-    const std::vector<int> &lightIndices = scene.getSceneData().lightIndices;
-    int *d_lightIndices = 0;
-    const size_t lightIndicesSizeInBytes = lightIndices.size() * sizeof(int);
+    const std::vector<LightIndex> &lightIndices = scene.getSceneData().lightIndices;
+    LightIndex *d_lightIndices = 0;
+    const size_t lightIndicesSizeInBytes = lightIndices.size() * sizeof(LightIndex);
     checkCUDA(cudaMalloc(reinterpret_cast<void **>(&d_lightIndices), lightIndicesSizeInBytes));
     checkCUDA(cudaMemcpy(
         reinterpret_cast<void *>(d_lightIndices),

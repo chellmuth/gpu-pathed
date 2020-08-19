@@ -19,12 +19,29 @@ __device__ inline LightSample sampleSceneLights(
     float choicePDF,
     const Vec3 &hitPoint,
     const float3 &samples,
-    const int *lightIndices,
+    const LightIndex *lightIndices,
     const Triangle *triangles,
+    const Sphere *spheres,
     const MaterialLookup &materialLookup
 ) {
-    const Triangle &triangle = triangles[lightIndices[lightChoice]];
-    const SurfaceSample sample = triangle.sample(samples.y, samples.z);
+    const LightIndex lightIndex = lightIndices[lightChoice];
+
+    SurfaceSample sample;
+    int materialID;
+    switch (lightIndex.primitiveType) {
+    case PrimitiveType::Triangle: {
+        const Triangle &triangle = triangles[lightIndex.index];
+        sample = triangle.sample(samples.y, samples.z);
+        materialID = triangle.materialID();
+        break;
+    }
+    case PrimitiveType::Sphere: {
+        const Sphere &sphere = spheres[lightIndex.index];
+        sample = sphere.sample(samples.y, samples.z);
+        materialID = sphere.materialID();
+        break;
+    }
+    }
 
     const Vec3 direction = sample.point - hitPoint;
     const float distance = direction.length();
@@ -34,7 +51,7 @@ __device__ inline LightSample sampleSceneLights(
         .wi = normalized(direction),
         .distance = distance,
         .pdf = pdf,
-        .emitted = materialLookup.getEmit(triangle.materialID())
+        .emitted = materialLookup.getEmit(materialID)
     };
     return lightSample;
 }
@@ -66,9 +83,10 @@ __device__ inline LightSample sampleDirectLights(
     const Vec3 &hitPoint,
     const Frame &frame,
     const float3 &samples,
-    const int *lightIndices,
+    const LightIndex *lightIndices,
     int lightIndexSize,
     const Triangle *triangles,
+    const Sphere *spheres,
     const EnvironmentLight &environmentLight,
     const MaterialLookup &materialLookup
 ) {
@@ -77,7 +95,8 @@ __device__ inline LightSample sampleDirectLights(
         choiceSize += 1;
     }
 
-    const int lightChoice = (int)floorf(samples.x * choiceSize);
+    // todo: modify curand code to be [0, 1) instead of [0, 1)
+    const int lightChoice = fminf(choiceSize - 1, (int)floorf(samples.x * choiceSize));
     const float choicePDF = 1.f / choiceSize;
 
     // Area lights or environment light
@@ -89,6 +108,7 @@ __device__ inline LightSample sampleDirectLights(
             samples,
             lightIndices,
             triangles,
+            spheres,
             materialLookup
         );
     } else {

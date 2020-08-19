@@ -31,7 +31,7 @@ public:
 
     Triangle *d_triangles;
     Sphere *d_spheres;
-    int *d_lightIndices;
+    LightIndex *d_lightIndices;
 };
 
 }
