@@ -98,24 +98,35 @@ SceneData getSceneData(int index)
         SceneAdapter::ParseRequest request;
 
         {
-            auto planeMaterial = std::make_unique<LambertianParams>(
-                Vec3(0.4f), Vec3(0.f)
-            );
-            request.materialParams.push_back(std::move(planeMaterial));
+            const int materialOffset = request.materialParams.size();
 
-            std::vector<std::string> filenames = {
-                "../scenes/mis/floor.ply",
-                "../scenes/mis/plate1.ply",
-                "../scenes/mis/plate2.ply",
-                "../scenes/mis/plate3.ply",
-                "../scenes/mis/plate4.ply",
+            std::vector<LambertianParams> materialParams = {
+                LambertianParams(Vec3(0.4f), Vec3(0.f)),
+                LambertianParams(Vec3(0.07f, 0.09f, 0.13f), Vec3(0.f)),
             };
 
-            for (const auto &sceneFilename : filenames) {
+            for (const auto &params : materialParams) {
+                request.materialParams.push_back(
+                    std::make_unique<LambertianParams>(params)
+                );
+            }
+
+            std::vector<std::pair<std::string, int> > elements = {
+                { "../scenes/mis/floor.ply", materialOffset + 0 },
+                { "../scenes/mis/plate1.ply", materialOffset + 1 },
+                { "../scenes/mis/plate2.ply", materialOffset + 1 },
+                { "../scenes/mis/plate3.ply", materialOffset + 1 },
+                { "../scenes/mis/plate4.ply", materialOffset + 1 },
+            };
+
+            for (const auto &element : elements) {
+                const std::string sceneFilename = element.first;
+                const int materialID = element.second;
+
                 PLYParser plyParser(sceneFilename);
                 request.plyParsers.push_back(plyParser);
 
-                request.defaultMaterialIDs.push_back(request.materialParams.size() - 1);
+                request.defaultMaterialIDs.push_back(materialID);
             }
         }
         {

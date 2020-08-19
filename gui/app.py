@@ -43,7 +43,7 @@ class App(QWidget):
 def run():
     app = QApplication(sys.argv)
 
-    width, height = 400, 400
+    width, height = 576, 432
     pt = path_tracer.RenderSession(width, height)
 
     widget = App(pt)
