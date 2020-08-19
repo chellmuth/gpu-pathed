@@ -98,24 +98,53 @@ SceneData getSceneData(int index)
         SceneAdapter::ParseRequest request;
 
         {
-            std::string sceneFilename("../test/ply_example.ply");
-            PLYParser plyParser(sceneFilename);
-            request.plyParsers.push_back(plyParser);
-
             auto planeMaterial = std::make_unique<LambertianParams>(
-                Vec3(1.f), Vec3(0.f)
+                Vec3(0.4f), Vec3(0.f)
             );
             request.materialParams.push_back(std::move(planeMaterial));
-            request.defaultMaterialIDs.push_back(request.materialParams.size() - 1);
+
+            std::vector<std::string> filenames = {
+                "../scenes/mis/floor.ply",
+                "../scenes/mis/plate1.ply",
+                "../scenes/mis/plate2.ply",
+                "../scenes/mis/plate3.ply",
+                "../scenes/mis/plate4.ply",
+            };
+
+            for (const auto &sceneFilename : filenames) {
+                PLYParser plyParser(sceneFilename);
+                request.plyParsers.push_back(plyParser);
+
+                request.defaultMaterialIDs.push_back(request.materialParams.size() - 1);
+            }
         }
         {
-            auto sphereMaterial = std::make_unique<LambertianParams>(
-                Vec3(0.f, 1.f, 0.f), Vec3(0.f)
-            );
-            request.materialParams.push_back(std::move(sphereMaterial));
+            const int materialOffset = request.materialParams.size();
+            std::vector<LambertianParams> materialParams = {
+                LambertianParams(Vec3(0.f), Vec3(800.f)),
+                LambertianParams(Vec3(0.f), Vec3(100.f)),
+                LambertianParams(Vec3(0.f), Vec3(901.803f)),
+                LambertianParams(Vec3(0.f), Vec3(11.1111f)),
+                LambertianParams(Vec3(0.f), Vec3(1.234567f)),
+            };
 
-            Sphere sphere(Vec3(0.4f, 0.8, 0.f), 0.15f, request.materialParams.size() - 1);
-            request.spheres.push_back(sphere);
+            for (const auto &params : materialParams) {
+                request.materialParams.push_back(
+                    std::make_unique<LambertianParams>(params)
+                );
+            }
+
+            std::vector<Sphere> spheres = {
+                Sphere(Vec3(10.f, 10.f, 4.f), 0.5f, materialOffset + 0),
+                Sphere(Vec3(-1.25f, 0.f, 0.f), 0.1f, materialOffset + 1),
+                Sphere(Vec3(-3.75f, 0.f, 0.f), 0.03333f, materialOffset + 2),
+                Sphere(Vec3(1.25f, 0.f, 0.f), 0.3f, materialOffset + 3),
+                Sphere(Vec3(3.75f, 0.f, 0.f), 0.9f, materialOffset + 4),
+            };
+
+            for (const auto &sphere : spheres) {
+                request.spheres.push_back(sphere);
+            }
         }
 
         request.environmentLightParams = EnvironmentLightParams(
