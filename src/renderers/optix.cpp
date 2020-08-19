@@ -61,9 +61,10 @@ static void initContext(OptixDeviceContext &context)
 static void initInstanceAcceleration(
     OptixDeviceContext &context,
     OptixTraversableHandle &iasHandle,
-    OptixTraversableHandle &sphereHandle
+    OptixTraversableHandle &gasHandle1,
+    OptixTraversableHandle &gasHandle2
 ) {
-    constexpr int numInstances = 1; // fixme
+    constexpr int numInstances = 2;
 
     CUdeviceptr d_instances;
     size_t instanceSizeInBytes = sizeof(OptixInstance) * numInstances;
@@ -110,12 +111,19 @@ static void initInstanceAcceleration(
     OptixInstance optixInstances[numInstances];
     memset(optixInstances, 0, instanceSizeInBytes);
 
-    optixInstances[0].traversableHandle = sphereHandle;
+    optixInstances[0].traversableHandle = gasHandle1;
     optixInstances[0].flags = OPTIX_INSTANCE_FLAG_NONE;
     optixInstances[0].instanceId = 0;
     optixInstances[0].sbtOffset = 0;
-    optixInstances[0].visibilityMask = 1;
+    optixInstances[0].visibilityMask = 255;
     memcpy(optixInstances[0].transform, identity, sizeof(float) * 12);
+
+    optixInstances[1].traversableHandle = gasHandle2;
+    optixInstances[1].flags = OPTIX_INSTANCE_FLAG_NONE;
+    optixInstances[1].instanceId = 1;
+    optixInstances[1].sbtOffset = 0;
+    optixInstances[1].visibilityMask = 255;
+    memcpy(optixInstances[1].transform, identity, sizeof(float) * 12);
 
     checkCUDA(cudaMemcpy(
         reinterpret_cast<void *>(d_instances),
@@ -439,7 +447,7 @@ static void createProgramGroup(
     OptixProgramGroupDesc hitgroupProgramGroupDesc = {};
     hitgroupProgramGroupDesc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
     hitgroupProgramGroupDesc.hitgroup.moduleCH = module;
-    hitgroupProgramGroupDesc.hitgroup.entryFunctionNameCH = "__closesthit__sphere";
+    hitgroupProgramGroupDesc.hitgroup.entryFunctionNameCH = "__closesthit__ch";
     hitgroupProgramGroupDesc.hitgroup.moduleIS = module;
     hitgroupProgramGroupDesc.hitgroup.entryFunctionNameIS = "__intersection__sphere";
     sizeofLog = sizeof(log);
@@ -639,7 +647,7 @@ void Optix::init(int width, int height, const Scene &scene)
     OptixTraversableHandle iasHandle;
     initTriangleAcceleration(context, gasHandleTriangle, scene.getSceneData());
     initSphereAcceleration(context, gasHandleSphere, scene.getSceneData());
-    initInstanceAcceleration(context, iasHandle, gasHandleSphere);
+    initInstanceAcceleration(context, iasHandle, gasHandleTriangle, gasHandleSphere);
 
     OptixModule module = nullptr;
     OptixPipelineCompileOptions pipelineCompileOptions = {};

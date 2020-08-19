@@ -384,55 +384,41 @@ extern "C" __global__ void __closesthit__ch()
     prd->done = false;
 
     const int primitiveIndex = optixGetPrimitiveIndex();
-    const rays::Triangle &triangle = params.triangles[primitiveIndex];
+    rays::Intersection intersection;
+
+    if (optixIsTriangleHit()) {
+        const rays::Triangle &triangle = params.triangles[primitiveIndex];
+
+        const float u = optixGetTriangleBarycentrics().x;
+        const float v = optixGetTriangleBarycentrics().y;
+        intersection.point = triangle.interpolate(u, v);
+        intersection.normal = triangle.interpolateNormal(u, v);
+        intersection.frame = rays::Frame(intersection.normal);
+        intersection.woLocal = intersection.frame.toLocal(
+            float3_to_vec3(-optixGetWorldRayDirection())
+        );
+    } else {
+        const rays::Vec3 point(
+            int_as_float(optixGetAttribute_0()),
+            int_as_float(optixGetAttribute_1()),
+            int_as_float(optixGetAttribute_2())
+        );
+
+        const rays::Vec3 normal(
+            int_as_float(optixGetAttribute_3()),
+            int_as_float(optixGetAttribute_4()),
+            int_as_float(optixGetAttribute_5())
+        );
+
+        intersection.point = point;
+        intersection.normal = normalized(normal);
+        intersection.frame = rays::Frame(intersection.normal);
+        intersection.woLocal = intersection.frame.toLocal(
+            float3_to_vec3(-optixGetWorldRayDirection())
+        );
+    }
 
     rays::HitGroupData* hitgroupData = reinterpret_cast<rays::HitGroupData *>(optixGetSbtDataPointer());
-
-    rays::Intersection intersection;
-    const float u = optixGetTriangleBarycentrics().x;
-    const float v = optixGetTriangleBarycentrics().y;
-    intersection.point = triangle.interpolate(u, v);
-    intersection.normal = triangle.interpolateNormal(u, v);
-    intersection.frame = rays::Frame(intersection.normal);
-    intersection.woLocal = intersection.frame.toLocal(
-        float3_to_vec3(-optixGetWorldRayDirection())
-    );
-
-    prd->intersection = intersection;
-    prd->materialID = hitgroupData->materialID;
-}
-
-extern "C" __global__ void __closesthit__sphere()
-{
-    PerRayData *prd = getPRD();
-    prd->done = false;
-
-    // fixme
-    // const int primitiveIndex = optixGetPrimitiveIndex();
-    // const rays::Sphere &sphere = params.spheres[primitiveIndex];
-
-    rays::HitGroupData* hitgroupData = reinterpret_cast<rays::HitGroupData *>(optixGetSbtDataPointer());
-
-    const rays::Vec3 point(
-        int_as_float(optixGetAttribute_0()),
-        int_as_float(optixGetAttribute_1()),
-        int_as_float(optixGetAttribute_2())
-    );
-
-    const rays::Vec3 normal(
-        int_as_float(optixGetAttribute_3()),
-        int_as_float(optixGetAttribute_4()),
-        int_as_float(optixGetAttribute_5())
-    );
-
-    rays::Intersection intersection;
-    intersection.point = point;
-    intersection.normal = normalized(normal);
-    intersection.frame = rays::Frame(intersection.normal);
-    intersection.woLocal = intersection.frame.toLocal(
-        float3_to_vec3(-optixGetWorldRayDirection())
-    );
-
     prd->intersection = intersection;
     prd->materialID = hitgroupData->materialID;
 }
