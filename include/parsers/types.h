@@ -29,6 +29,11 @@ struct Vertex {
         );
     }
 
+    bool operator==(const Vertex &other) const {
+        return x == other.x && y == other.y && z == other.z;
+    }
+
+
     float length() const {
         return std::sqrt(x * x + y * y + z * z);
     }
