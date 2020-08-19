@@ -173,7 +173,8 @@ Camera getCamera(int index, Resolution resolution)
             Vec3(0.f, 1.f, 0.f),
             Vec3(0.f, 1.f, 0.f),
             19.5f / 180.f * M_PI,
-            resolution
+            resolution,
+            false
         );
     } else if (index == 1) {
         return Camera(
@@ -181,7 +182,8 @@ Camera getCamera(int index, Resolution resolution)
             Vec3(0.f, 0.7f, 0.f),
             Vec3(0.f, 1.f, 0.f),
             28.f / 180.f * M_PI,
-            resolution
+            resolution,
+            false
         );
     } else if (index == 2) {
         return Camera(
@@ -189,7 +191,8 @@ Camera getCamera(int index, Resolution resolution)
             Vec3(0.f, 1.f, 0.f),
             Vec3(0.f, 1.f, 0.f),
             19.5f / 180.f * M_PI,
-            resolution
+            resolution,
+            false
         );
     } else if (index == 3) {
         return Camera(
@@ -197,7 +200,8 @@ Camera getCamera(int index, Resolution resolution)
             Vec3(0.f, 1.69521f, 14.0476f),
             Vec3(0.f, 0.952421f, -0.304787f),
             28.0000262073138f / 180.f * M_PI,
-            resolution
+            resolution,
+            true
         );
     } else {
         std::cerr << "Invalid scene index: " << index << std::endl;

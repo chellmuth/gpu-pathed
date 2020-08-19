@@ -22,7 +22,8 @@ public:
         const Vec3 &target,
         const Vec3 &up,
         float verticalFOV,
-        const Resolution &resolution
+        const Resolution &resolution,
+        bool flipHandedness
     );
 
     __device__ Ray generateRay(int row, int col, curandState &randState) const;
@@ -34,6 +35,7 @@ public:
     Vec3 getOrigin() const { return m_origin; }
     Vec3 getTarget() const { return m_target; }
     Vec3 getUp() const { return m_up; }
+    bool getFlipHandedness() const { return m_flipHandedness; }
 
     __device__ Ray generateRay(int row, int col, float2 samples) const {
         const float top = std::tan(m_verticalFOV / 2.f);
@@ -66,6 +68,7 @@ private:
     Vec3 m_up;
     float m_verticalFOV;
     Resolution m_resolution;
+    bool m_flipHandedness;
 };
 
 }

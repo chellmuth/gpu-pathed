@@ -202,7 +202,8 @@ void SceneModel::setCameraOrigin(float originX, float originY, float originZ)
         current.getTarget(),
         current.getUp(),
         current.getVerticalFOV(),
-        current.getResolution()
+        current.getResolution(),
+        current.getFlipHandedness()
     );
     m_callback({
         getColor(),
@@ -232,7 +233,8 @@ void SceneModel::setCameraTarget(float targetX, float targetY, float targetZ)
         target,
         current.getUp(),
         current.getVerticalFOV(),
-        current.getResolution()
+        current.getResolution(),
+        current.getFlipHandedness()
     );
     m_callback({
         getColor(),
@@ -262,7 +264,8 @@ void SceneModel::setCameraUp(float upX, float upY, float upZ)
         current.getTarget(),
         up,
         current.getVerticalFOV(),
-        current.getResolution()
+        current.getResolution(),
+        current.getFlipHandedness()
     );
     m_callback({
         getColor(),
@@ -287,7 +290,8 @@ void SceneModel::zoomCamera(float ticks)
         current.getTarget(),
         current.getUp(),
         current.getVerticalFOV(),
-        current.getResolution()
+        current.getResolution(),
+        current.getFlipHandedness()
     );
     m_callback({
         getColor(),
