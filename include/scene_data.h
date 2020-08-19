@@ -9,6 +9,7 @@
 #include "materials/mirror.h"
 #include "materials/params.h"
 #include "parsers/obj_parser.h"
+#include "parsers/ply_parser.h"
 #include "primitives/sphere.h"
 #include "primitives/triangle.h"
 
@@ -44,6 +45,7 @@ namespace rays { namespace SceneAdapter {
 
 struct ParseRequest {
     std::vector<ObjParser> objParsers;
+    std::vector<PLYParser> plyParsers;
     std::vector<Sphere> spheres;
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
     std::vector<int> defaultMaterialIDs;

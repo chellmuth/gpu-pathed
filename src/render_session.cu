@@ -66,7 +66,7 @@ RenderSession::RenderSession(int width, int height)
     }
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
 
-    constexpr int sceneIndex = 0;
+    constexpr int sceneIndex = 3;
     SceneData sceneData = SceneParameters::getSceneData(sceneIndex);
     Camera camera = SceneParameters::getCamera(sceneIndex, { width, height });
 

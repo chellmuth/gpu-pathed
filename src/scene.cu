@@ -94,6 +94,35 @@ SceneData getSceneData(int index)
         );
 
         return SceneAdapter::createSceneData(request);
+    } else if (index == 3) {
+        SceneAdapter::ParseRequest request;
+
+        {
+            std::string sceneFilename("../test/ply_example.ply");
+            PLYParser plyParser(sceneFilename);
+            request.plyParsers.push_back(plyParser);
+
+            auto planeMaterial = std::make_unique<LambertianParams>(
+                Vec3(1.f), Vec3(0.f)
+            );
+            request.materialParams.push_back(std::move(planeMaterial));
+            request.defaultMaterialIDs.push_back(request.materialParams.size() - 1);
+        }
+        {
+            auto sphereMaterial = std::make_unique<LambertianParams>(
+                Vec3(0.f, 1.f, 0.f), Vec3(0.f)
+            );
+            request.materialParams.push_back(std::move(sphereMaterial));
+
+            Sphere sphere(Vec3(0.4f, 0.8, 0.f), 0.15f, request.materialParams.size() - 1);
+            request.spheres.push_back(sphere);
+        }
+
+        request.environmentLightParams = EnvironmentLightParams(
+            "../scenes/assets/20060807_wells6_hd.exr"
+        );
+
+        return SceneAdapter::createSceneData(request);
     } else {
         std::cerr << "Invalid scene index: " << index << std::endl;
         exit(1);
@@ -124,6 +153,14 @@ Camera getCamera(int index, Resolution resolution)
             Vec3(0.f, 1.f, 0.f),
             Vec3(0.f, 1.f, 0.f),
             19.5f / 180.f * M_PI,
+            resolution
+        );
+    } else if (index == 3) {
+        return Camera(
+            Vec3(0.f, 2.f, 15.f),
+            Vec3(0.f, 1.69521f, 14.0476f),
+            Vec3(0.f, 0.952421f, -0.304787f),
+            28.0000262073138f / 180.f * M_PI,
             resolution
         );
     } else {
