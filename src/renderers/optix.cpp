@@ -58,6 +58,91 @@ static void initContext(OptixDeviceContext &context)
     checkOptix(optixDeviceContextCreate(cuContext, &options, &context));
 }
 
+static void initInstanceAcceleration(
+    OptixDeviceContext &context,
+    OptixTraversableHandle &iasHandle,
+    OptixTraversableHandle &sphereHandle
+) {
+    constexpr int numInstances = 1; // fixme
+
+    CUdeviceptr d_instances;
+    size_t instanceSizeInBytes = sizeof(OptixInstance) * numInstances;
+    checkCUDA(cudaMalloc(
+        reinterpret_cast<void **>(&d_instances),
+        instanceSizeInBytes
+    ));
+
+    OptixBuildInput instanceInput = {};
+    instanceInput.type = OPTIX_BUILD_INPUT_TYPE_INSTANCES;
+    instanceInput.instanceArray.instances = d_instances;
+    instanceInput.instanceArray.numInstances = numInstances;
+
+    OptixAccelBuildOptions accelOptions = {};
+    accelOptions.buildFlags = OPTIX_BUILD_FLAG_NONE;
+    accelOptions.operation = OPTIX_BUILD_OPERATION_BUILD;
+
+    OptixAccelBufferSizes iasBufferSizes;
+    checkOptix(optixAccelComputeMemoryUsage(
+        context,
+        &accelOptions,
+        &instanceInput,
+        1, // num build inputs
+        &iasBufferSizes
+    ));
+
+    CUdeviceptr d_tempBuffer;
+    CUdeviceptr d_iasOutputBuffer; // fixme (free)
+    checkCUDA(cudaMalloc(
+        reinterpret_cast<void **>(&d_tempBuffer),
+        iasBufferSizes.tempSizeInBytes
+    ));
+    checkCUDA(cudaMalloc(
+        reinterpret_cast<void **>(&d_iasOutputBuffer),
+        iasBufferSizes.outputSizeInBytes
+    ));
+
+    float identity[12] = {
+        1.f, 0.f, 0.f, 0.f,
+        0.f, 1.f, 0.f, 0.f,
+        0.f, 0.f, 1.f, 0.f
+    };
+
+    OptixInstance optixInstances[numInstances];
+    memset(optixInstances, 0, instanceSizeInBytes);
+
+    optixInstances[0].traversableHandle = sphereHandle;
+    optixInstances[0].flags = OPTIX_INSTANCE_FLAG_NONE;
+    optixInstances[0].instanceId = 0;
+    optixInstances[0].sbtOffset = 0;
+    optixInstances[0].visibilityMask = 1;
+    memcpy(optixInstances[0].transform, identity, sizeof(float) * 12);
+
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(d_instances),
+        &optixInstances,
+        instanceSizeInBytes,
+        cudaMemcpyHostToDevice
+    ));
+
+    checkOptix(optixAccelBuild(
+        context,
+        0, // CUDA stream
+        &accelOptions,
+        &instanceInput,
+        1, // num build inputs
+        d_tempBuffer,
+        iasBufferSizes.tempSizeInBytes,
+        d_iasOutputBuffer,
+        iasBufferSizes.outputSizeInBytes,
+        &iasHandle,
+        nullptr,
+        0
+    ));
+
+    checkCUDA(cudaFree(reinterpret_cast<void *>(d_tempBuffer)));
+    checkCUDA(cudaFree(reinterpret_cast<void *>(d_instances)));
+}
+
 static void initSphereAcceleration(
     OptixDeviceContext &context,
     OptixTraversableHandle &gasHandle,
@@ -172,7 +257,6 @@ static void initSphereAcceleration(
 static void initTriangleAcceleration(
     OptixDeviceContext &context,
     OptixTraversableHandle &gasHandle,
-    CUdeviceptr &d_gasOutputBuffer,
     const SceneData &sceneData
 ) {
     // Use default options for simplicity
@@ -243,6 +327,7 @@ static void initTriangleAcceleration(
     ));
 
     CUdeviceptr d_tempBufferGas;
+    CUdeviceptr d_gasOutputBuffer;
     checkCUDA(cudaMalloc(
         reinterpret_cast<void **>(&d_tempBufferGas),
         gasBufferSizes.tempSizeInBytes
@@ -284,7 +369,7 @@ static void createModule(
     moduleCompileOptions.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO;
 
     pipelineCompileOptions.usesMotionBlur = false;
-    pipelineCompileOptions.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
+    pipelineCompileOptions.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING;
     pipelineCompileOptions.numPayloadValues = 3;
     pipelineCompileOptions.numAttributeValues = 6; // fixme
 #ifdef DEBUG
@@ -378,7 +463,7 @@ static void linkPipeline(
     OptixProgramGroup &hitgroupProgramGroup,
     char *log
 ) {
-    const uint32_t maxTraceDepth  = 1;
+    const uint32_t maxTraceDepth = 1;
     OptixProgramGroup programGroups[] = {
         raygenProgramGroup,
         missProgramGroup,
@@ -421,7 +506,7 @@ static void linkPipeline(
         directCallableStackSizeFromTraversal,
         directCallableStackSizeFromState,
         continuationStackSize,
-        1  // maxTraversableDepth
+        2  // maxTraversableDepth
     ));
 }
 
@@ -549,12 +634,16 @@ void Optix::init(int width, int height, const Scene &scene)
     OptixDeviceContext context = nullptr;
     initContext(context);
 
-    OptixTraversableHandle gasHandle;
-    // initTriangleAcceleration(context, gasHandle, d_gasOutputBuffer, scene.getSceneData());
-    initSphereAcceleration(context, gasHandle, scene.getSceneData());
+    OptixTraversableHandle gasHandleTriangle;
+    OptixTraversableHandle gasHandleSphere;
+    OptixTraversableHandle iasHandle;
+    initTriangleAcceleration(context, gasHandleTriangle, scene.getSceneData());
+    initSphereAcceleration(context, gasHandleSphere, scene.getSceneData());
+    initInstanceAcceleration(context, iasHandle, gasHandleSphere);
 
     OptixModule module = nullptr;
     OptixPipelineCompileOptions pipelineCompileOptions = {};
+
     createModule(context, module, pipelineCompileOptions, log);
 
     OptixProgramGroup raygenProgramGroup = nullptr;
@@ -650,7 +739,7 @@ void Optix::init(int width, int height, const Scene &scene)
     m_params.lightIndices = d_lightIndices;
     m_params.lightIndexSize = lightIndices.size();
     m_params.environmentLight = environmentLight;
-    m_params.handle = gasHandle;
+    m_params.handle = iasHandle;
     updateMaxDepth(scene);
     updateNextEventEstimation(scene);
 
@@ -658,7 +747,7 @@ void Optix::init(int width, int height, const Scene &scene)
 
     m_width = width;
     m_height = height;
-    m_gasHandle = gasHandle;
+    m_gasHandle = iasHandle;
     m_pipeline = pipeline;
     m_sbt = sbt;
 }
