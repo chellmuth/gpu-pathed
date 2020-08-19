@@ -9,6 +9,7 @@
 #include "hit_record.h"
 #include "lights/environment_light.h"
 #include "lights/sampler.h"
+#include "lights/types.h"
 #include "materials/bsdf.h"
 #include "materials/bsdf_sample.h"
 #include "materials/lambertian.h"

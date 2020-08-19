@@ -6,21 +6,11 @@
 #include "core/vec3.h"
 #include "frame.h"
 #include "lights/environment_light.h"
+#include "lights/types.h"
 #include "materials/material_lookup.h"
 #include "primitives/triangle.h"
 #include "surface_sample.h"
 #include "world_frame.h"
-
-namespace rays {
-
-struct LightSample {
-    Vec3 wi;
-    float distance;
-    float pdf;
-    Vec3 emitted;
-};
-
-}
 
 namespace rays { namespace Sampler {
 
