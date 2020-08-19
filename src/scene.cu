@@ -147,10 +147,6 @@ SceneData getSceneData(int index)
             }
         }
 
-        request.environmentLightParams = EnvironmentLightParams(
-            "../scenes/assets/20060807_wells6_hd.exr"
-        );
-
         return SceneAdapter::createSceneData(request);
     } else {
         std::cerr << "Invalid scene index: " << index << std::endl;

@@ -12,6 +12,10 @@
 namespace rays {
 
 EnvironmentLight EnvironmentLightParams::createEnvironmentLight() const {
+    if (m_type == EnvironmentLightType::None) {
+        return EnvironmentLight::None();
+    }
+
     float *data;
     int width, height;
 
@@ -36,7 +40,6 @@ EnvironmentLight EnvironmentLightParams::createEnvironmentLight() const {
         dataSize,
         cudaMemcpyHostToDevice
     ));
-
 
     std::vector<float> intensities(width * height);
     for (int i = 0; i < width * height; i++) {

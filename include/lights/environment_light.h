@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <string>
 
 #include "frame.h"
@@ -17,16 +18,30 @@ struct EnvironmentLightSample {
     Vec3 emitted;
 };
 
+enum class EnvironmentLightType {
+    None,
+    Image
+};
+
 class EnvironmentLight {
 public:
     __device__ EnvironmentLight() {}
 
+    static EnvironmentLight None() {
+        return EnvironmentLight(EnvironmentLightType::None);
+    }
+
     EnvironmentLight(float *data, PhiThetaDistribution distribution, int width, int height)
-        : m_data(data),
-            m_distribution(distribution),
-            m_width(width),
-            m_height(height)
-        {}
+        : m_type(EnvironmentLightType::Image),
+          m_data(data),
+          m_distribution(distribution),
+          m_width(width),
+          m_height(height)
+    {}
+
+    __device__ EnvironmentLightType getType() const {
+        return m_type;
+    }
 
     __device__ EnvironmentLightSample sample(
         const Vec3 &point,
@@ -47,6 +62,8 @@ public:
     }
 
     __device__ Vec3 getEmit(const Vec3 &wi) const {
+        if (m_type == EnvironmentLightType::None) { return Vec3(0.f); }
+
         float phi, theta;
         Coordinates::cartesianToSpherical(wi, &phi, &theta);
 
@@ -62,6 +79,15 @@ public:
     }
 
 private:
+    EnvironmentLight(EnvironmentLightType type)
+        : m_type(type)
+    {
+        assert(type == EnvironmentLightType::None);
+    }
+
+
+    EnvironmentLightType m_type;
+
     float *m_data;
     PhiThetaDistribution m_distribution;
     int m_width;
@@ -71,15 +97,19 @@ private:
 
 class EnvironmentLightParams {
 public:
-    EnvironmentLightParams() {}
+    EnvironmentLightParams()
+        : m_type(EnvironmentLightType::None)
+    {}
 
     EnvironmentLightParams(const std::string &filename)
-        : m_filename(filename)
+        : m_type(EnvironmentLightType::Image),
+          m_filename(filename)
     {}
 
     EnvironmentLight createEnvironmentLight() const;
 
 private:
+    EnvironmentLightType m_type;
     std::string m_filename;
 };
 
