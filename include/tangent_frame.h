@@ -28,4 +28,19 @@ namespace rays { namespace TangentFrame {
         return sin2Theta(vector) / cos2Theta(vector);
     }
 
+    __device__ inline float sinTheta(const Vec3 &vector)
+    {
+        return sqrtf(fmaxf(0.f, 1.f - cos2Theta(vector)));
+    }
+
+    __device__ inline float tanTheta(const Vec3 &vector)
+    {
+        return sinTheta(vector) / cosTheta(vector);
+    }
+
+    __device__ inline float absTanTheta(const Vec3 &vector)
+    {
+        return fabsf(tanTheta(vector));
+    }
+
 } }

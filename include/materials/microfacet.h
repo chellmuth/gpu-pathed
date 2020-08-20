@@ -24,6 +24,16 @@ public:
         : m_alpha(alpha)
     {}
 
+    __device__ float G(const Vec3 &wi, const Vec3 &wo, const Vec3 &wh) const {
+        if (util::sign(dot(wo, wh)) != util::sign(TangentFrame::cosTheta(wo))) {
+            return 0.f;
+        }
+        if (util::sign(dot(wi, wh)) != util::sign(TangentFrame::cosTheta(wi))) {
+            return 0.f;
+        }
+        return G1(wi) * G1(wo);
+    }
+
     __device__ float D(const Vec3 &wi, const Vec3 &wh) const {
         const float alpha = sampleAlpha(TangentFrame::absCosTheta(wi));
         const float alpha2 = alpha * alpha;
@@ -61,6 +71,17 @@ private:
         return (1.2f - 0.2f * sqrtf(absCosThetaI)) * m_alpha;
     }
 
+    __device__ float G1(const Vec3 &v) const {
+        const float a = 1.f / (m_alpha * TangentFrame::absTanTheta(v));
+
+        if (a >= 1.6f) { return 1.f; }
+
+        const float numerator = 3.535f * a + 2.181f * a * a;
+        const float denominator = 1.f + 2.276f * a + 2.577f * a * a;
+
+        return numerator / denominator;
+    }
+
     float m_alpha;
 };
 
@@ -89,11 +110,11 @@ public:
         const float cosThetaIncident = util::clamp(dot(wi, wh), 0.f, 1.f);
         const float fresnel(Fresnel::dielectricReflectance(cosThetaIncident, 1.f, 1.5f)); // fixme
         const float distribution = m_distribution.D(wi, wh);
-        // const float masking = m_distribution.G(wi, wo, wh);
+        const float masking = m_distribution.G(wi, wo, wh);
 
         const Vec3 throughput = Vec3(1.f)
             * distribution
-            // * masking
+            * masking
             * fresnel
             / (4 * cosThetaI * cosThetaO);
 

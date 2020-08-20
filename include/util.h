@@ -11,5 +11,10 @@ __device__ inline float square(float x) {
     return x * x;
 }
 
+__device__ inline float sign(float x) {
+    return x < 0.f
+        ? -1.f
+        : 1.f;
+}
 
 } }
