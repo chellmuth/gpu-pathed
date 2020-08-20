@@ -55,7 +55,7 @@ void PBOManager::swapPBOs()
 RenderSession::RenderSession(int width, int height)
     : m_width(width),
       m_height(height),
-      m_rendererType(RendererType::CUDA)
+      m_rendererType(RendererType::Optix)
 {
     if (m_rendererType == RendererType::CUDA) {
         m_pathTracer = std::make_unique<PathTracer>();

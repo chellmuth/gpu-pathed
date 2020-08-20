@@ -100,23 +100,27 @@ SceneData getSceneData(int index)
         {
             const int materialOffset = request.materialParams.size();
 
-            std::vector<LambertianParams> materialParams = {
-                LambertianParams(Vec3(0.4f), Vec3(0.f)),
-                LambertianParams(Vec3(0.07f, 0.09f, 0.13f), Vec3(0.f)),
+            constexpr int paramCount = 5;
+            std::unique_ptr<MaterialParams> paramsArray[paramCount] = {
+                std::make_unique<LambertianParams>(Vec3(0.4f), Vec3(0.f)),
+                std::make_unique<MicrofacetParams>(0.005f),
+                std::make_unique<MicrofacetParams>(0.02f),
+                std::make_unique<MicrofacetParams>(0.05f),
+                std::make_unique<MicrofacetParams>(0.1f),
             };
 
-            for (const auto &params : materialParams) {
+            for (int i = 0; i < paramCount; i++) {
                 request.materialParams.push_back(
-                    std::make_unique<LambertianParams>(params)
+                    std::move(paramsArray[i])
                 );
             }
 
             std::vector<std::pair<std::string, int> > elements = {
                 { "../scenes/mis/floor.ply", materialOffset + 0 },
                 { "../scenes/mis/plate1.ply", materialOffset + 1 },
-                { "../scenes/mis/plate2.ply", materialOffset + 1 },
-                { "../scenes/mis/plate3.ply", materialOffset + 1 },
-                { "../scenes/mis/plate4.ply", materialOffset + 1 },
+                { "../scenes/mis/plate2.ply", materialOffset + 2 },
+                { "../scenes/mis/plate3.ply", materialOffset + 3 },
+                { "../scenes/mis/plate4.ply", materialOffset + 4 },
             };
 
             for (const auto &element : elements) {

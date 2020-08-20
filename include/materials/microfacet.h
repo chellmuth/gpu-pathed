@@ -89,10 +89,10 @@ public:
         const float cosThetaIncident = util::clamp(dot(wi, wh), 0.f, 1.f);
         const float fresnel(Fresnel::dielectricReflectance(cosThetaIncident, 1.f, 1.5f)); // fixme
         const float distribution = m_distribution.D(wi, wh);
-        // const float masking = m_distributionPtr->G(wi, wo, wh);
+        // const float masking = m_distribution.G(wi, wo, wh);
 
         const Vec3 throughput = Vec3(1.f)
-            // * distribution
+            * distribution
             // * masking
             * fresnel
             / (4 * cosThetaI * cosThetaO);

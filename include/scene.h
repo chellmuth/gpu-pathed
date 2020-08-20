@@ -15,7 +15,7 @@
 namespace rays {
 
 constexpr float defaultLightPosition = -0.6f;
-constexpr int defaultMaxDepth = 3;
+constexpr int defaultMaxDepth = 2;
 
 class Scene {
 public:
@@ -25,7 +25,7 @@ public:
     ) : m_camera(camera),
         m_sceneData(std::move(sceneData)),
         m_maxDepth(defaultMaxDepth),
-        m_nextEventEstimation(false)
+        m_nextEventEstimation(true)
     {}
 
     const Camera &getCamera() const { return m_camera; }
