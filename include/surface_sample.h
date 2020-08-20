@@ -17,8 +17,9 @@ struct SurfaceSample {
         const float distance = lightDirection.length();
 
         const float distance2 = distance * distance;
-        const float projectedArea = WorldFrame::cosTheta(normal, lightWo);
+        const float projectedArea = WorldFrame::absCosTheta(normal, lightWo);
 
+        if (projectedArea == 0.f) { return 0.f; }
         return pdf * distance2 / projectedArea;
     }
 };

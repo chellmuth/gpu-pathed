@@ -34,9 +34,13 @@ public:
         SurfaceSample sample = {
             .point = pointWorld,
             .normal = pointLocal,
-            .pdf = 1.f / area(),
+            .pdf = pdfArea()
         };
         return sample;
+    }
+
+    __device__ float pdfArea() const {
+        return 1.f / area();
     }
 
     __host__ __device__ int materialID() const { return m_materialID; }

@@ -3,12 +3,13 @@
 #include <curand_kernel.h>
 #include <ostream>
 
+#include "core/sample.h"
+#include "core/vec3.h"
 #include "frame.h"
 #include "hit_record.h"
 #include "materials/bsdf_sample.h"
 #include "materials/params.h"
 #include "renderers/random.h"
-#include "core/vec3.h"
 
 namespace rays {
 
@@ -47,6 +48,10 @@ public:
         return m_albedo / M_PI;
     }
 
+    __device__ float pdf(const Vec3 &wo, const Vec3 &wi) const {
+        return Sample::uniformHemispherePDF(wi);
+    }
+
     __device__ BSDFSample sample(const Vec3 &wo, curandState &randState) const {
         const float xi1 = curand_uniform(&randState);
         const float xi2 = curand_uniform(&randState);
@@ -60,17 +65,11 @@ public:
     }
 
     __device__ BSDFSample sample(const Vec3 &wo, const float xi1, const float xi2) const {
-        const float z = xi1;
-        const float r = sqrtf(fmaxf(0.f, 1.f - z * z));
+        const Vec3 wi = Sample::uniformHemisphere(xi1, xi2);
 
-        const float phi = 2 * M_PI * xi2;
-        const float x = r * cos(phi);
-        const float y = r * sin(phi);
-
-        const Vec3 wi = Vec3(x, y, z);
         return BSDFSample{
             .wiLocal = wi,
-            .pdf = 1 / (2.f * M_PI),
+            .pdf = pdf(wo, wi),
             .f = f(wo, wi),
             .isDelta = false
         };

@@ -1,20 +1,22 @@
 #include <optix.h>
 
+#include "core/ray.h"
+#include "core/vec3.h"
 #include "frame.h"
 #include "intersection.h"
+#include "lights/sampler.h"
 #include "materials/bsdf.h"
 #include "materials/bsdf_sample.h"
 #include "materials/lambertian.h"
 #include "materials/types.h"
-#include "core/ray.h"
+#include "math/mis.h"
+#include "primitives/triangle.h"
+#include "primitives/types.h"
 #include "renderers/float3_helpers.h"
 #include "renderers/optix.h"
 #include "renderers/payload_helpers.h"
 #include "renderers/random.h"
-#include "lights/sampler.h"
 #include "tangent_frame.h"
-#include "primitives/triangle.h"
-#include "core/vec3.h"
 #include "world_frame.h"
 
 extern "C" {
@@ -37,6 +39,15 @@ __forceinline__ __device__ static rays::Vec3 f(
 ) {
     rays::BSDF bsdf(params.materialLookup, materialID);
     return bsdf.f(wo, wi);
+}
+
+__forceinline__ __device__ static float pdf(
+    int materialID,
+    const rays::Vec3 &wo,
+    const rays::Vec3 &wi
+) {
+    rays::BSDF bsdf(params.materialLookup, materialID);
+    return bsdf.pdf(wo, wi);
 }
 
 __forceinline__ __device__ static rays::BSDFSample sample(
@@ -66,9 +77,7 @@ __forceinline__ __device__ static rays::Vec3 directSampleBSDF(
     const rays::BSDFSample &bsdfSample,
     unsigned int &seed
 ) {
-    if (!bsdfSample.isDelta) { return rays::Vec3(0.f); }
-
-    const float bsdfWeight = 1.f;
+    if (bsdfSample.f.isZero()) { return rays::Vec3(0.f); }
 
     const rays::Vec3 bounceDirection = intersection.frame.toWorld(bsdfSample.wiLocal);
     const rays::Ray bounceRay(intersection.point, bounceDirection);
@@ -94,18 +103,53 @@ __forceinline__ __device__ static rays::Vec3 directSampleBSDF(
     rays::Vec3 emit(0.f);
     const bool hit = !prd.done;
     if (hit) {
-        emit = getEmit(prd.materialID);
+        // fixme backside check?
+        const rays::Vec3 emit = getEmit(prd.materialID);
+        if (emit.isZero()) { return rays::Vec3(0.f); }
+
+        const rays::Intersection bounceIntersection = prd.intersection;
+        const float lightPDF = rays::Sampler::pdfSceneLights(
+            intersection.point,
+            bounceIntersection.point,
+            bounceIntersection.normal,
+            bounceIntersection.index,
+            params.lightIndices,
+            params.lightIndexSize,
+            params.triangles,
+            params.spheres,
+            params.environmentLight
+        );
+        const float bsdfWeight = bsdfSample.isDelta
+            ? 1.f
+            : rays::MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
+
+        return emit
+            * bsdfWeight
+            * bsdfSample.f
+            * rays::TangentFrame::absCosTheta(bsdfSample.wiLocal)
+            / bsdfSample.pdf;
+
     } else {
-        emit = params.environmentLight.getEmit(bounceRay.direction());
+        const rays::Vec3 emit = params.environmentLight.getEmit(bounceRay.direction());
+        if (emit.isZero()) { return rays::Vec3(0.f); }
+
+        const float lightPDF = rays::Sampler::pdfEnvironmentLight(
+            bounceRay.direction(),
+            params.environmentLight,
+            params.lightIndexSize
+        );
+
+        const float bsdfWeight = bsdfSample.isDelta
+            ? 1.f
+            : rays::MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
+
+        return emit
+            * bsdfWeight
+            * bsdfSample.f
+            * rays::TangentFrame::absCosTheta(bsdfSample.wiLocal)
+            / bsdfSample.pdf;
+
     }
-
-    if (emit.isZero()) { return rays::Vec3(0.f); }
-
-    return emit
-        * bsdfWeight
-        * bsdfSample.f
-        * rays::TangentFrame::absCosTheta(bsdfSample.wiLocal)
-        / bsdfSample.pdf;
 }
 
 __forceinline__ __device__ static rays::Vec3 directSampleLights(
@@ -114,7 +158,7 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
     const rays::BSDFSample &bsdfSample,
     unsigned int &seed
 ) {
-    if (bsdfSample.isDelta) { return 0.f; }
+    if (bsdfSample.isDelta) { return rays::Vec3(0.f); }
 
     const float xi1 = rnd(seed);
     const float xi2 = rnd(seed);
@@ -131,6 +175,10 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
         params.environmentLight,
         *params.materialLookup
     );
+
+    if (dot(lightSample.normal, lightSample.wi) >= 0.f) {
+        return rays::Vec3(0.f);
+    }
 
     const rays::Ray shadowRay(
         intersection.point,
@@ -151,25 +199,27 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
         0.0f,
         OptixVisibilityMask(255),
         OPTIX_RAY_FLAG_NONE,
-        0,                   // SBT offset   -- See SBT discussion
-        1,                   // SBT stride   -- See SBT discussion
-        0,                   // missSBTIndex -- See SBT discussion
+        0, 1, 0, // sbt fields
         p0, p1
     );
 
     const bool isHit = !prd.done;
     if (isHit) {
         return rays::Vec3(0.f);
-    } else {
-        const rays::Vec3 wiLocal = intersection.frame.toLocal(lightSample.wi);
-        const rays::Vec3 lightContribution = rays::Vec3(1.f)
-            * lightSample.emitted
-            * f(materialID, intersection.woLocal, wiLocal)
-            * rays::WorldFrame::absCosTheta(intersection.normal, lightSample.wi)
-            / lightSample.pdf;
-
-        return lightContribution;
     }
+
+    const rays::Vec3 wiLocal = intersection.frame.toLocal(lightSample.wi);
+    const float bsdfPDF = pdf(bsdfSample.materialID, intersection.woLocal, wiLocal);
+    const float lightWeight = rays::MIS::balanceWeight(1, 1, lightSample.pdf, bsdfPDF);
+
+    const rays::Vec3 lightContribution = rays::Vec3(1.f)
+        * lightSample.emitted
+        * lightWeight
+        * f(materialID, intersection.woLocal, wiLocal)
+        * rays::WorldFrame::absCosTheta(intersection.normal, lightSample.wi)
+        / lightSample.pdf;
+
+    return lightContribution;
 }
 
 __forceinline__ __device__ static rays::Vec3 direct(
@@ -398,6 +448,10 @@ extern "C" __global__ void __closesthit__ch()
         intersection.woLocal = intersection.frame.toLocal(
             float3_to_vec3(-optixGetWorldRayDirection())
         );
+        intersection.index = rays::PrimitiveIndex{
+            rays::PrimitiveType::Triangle,
+            primitiveIndex
+        };
     } else {
         const rays::Vec3 point(
             int_as_float(optixGetAttribute_0()),
@@ -417,6 +471,10 @@ extern "C" __global__ void __closesthit__ch()
         intersection.woLocal = intersection.frame.toLocal(
             float3_to_vec3(-optixGetWorldRayDirection())
         );
+        intersection.index = rays::PrimitiveIndex{
+            rays::PrimitiveType::Sphere,
+            primitiveIndex
+        };
     }
 
     rays::HitGroupData* hitgroupData = reinterpret_cast<rays::HitGroupData *>(optixGetSbtDataPointer());

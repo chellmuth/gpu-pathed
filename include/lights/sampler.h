@@ -2,13 +2,16 @@
 
 #include <cuda_runtime.h>
 
+#include "core/measure.h"
 #include "core/ray.h"
 #include "core/vec3.h"
 #include "frame.h"
 #include "lights/environment_light.h"
 #include "lights/types.h"
 #include "materials/material_lookup.h"
+#include "primitives/sphere.h"
 #include "primitives/triangle.h"
+#include "primitives/types.h"
 #include "surface_sample.h"
 #include "world_frame.h"
 
@@ -49,6 +52,7 @@ __device__ inline LightSample sampleSceneLights(
 
     const LightSample lightSample = {
         .wi = normalized(direction),
+        .normal = sample.normal,
         .distance = distance,
         .pdf = pdf,
         .emitted = materialLookup.getEmit(materialID)
@@ -70,13 +74,65 @@ __device__ inline LightSample sampleEnvironmentLight(
         samples.z
     );
 
+    const Vec3 wi = normalized(sample.occlusionRay.direction());
     const LightSample lightSample = {
-        .wi = normalized(sample.occlusionRay.direction()),
+        .wi = wi,
+        .normal = wi,
         .distance = 1e16, // fixme
         .pdf = sample.pdf * choicePDF,
         .emitted = sample.emitted
     };
+
     return lightSample;
+}
+
+__device__ inline float pdfSceneLights(
+    const Vec3 &referencePoint,
+    const Vec3 &lightPoint,
+    const Vec3 &lightNormal,
+    PrimitiveIndex index,
+    const LightIndex *lightIndices,
+    int lightIndexSize,
+    const Triangle *triangles,
+    const Sphere *spheres,
+    const EnvironmentLight &environmentLight
+) {
+    float pdfArea;
+    switch (index.primitiveType) {
+    case PrimitiveType::Sphere: {
+        pdfArea = spheres[index.index].pdfArea();
+        break;
+    }
+    case PrimitiveType::Triangle: {
+        pdfArea = triangles[index.index].pdfArea();
+        break;
+    }
+    }
+
+    const float pdfSolidAngle = Measure::areaToSolidAngle(
+        pdfArea,
+        referencePoint,
+        lightPoint,
+        lightNormal
+    );
+
+    int choiceCount = lightIndexSize;
+    if (environmentLight.getType() != EnvironmentLightType::None) {
+        choiceCount += 1;
+    }
+
+    return pdfSolidAngle / choiceCount;
+}
+
+__device__ inline float pdfEnvironmentLight(
+    const Vec3 &wi,
+    const EnvironmentLight &environmentLight,
+    int lightIndexSize
+) {
+    const float lightPDF = environmentLight.pdf(wi);
+    const float choicePDF = 1.f / (lightIndexSize + 1);
+
+    return lightPDF * choicePDF;
 }
 
 __device__ inline LightSample sampleDirectLights(

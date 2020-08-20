@@ -32,6 +32,10 @@ public:
         return Vec3(0.f);
     }
 
+    __device__ float pdf(const Vec3 &wo, const Vec3 &wi) const {
+        return 0.f;
+    }
+
     __device__ BSDFSample sample(const Vec3 &wo, unsigned int &seed) const {
         return sample(wo);
     }

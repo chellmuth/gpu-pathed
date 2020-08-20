@@ -65,9 +65,9 @@ SceneData getSceneData(int index)
             request.spheres.push_back(sphere);
         }
 
-        request.environmentLightParams = EnvironmentLightParams(
-            "../scenes/assets/20060807_wells6_hd.exr"
-        );
+        // request.environmentLightParams = EnvironmentLightParams(
+        //     "../scenes/assets/20060807_wells6_hd.exr"
+        // );
 
         return SceneAdapter::createSceneData(request);
     } else if (index == 1) {
@@ -161,6 +161,10 @@ SceneData getSceneData(int index)
                 request.spheres.push_back(sphere);
             }
         }
+
+        request.environmentLightParams = EnvironmentLightParams(
+            "../scenes/assets/20060807_wells6_hd.exr"
+        );
 
         return SceneAdapter::createSceneData(request);
     } else {

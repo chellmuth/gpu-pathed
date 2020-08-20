@@ -121,6 +121,18 @@ public:
         return throughput;
     }
 
+    __device__ float pdf(const Vec3 &wo, const Vec3 &wi) const {
+        if (wo.z() < 0.f || wi.z() < 0.f) {
+            return 0.f;
+        }
+
+        const float cosThetaO = TangentFrame::absCosTheta(wo);
+        const float cosThetaI = TangentFrame::absCosTheta(wi);
+        const Vec3 wh = normalized(wo + wi);
+
+        return m_distribution.pdf(wi, wh) / (4.f * absDot(wo, wh));
+    }
+
     __device__ BSDFSample sample(const Vec3 &wo, curandState &randState) const {
         const float xi1 = curand_uniform(&randState);
         const float xi2 = curand_uniform(&randState);

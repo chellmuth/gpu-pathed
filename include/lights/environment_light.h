@@ -43,6 +43,10 @@ public:
         return m_type;
     }
 
+    __device__ float pdf(const Vec3 &wi) const {
+        return m_distribution.pdf(wi);
+    }
+
     __device__ EnvironmentLightSample sample(
         const Vec3 &point,
         const Frame &frame,

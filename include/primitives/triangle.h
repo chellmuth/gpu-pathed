@@ -80,9 +80,13 @@ public:
         SurfaceSample sample = {
             .point = point,
             .normal = normal,
-            .pdf = 1.f / area(),
+            .pdf = pdfArea()
         };
         return sample;
+    }
+
+    __device__ float pdfArea() const {
+        return 1.f / area();
     }
 
 private:
