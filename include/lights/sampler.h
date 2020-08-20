@@ -77,7 +77,7 @@ __device__ inline LightSample sampleEnvironmentLight(
     const Vec3 wi = normalized(sample.occlusionRay.direction());
     const LightSample lightSample = {
         .wi = wi,
-        .normal = wi,
+        .normal = -wi,
         .distance = 1e16, // fixme
         .pdf = sample.pdf * choicePDF,
         .emitted = sample.emitted

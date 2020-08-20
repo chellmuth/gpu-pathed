@@ -148,7 +148,6 @@ __forceinline__ __device__ static rays::Vec3 directSampleBSDF(
             * bsdfSample.f
             * rays::TangentFrame::absCosTheta(bsdfSample.wiLocal)
             / bsdfSample.pdf;
-
     }
 }
 
