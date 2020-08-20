@@ -96,6 +96,7 @@ void ObjParser::processFace(string &faceArgs)
 {
     if (processDoubleFaceGeometryOnly(faceArgs)) { return; }
     if (processSingleFaceTriplets(faceArgs)) { return; }
+    if (processSingleFaceVertexAndNormal(faceArgs)) { return; }
 }
 
 bool ObjParser::processDoubleFaceGeometryOnly(string &faceArgs)
@@ -145,6 +146,32 @@ bool ObjParser::processSingleFaceTriplets(std::string &faceArgs)
         vertexIndex0, vertexIndex1, vertexIndex2,
         normalIndex0, normalIndex1, normalIndex2,
         UVIndex0, UVIndex1, UVIndex2
+    );
+
+    return true;
+}
+
+bool ObjParser::processSingleFaceVertexAndNormal(std::string &faceArgs)
+{
+    static std::regex expression("(-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+) (-?\\d+)//(-?\\d+)\\s*");
+    std::smatch match;
+    std::regex_match (faceArgs, match, expression);
+
+    if (match.empty()) {
+        return false;
+    }
+
+    int vertexIndex0 = std::stoi(match[1]);
+    int vertexIndex1 = std::stoi(match[3]);
+    int vertexIndex2 = std::stoi(match[5]);
+
+    int normalIndex0 = std::stoi(match[2]);
+    int normalIndex1 = std::stoi(match[4]);
+    int normalIndex2 = std::stoi(match[6]);
+
+    processTriangle(
+        vertexIndex0, vertexIndex1, vertexIndex2,
+        normalIndex0, normalIndex1, normalIndex2
     );
 
     return true;

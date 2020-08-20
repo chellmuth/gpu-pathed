@@ -30,6 +30,7 @@ private:
     void processMaterialLibrary(std::string &libraryArgs);
 
     bool processSingleFaceTriplets(std::string &faceArgs);
+    bool processSingleFaceVertexAndNormal(std::string &faceArgs);
     bool processDoubleFaceGeometryOnly(std::string &faceArgs);
 
     void processTriangle(int vertexIndex0, int vertexIndex1, int vertexIndex2);
