@@ -642,12 +642,27 @@ void Optix::init(int width, int height, const Scene &scene)
     OptixDeviceContext context = nullptr;
     initContext(context);
 
+    OptixTraversableHandle rootHandle;
     OptixTraversableHandle gasHandleTriangle;
     OptixTraversableHandle gasHandleSphere;
     OptixTraversableHandle iasHandle;
-    initTriangleAcceleration(context, gasHandleTriangle, scene.getSceneData());
-    initSphereAcceleration(context, gasHandleSphere, scene.getSceneData());
-    initInstanceAcceleration(context, iasHandle, gasHandleTriangle, gasHandleSphere);
+    bool useInstances = true;
+    if (scene.getSceneData().triangles.size() > 0) {
+        initTriangleAcceleration(context, gasHandleTriangle, scene.getSceneData());
+        rootHandle = gasHandleTriangle;
+    } else {
+        useInstances = false;
+    }
+    if (scene.getSceneData().spheres.size() > 0) {
+        initSphereAcceleration(context, gasHandleSphere, scene.getSceneData());
+        rootHandle = gasHandleSphere;
+    } else {
+        useInstances = false;
+    }
+    if (useInstances) {
+        initInstanceAcceleration(context, iasHandle, gasHandleTriangle, gasHandleSphere);
+        rootHandle = iasHandle;
+    }
 
     OptixModule module = nullptr;
     OptixPipelineCompileOptions pipelineCompileOptions = {};
@@ -747,7 +762,7 @@ void Optix::init(int width, int height, const Scene &scene)
     m_params.lightIndices = d_lightIndices;
     m_params.lightIndexSize = lightIndices.size();
     m_params.environmentLight = environmentLight;
-    m_params.handle = iasHandle;
+    m_params.handle = rootHandle;
     updateMaxDepth(scene);
     updateNextEventEstimation(scene);
 
