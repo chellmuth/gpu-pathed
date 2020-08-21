@@ -15,7 +15,7 @@
 namespace rays {
 
 constexpr float defaultLightPosition = -0.6f;
-constexpr int defaultMaxDepth = 2;
+constexpr int defaultMaxDepth = 3;
 
 class Scene {
 public:
