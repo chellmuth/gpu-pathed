@@ -22,46 +22,48 @@ SceneData getSceneData(int index)
         );
         request.materialParams.push_back(std::move(defaultMaterial));
         {
+            std::string sceneFilename("../scenes/cornell-box/CornellBox-Original.obj");
+            ObjParser objParser(sceneFilename);
+            request.objParsers.push_back(objParser);
+
+            request.defaultMaterialIDs.push_back(0);
+        }
+
+        return SceneAdapter::createSceneData(request);
+    } else if (index == 1) {
+        SceneAdapter::ParseRequest request;
+
+        auto defaultMaterial = std::make_unique<LambertianParams>(
+            Vec3(1.f, 0.f, 0.f), Vec3(0.f)
+        );
+        request.materialParams.push_back(std::move(defaultMaterial));
+        {
             std::string sceneFilename("../scenes/cornell-glossy/CornellBox-Glossy.obj");
             ObjParser objParser(sceneFilename);
             request.objParsers.push_back(objParser);
 
             request.defaultMaterialIDs.push_back(0);
         }
+
         {
             std::string sceneFilename("../scenes/cornell-glossy/box.obj");
             ObjParser objParser(sceneFilename);
             request.objParsers.push_back(objParser);
 
-            auto boxParams = std::make_unique<GlassParams>(1.4f);
+            auto boxParams = std::make_unique<MirrorParams>();
             request.materialParams.push_back(std::move(boxParams));
             request.defaultMaterialIDs.push_back(1);
         }
         {
-            std::string sceneFilename("../scenes/cornell-glossy/ball.obj");
-            ObjParser objParser(sceneFilename);
-            request.objParsers.push_back(objParser);
-
-            auto ballParams = std::make_unique<MicrofacetParams>(0.3f);
+            auto ballParams = std::make_unique<GlassParams>(1.4);
             request.materialParams.push_back(std::move(ballParams));
-            request.defaultMaterialIDs.push_back(2);
-        }
-        {
-            auto sphereMaterial = std::make_unique<LambertianParams>(
-                Vec3(1.f), Vec3(0.f)
-            );
-            request.materialParams.push_back(std::move(sphereMaterial));
 
-            Sphere sphere(Vec3(0.f, 0.7, 0.f), 0.2f, request.materialParams.size() - 1);
-            request.spheres.push_back(sphere);
-        }
-        {
-            auto sphereMaterial = std::make_unique<LambertianParams>(
-                Vec3(0.f, 1.f, 0.f), Vec3(0.f)
+            Sphere sphere(
+                Vec3(0.45f, 0.451f, -0.4f),
+                0.45f,
+                request.materialParams.size() - 1
             );
-            request.materialParams.push_back(std::move(sphereMaterial));
 
-            Sphere sphere(Vec3(0.4f, 0.8, 0.f), 0.15f, request.materialParams.size() - 1);
             request.spheres.push_back(sphere);
         }
 
@@ -70,10 +72,6 @@ SceneData getSceneData(int index)
         // );
 
         return SceneAdapter::createSceneData(request);
-    } else if (index == 1) {
-        std::string sceneFilename("../scenes/bunny/bunny.obj");
-        ObjParser objParser(sceneFilename);
-        return SceneAdapter::createSceneData(objParser);
     } else if (index == 2) {
         SceneAdapter::ParseRequest request;
 
@@ -186,10 +184,10 @@ Camera getCamera(int index, Resolution resolution)
         );
     } else if (index == 1) {
         return Camera(
-            Vec3(0.f, 0.7f, 4.f),
-            Vec3(0.f, 0.7f, 0.f),
+            Vec3(0.f, 1.f, 6.8f),
             Vec3(0.f, 1.f, 0.f),
-            28.f / 180.f * M_PI,
+            Vec3(0.f, 1.f, 0.f),
+            19.5f / 180.f * M_PI,
             resolution,
             false
         );

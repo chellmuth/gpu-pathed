@@ -19,7 +19,8 @@ class Trackball:
         self.anchor = point
 
     def drag(self, point):
-        delta = point - self.anchor
+        velocity = 0.1
+        delta = (point - self.anchor) * velocity
 
         radians = delta / 180. * math.pi
 
