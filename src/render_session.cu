@@ -55,7 +55,7 @@ void PBOManager::swapPBOs()
 RenderSession::RenderSession(int width, int height)
     : m_width(width),
       m_height(height),
-      m_rendererType(RendererType::Optix)
+      m_rendererType(RendererType::CUDA)
 {
     if (m_rendererType == RendererType::CUDA) {
         m_pathTracer = std::make_unique<PathTracer>();
@@ -66,7 +66,7 @@ RenderSession::RenderSession(int width, int height)
     }
     m_cudaGlobals = std::make_unique<CUDAGlobals>();
 
-    constexpr int sceneIndex = 2;
+    constexpr int sceneIndex = 3;
     SceneData sceneData = SceneParameters::getSceneData(sceneIndex);
     Camera camera = SceneParameters::getCamera(sceneIndex, { width, height });
 
@@ -97,6 +97,7 @@ RenderSession::RenderSession(int width, int height)
                 m_scene->setColor(materialID, attributes.albedo);
                 m_scene->setEmit(materialID, attributes.emitted);
                 m_scene->setIOR(materialID, attributes.ior);
+                m_scene->setAlpha(materialID, attributes.alpha);
             }
         }
 

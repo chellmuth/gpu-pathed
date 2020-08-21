@@ -29,6 +29,7 @@ void SceneModel::setRendererType(RendererType rendererType)
         getColor(),
         getEmit(),
         getIOR(),
+        getAlpha(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -43,6 +44,7 @@ void SceneModel::setColor(float r, float g, float b)
         Vec3(r, g, b),
         getEmit(),
         getIOR(),
+        getAlpha(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -63,6 +65,7 @@ void SceneModel::setEmit(float r, float g, float b)
         getColor(),
         Vec3(r, g, b),
         getIOR(),
+        getAlpha(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -83,6 +86,7 @@ void SceneModel::setIOR(float ior)
         getColor(),
         getEmit(),
         ior,
+        getAlpha(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -96,6 +100,28 @@ float SceneModel::getIOR() const
     if (m_materialID == -1) { return -1.f; }
 
     return m_scene->getIOR(m_materialID);
+}
+
+void SceneModel::setAlpha(float alpha)
+{
+    m_callback({
+        getColor(),
+        getEmit(),
+        getIOR(),
+        alpha,
+        m_scene->getCamera(),
+        m_rendererType,
+        getMaxDepth(),
+        getNextEventEstimation(),
+        getMaterialType()
+    });
+}
+
+float SceneModel::getAlpha() const
+{
+    if (m_materialID == -1) { return -1.f; }
+
+    return m_scene->getAlpha(m_materialID);
 }
 
 int SceneModel::getMaterialID() const
@@ -121,6 +147,7 @@ void SceneModel::setMaterialType(MaterialType materialType)
         getColor(),
         getEmit(),
         getIOR(),
+        getAlpha(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -136,6 +163,7 @@ void SceneModel::setLightPosition(float lightPosition)
         getColor(),
         getEmit(),
         getIOR(),
+        getAlpha(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),
@@ -174,12 +202,14 @@ void SceneModel::setCameraOrigin(float originX, float originY, float originZ)
         current.getTarget(),
         current.getUp(),
         current.getVerticalFOV(),
-        current.getResolution()
+        current.getResolution(),
+        current.getFlipHandedness()
     );
     m_callback({
         getColor(),
         getEmit(),
         getIOR(),
+        getAlpha(),
         updated,
         m_rendererType,
         getMaxDepth(),
@@ -203,12 +233,14 @@ void SceneModel::setCameraTarget(float targetX, float targetY, float targetZ)
         target,
         current.getUp(),
         current.getVerticalFOV(),
-        current.getResolution()
+        current.getResolution(),
+        current.getFlipHandedness()
     );
     m_callback({
         getColor(),
         getEmit(),
         getIOR(),
+        getAlpha(),
         updated,
         m_rendererType,
         getMaxDepth(),
@@ -232,12 +264,14 @@ void SceneModel::setCameraUp(float upX, float upY, float upZ)
         current.getTarget(),
         up,
         current.getVerticalFOV(),
-        current.getResolution()
+        current.getResolution(),
+        current.getFlipHandedness()
     );
     m_callback({
         getColor(),
         getEmit(),
         getIOR(),
+        getAlpha(),
         updated,
         m_rendererType,
         getMaxDepth(),
@@ -256,12 +290,14 @@ void SceneModel::zoomCamera(float ticks)
         current.getTarget(),
         current.getUp(),
         current.getVerticalFOV(),
-        current.getResolution()
+        current.getResolution(),
+        current.getFlipHandedness()
     );
     m_callback({
         getColor(),
         getEmit(),
         getIOR(),
+        getAlpha(),
         updated,
         m_rendererType,
         getMaxDepth(),
@@ -281,6 +317,7 @@ void SceneModel::setMaxDepth(int maxDepth)
         getColor(),
         getEmit(),
         getIOR(),
+        getAlpha(),
         m_scene->getCamera(),
         m_rendererType,
         maxDepth,
@@ -300,6 +337,7 @@ void SceneModel::setNextEventEstimation(bool nextEventEstimation)
         getColor(),
         getEmit(),
         getIOR(),
+        getAlpha(),
         m_scene->getCamera(),
         m_rendererType,
         getMaxDepth(),

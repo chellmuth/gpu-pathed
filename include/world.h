@@ -9,12 +9,14 @@
 #include "hit_record.h"
 #include "lights/environment_light.h"
 #include "lights/sampler.h"
+#include "lights/types.h"
 #include "materials/bsdf.h"
 #include "materials/bsdf_sample.h"
 #include "materials/lambertian.h"
 #include "materials/material_lookup.h"
 #include "primitives/sphere.h"
 #include "primitives/triangle.h"
+#include "primitives/types.h"
 
 namespace rays {
 
@@ -25,7 +27,7 @@ public:
         size_t triangleSize,
         Sphere *spheres,
         size_t sphereSize,
-        int *lightIndices,
+        LightIndex *lightIndices,
         size_t lightIndexSize,
         EnvironmentLight *environmentLight,
         MaterialLookup *materialLookup
@@ -62,15 +64,51 @@ public:
             m_lightIndices,
             m_lightIndexSize,
             m_triangles,
+            m_spheres,
             *m_environmentLight,
             *m_materialLookup
         );
     }
 
+    __device__ float pdfSceneLights(
+        const Vec3 &referencePoint,
+        const HitRecord &lightRecord
+    ) const {
+        const float lightPDF = rays::Sampler::pdfSceneLights(
+            referencePoint,
+            lightRecord.point,
+            lightRecord.normal,
+            lightRecord.index,
+            m_lightIndices,
+            m_lightIndexSize,
+            m_triangles,
+            m_spheres,
+            *m_environmentLight
+        );
+        return lightPDF;
+    }
+
+    __device__ float pdfEnvironmentLight(const Vec3 &wi) const {
+        const float lightPDF = rays::Sampler::pdfEnvironmentLight(
+            wi,
+            *m_environmentLight,
+            m_lightIndexSize
+        );
+        return lightPDF;
+    }
+
+    __device__ float pdfBSDF(
+        int materialID,
+        const Vec3 &wo,
+        const Vec3 &wi
+    ) const {
+        BSDF bsdf(m_materialLookup, materialID);
+        return bsdf.pdf(wo, wi);
+    }
+
     __device__ Vec3 getEmit(const int materialID) const {
         return m_materialLookup->getEmit(materialID);
     }
-
 
     __device__ Vec3 getEmit(const int materialID, const HitRecord &record) const {
         MaterialIndex index = m_materialLookup->indices[materialID];
@@ -117,7 +155,7 @@ private:
     Sphere *m_spheres;
     size_t m_sphereSize;
 
-    int *m_lightIndices;
+    LightIndex *m_lightIndices;
     size_t m_lightIndexSize;
 
     EnvironmentLight *m_environmentLight;

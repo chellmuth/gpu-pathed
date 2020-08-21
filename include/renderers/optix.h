@@ -7,7 +7,10 @@
 #include "core/camera.h"
 #include "core/vec3.h"
 #include "lights/environment_light.h"
+#include "lights/types.h"
 #include "materials/lambertian.h"
+#include "primitives/sphere.h"
+#include "primitives/triangle.h"
 #include "scene.h"
 
 namespace rays {
@@ -24,7 +27,8 @@ struct Params
     bool useNextEventEstimation;
     MaterialLookup *materialLookup;
     Triangle *triangles;
-    int *lightIndices;
+    Sphere *spheres;
+    LightIndex *lightIndices;
     int lightIndexSize;
     EnvironmentLight environmentLight;
     OptixTraversableHandle handle;

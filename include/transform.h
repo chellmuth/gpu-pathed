@@ -62,6 +62,11 @@ private:
     float m_matrix[4][4];
 };
 
-Transform lookAt(const Vec3 &source, const Vec3 &target, const Vec3 &up);
+Transform lookAt(
+    const Vec3 &source,
+    const Vec3 &target,
+    const Vec3 &up,
+    bool flipHandedness = false
+);
 
 }

@@ -17,6 +17,10 @@ __device__ bool World::hit(
             isHit = true;
             tNear = tempRecord.t;
             record = tempRecord;
+            record.index = {
+                PrimitiveType::Triangle,
+                i
+            };
         }
     }
 
@@ -26,6 +30,10 @@ __device__ bool World::hit(
             isHit = true;
             tNear = tempRecord.t;
             record = tempRecord;
+            record.index = {
+                PrimitiveType::Sphere,
+                i
+            };
         }
     }
 

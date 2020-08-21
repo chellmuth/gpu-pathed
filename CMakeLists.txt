@@ -62,6 +62,7 @@ add_library(rays STATIC
 
   src/parsers/mtl_parser.cpp
   src/parsers/obj_parser.cpp
+  src/parsers/ply_parser.cpp
   src/parsers/string_util.cpp
 
   src/primitives/sphere.cu

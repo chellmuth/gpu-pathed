@@ -3,5 +3,6 @@ add_executable(pathed_test
   test.cpp
 
   test_distribution.cu
+  test_ply_parser.cpp
 )
 target_link_libraries(pathed_test Catch2::Catch2 rays)

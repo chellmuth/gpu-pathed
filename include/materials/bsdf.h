@@ -28,46 +28,90 @@ public:
         case MaterialType::Glass: {
             return m_materialLookupPtr->glasses[index.index].f(wo, wi);
         }
+        case MaterialType::Microfacet: {
+            return m_materialLookupPtr->microfacets[index.index].f(wo, wi);
+        }
         }
         return Vec3(0.f);
+    }
+
+    __device__ float pdf(const Vec3 &wo, const Vec3 &wi) {
+        const MaterialIndex index = m_materialLookupPtr->indices[m_materialID];
+        switch(index.materialType) {
+        case MaterialType::Lambertian: {
+            return m_materialLookupPtr->lambertians[index.index].pdf(wo, wi);
+        }
+        case MaterialType::Mirror: {
+            return m_materialLookupPtr->mirrors[index.index].pdf(wo, wi);
+        }
+        case MaterialType::Glass: {
+            return m_materialLookupPtr->glasses[index.index].pdf(wo, wi);
+        }
+        case MaterialType::Microfacet: {
+            return m_materialLookupPtr->microfacets[index.index].pdf(wo, wi);
+        }
+        }
+        return 0.f;
     }
 
     __device__ BSDFSample sample(
         const Intersection &intersection,
         unsigned int &seed
     ) {
+        BSDFSample sample;
+
         const MaterialIndex index = m_materialLookupPtr->indices[m_materialID];
         switch(index.materialType) {
         case MaterialType::Lambertian: {
-            return m_materialLookupPtr->lambertians[index.index].sample(intersection.woLocal, seed);
+            sample = m_materialLookupPtr->lambertians[index.index].sample(intersection.woLocal, seed);
+            break;
         }
         case MaterialType::Mirror: {
-            return m_materialLookupPtr->mirrors[index.index].sample(intersection.woLocal, seed);
+            sample = m_materialLookupPtr->mirrors[index.index].sample(intersection.woLocal, seed);
+            break;
         }
         case MaterialType::Glass: {
-            return m_materialLookupPtr->glasses[index.index].sample(intersection.woLocal, seed);
+            sample = m_materialLookupPtr->glasses[index.index].sample(intersection.woLocal, seed);
+            break;
+        }
+        case MaterialType::Microfacet: {
+            sample = m_materialLookupPtr->microfacets[index.index].sample(intersection.woLocal, seed);
+            break;
         }
         }
-        return {};
+
+        sample.materialID = m_materialID;
+        return sample;
     }
 
     __device__ BSDFSample sample(
         const HitRecord &record,
         curandState &randState
     ) {
+        BSDFSample sample;
+
         const MaterialIndex index = m_materialLookupPtr->indices[m_materialID];
         switch(index.materialType) {
         case MaterialType::Lambertian: {
-            return m_materialLookupPtr->lambertians[index.index].sample(record.wo, randState);
+            sample = m_materialLookupPtr->lambertians[index.index].sample(record.wo, randState);
+            break;
         }
         case MaterialType::Mirror: {
-            return m_materialLookupPtr->mirrors[index.index].sample(record.wo, randState);
+            sample = m_materialLookupPtr->mirrors[index.index].sample(record.wo, randState);
+            break;
         }
         case MaterialType::Glass: {
-            return m_materialLookupPtr->glasses[index.index].sample(record.wo, randState);
+            sample = m_materialLookupPtr->glasses[index.index].sample(record.wo, randState);
+            break;
+        }
+        case MaterialType::Microfacet: {
+            sample = m_materialLookupPtr->microfacets[index.index].sample(record.wo, randState);
+            break;
         }
         }
-        return {};
+
+        sample.materialID = m_materialID;
+        return sample;
     }
 
     __device__ Vec3 getEmit() {
@@ -81,6 +125,9 @@ public:
         }
         case MaterialType::Glass: {
             return m_materialLookupPtr->glasses[index.index].getEmit();
+        }
+        case MaterialType::Microfacet: {
+            return m_materialLookupPtr->microfacets[index.index].getEmit();
         }
         }
         return Vec3(0.f);

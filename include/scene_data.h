@@ -4,11 +4,13 @@
 #include <vector>
 
 #include "lights/environment_light.h"
+#include "lights/types.h"
 #include "materials/glass.h"
 #include "materials/lambertian.h"
 #include "materials/mirror.h"
 #include "materials/params.h"
 #include "parsers/obj_parser.h"
+#include "parsers/ply_parser.h"
 #include "primitives/sphere.h"
 #include "primitives/triangle.h"
 
@@ -17,7 +19,7 @@ namespace rays {
 struct SceneData {
     std::vector<Triangle> triangles;
     std::vector<Sphere> spheres;
-    std::vector<int> lightIndices;
+    std::vector<LightIndex> lightIndices;
 
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
     EnvironmentLightParams environmentLightParams;
@@ -44,6 +46,8 @@ namespace rays { namespace SceneAdapter {
 
 struct ParseRequest {
     std::vector<ObjParser> objParsers;
+    std::vector<PLYParser> plyParsers;
+    std::vector<Sphere> spheres;
     std::vector<std::unique_ptr<MaterialParams> > materialParams;
     std::vector<int> defaultMaterialIDs;
     EnvironmentLightParams environmentLightParams;

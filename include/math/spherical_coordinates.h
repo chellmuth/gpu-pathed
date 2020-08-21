@@ -31,4 +31,19 @@ __device__ inline Vec3 sphericalToCartesian(float phi, float theta) {
     return sphericalToCartesian(phi, cosf(theta), sinf(theta));
 }
 
+// fixme
+__device__ inline Vec3 sphericalToCartesianZ(float phi, float cosTheta, float sinTheta)
+{
+    const float z = cosTheta;
+    const float x = sinTheta * cosf(phi);
+    const float y = sinTheta * sinf(phi);
+
+    return Vec3(x, y, z);
+}
+
+// fixme
+__device__ inline Vec3 sphericalToCartesianZ(float phi, float theta) {
+    return sphericalToCartesianZ(phi, cosf(theta), sinf(theta));
+}
+
 } }

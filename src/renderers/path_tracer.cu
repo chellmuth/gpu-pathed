@@ -4,12 +4,13 @@
 #include <iostream>
 
 #include "core/camera.h"
+#include "core/vec3.h"
 #include "frame.h"
 #include "framebuffer.h"
 #include "macro_helper.h"
-#include "world.h"
+#include "math/mis.h"
 #include "scene.h"
-#include "core/vec3.h"
+#include "world.h"
 
 #define checkCudaErrors(result) { gpuAssert((result), __FILE__, __LINE__); }
 
@@ -40,32 +41,43 @@ __device__ static Vec3 directSampleBSDF(
     const World *world,
     curandState &randState
 ) {
-    if (!bsdfSample.isDelta) { return Vec3(0.f); }
-    const float brdfWeight = 1.f;
+    if (bsdfSample.f.isZero()) { return Vec3(0.f); }
 
     const Frame intersection(hitRecord.normal);
     const Vec3 bounceDirection = intersection.toWorld(bsdfSample.wiLocal);
     const Ray bounceRay(hitRecord.point, bounceDirection);
 
     HitRecord brdfRecord;
-    const bool hit = world->hit(bounceRay, 1e-3, FLT_MAX, brdfRecord);
-    if (!hit) {
+    const bool hit = world->hit(bounceRay, 1e-4, FLT_MAX, brdfRecord);
+    if (hit) {
+        const Vec3 emit = world->getEmit(brdfRecord.materialID, brdfRecord);
+        if (emit.isZero()) { return Vec3(0.f); }
+
+        const float lightPDF = world->pdfSceneLights(hitRecord.point, brdfRecord);
+
+        const float bsdfWeight = bsdfSample.isDelta
+            ? 1.f
+            : rays::MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
+
+        const Vec3 brdfContribution = emit
+            * bsdfWeight
+            * bsdfSample.f
+            * TangentFrame::absCosTheta(bsdfSample.wiLocal)
+            / bsdfSample.pdf;
+        return brdfContribution;
+    } else {
+        const float lightPDF = world->pdfEnvironmentLight(bounceDirection);
+
+        const float bsdfWeight = bsdfSample.isDelta
+            ? 1.f
+            : rays::MIS::balanceWeight(1, 1, bsdfSample.pdf, lightPDF);
+
         return world->environmentL(bounceDirection)
-            * brdfWeight
+            * bsdfWeight
             * bsdfSample.f
             * TangentFrame::absCosTheta(bsdfSample.wiLocal)
             / bsdfSample.pdf;
     }
-    const Vec3 emit = world->getEmit(brdfRecord.materialID, brdfRecord);
-    if (emit.isZero()) { return Vec3(0.f); }
-
-    const Vec3 brdfContribution = emit
-        * brdfWeight
-        * bsdfSample.f
-        * bsdfSample.wiLocal.z()
-        / bsdfSample.pdf;
-
-    return brdfContribution;
 }
 
 __device__ static Vec3 directSampleLights(
@@ -81,6 +93,11 @@ __device__ static Vec3 directSampleLights(
         Frame(hitRecord.normal),
         randState
     );
+
+    if (dot(lightSample.normal, lightSample.wi) >= 0.f) {
+        return rays::Vec3(0.f);
+    }
+
     const Ray shadowRay(hitRecord.point, lightSample.wi);
 
     HitRecord occlusionRecord;
@@ -91,18 +108,21 @@ __device__ static Vec3 directSampleLights(
         occlusionRecord
     );
 
-    if (!occluded) {
-        const Vec3 wiLocal = Frame(hitRecord.normal).toLocal(lightSample.wi);
-        const Vec3 lightContribution = Vec3(1.f)
-            * lightSample.emitted
-            * world->f(hitRecord.materialID, hitRecord.wo, wiLocal)
-            * WorldFrame::absCosTheta(hitRecord.normal, lightSample.wi)
-            / lightSample.pdf;
-
-        return lightContribution;
-    } else {
+    if (occluded) {
         return Vec3(0.f);
     }
+
+    const Vec3 wiLocal = Frame(hitRecord.normal).toLocal(lightSample.wi);
+    const float bsdfPDF = world->pdfBSDF(bsdfSample.materialID, hitRecord.wo, wiLocal);
+    const float lightWeight = rays::MIS::balanceWeight(1, 1, lightSample.pdf, bsdfPDF);
+
+    const Vec3 lightContribution = Vec3(1.f)
+        * lightSample.emitted
+        * lightWeight
+        * world->f(hitRecord.materialID, hitRecord.wo, wiLocal)
+        * WorldFrame::absCosTheta(hitRecord.normal, lightSample.wi)
+        / lightSample.pdf;
+    return lightContribution;
 }
 
 __device__ static Vec3 direct(
@@ -146,7 +166,7 @@ __device__ static Vec3 calculateLiNEE(
         const Frame intersection(record.normal);
 
         const BSDFSample bsdfSample = world->sample(record.materialID, record, randState);
-        result += direct(record, bsdfSample, world, randState) * beta;
+        result += beta * direct(record, bsdfSample, world, randState);
 
         beta *= bsdfSample.f
             * intersection.absCosTheta(bsdfSample.wiLocal)
@@ -236,7 +256,7 @@ __global__ static void renderKernel(
         ;
 
         if (sample == 1) {
-            passRadiances[pixelIndex] = Li;
+            passRadiances[pixelIndex] = Li / spp;
         } else {
             passRadiances[pixelIndex] += Li / spp;
         }

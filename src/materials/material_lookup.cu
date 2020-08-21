@@ -15,6 +15,7 @@ void MaterialLookup::mallocMaterials(const SceneData &sceneData)
     int lambertianSize = 0;
     int mirrorSize = 0;
     int glassSize = 0;
+    int microfacetSize = 0;
 
     for (const auto &param : sceneData.materialParams) {
         switch (param->getMaterialType()) {
@@ -30,6 +31,10 @@ void MaterialLookup::mallocMaterials(const SceneData &sceneData)
             glassSize += 1;
             break;
         }
+        case MaterialType::Microfacet: {
+            microfacetSize += 1;
+            break;
+        }
         }
     }
 
@@ -37,6 +42,7 @@ void MaterialLookup::mallocMaterials(const SceneData &sceneData)
     checkCUDA(cudaMalloc((void **)&lambertians, lambertianSize * sizeof(Lambertian)));
     checkCUDA(cudaMalloc((void **)&mirrors, mirrorSize * sizeof(Mirror)));
     checkCUDA(cudaMalloc((void **)&glasses, glassSize * sizeof(Glass)));
+    checkCUDA(cudaMalloc((void **)&microfacets, microfacetSize * sizeof(Microfacet)));
 }
 
 void MaterialLookup::copyMaterials(const SceneData &sceneData)
@@ -45,6 +51,7 @@ void MaterialLookup::copyMaterials(const SceneData &sceneData)
     std::vector<Lambertian> lambertiansLocal;
     std::vector<Mirror> mirrorsLocal;
     std::vector<Glass> glassesLocal;
+    std::vector<Microfacet> microfacetsLocal;
 
     for (const auto &param : sceneData.materialParams) {
         switch (param->getMaterialType()) {
@@ -67,6 +74,13 @@ void MaterialLookup::copyMaterials(const SceneData &sceneData)
             glassesLocal.push_back(glass);
 
             indicesLocal.push_back({MaterialType::Glass, glassesLocal.size() - 1});
+            break;
+        }
+        case MaterialType::Microfacet: {
+            Microfacet microfacet(*param);
+            microfacetsLocal.push_back(microfacet);
+
+            indicesLocal.push_back({MaterialType::Microfacet, microfacetsLocal.size() - 1});
             break;
         }
         }
@@ -99,6 +113,13 @@ void MaterialLookup::copyMaterials(const SceneData &sceneData)
         glassesLocal.size() * sizeof(Glass),
         cudaMemcpyHostToDevice
     ));
+
+    checkCUDA(cudaMemcpy(
+        reinterpret_cast<void *>(microfacets),
+        microfacetsLocal.data(),
+        microfacetsLocal.size() * sizeof(Microfacet),
+        cudaMemcpyHostToDevice
+    ));
 }
 
 void MaterialLookup::freeMaterials()
@@ -107,6 +128,7 @@ void MaterialLookup::freeMaterials()
     checkCUDA(cudaFree(lambertians));
     checkCUDA(cudaFree(mirrors));
     checkCUDA(cudaFree(glasses));
+    checkCUDA(cudaFree(microfacets));
 }
 
 }

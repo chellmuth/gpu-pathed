@@ -9,6 +9,7 @@ struct BSDFSample {
     float pdf;
     Vec3 f;
     bool isDelta;
+    int materialID;
 };
 
 }
