@@ -15,7 +15,7 @@ class App(QWidget):
     def __init__(self, pt, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("CUDA / PyQT Demo")
+        self.setWindowTitle("Pathed-GPU")
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update)
