@@ -88,22 +88,30 @@ public:
         const HitRecord &record,
         curandState &randState
     ) {
+        BSDFSample sample;
+
         const MaterialIndex index = m_materialLookupPtr->indices[m_materialID];
         switch(index.materialType) {
         case MaterialType::Lambertian: {
-            return m_materialLookupPtr->lambertians[index.index].sample(record.wo, randState);
+            sample = m_materialLookupPtr->lambertians[index.index].sample(record.wo, randState);
+            break;
         }
         case MaterialType::Mirror: {
-            return m_materialLookupPtr->mirrors[index.index].sample(record.wo, randState);
+            sample = m_materialLookupPtr->mirrors[index.index].sample(record.wo, randState);
+            break;
         }
         case MaterialType::Glass: {
-            return m_materialLookupPtr->glasses[index.index].sample(record.wo, randState);
+            sample = m_materialLookupPtr->glasses[index.index].sample(record.wo, randState);
+            break;
         }
         case MaterialType::Microfacet: {
-            return m_materialLookupPtr->microfacets[index.index].sample(record.wo, randState);
+            sample = m_materialLookupPtr->microfacets[index.index].sample(record.wo, randState);
+            break;
         }
         }
-        return {};
+
+        sample.materialID = m_materialID;
+        return sample;
     }
 
     __device__ Vec3 getEmit() {

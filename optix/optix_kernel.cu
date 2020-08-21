@@ -128,7 +128,6 @@ __forceinline__ __device__ static rays::Vec3 directSampleBSDF(
             * bsdfSample.f
             * rays::TangentFrame::absCosTheta(bsdfSample.wiLocal)
             / bsdfSample.pdf;
-
     } else {
         const rays::Vec3 emit = params.environmentLight.getEmit(bounceRay.direction());
         if (emit.isZero()) { return rays::Vec3(0.f); }
@@ -217,7 +216,6 @@ __forceinline__ __device__ static rays::Vec3 directSampleLights(
         * f(materialID, intersection.woLocal, wiLocal)
         * rays::WorldFrame::absCosTheta(intersection.normal, lightSample.wi)
         / lightSample.pdf;
-
     return lightContribution;
 }
 

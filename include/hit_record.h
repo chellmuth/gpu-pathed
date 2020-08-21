@@ -1,7 +1,8 @@
 #pragma once
 
-#include "materials/types.h"
 #include "core/vec3.h"
+#include "materials/types.h"
+#include "primitives/types.h"
 
 namespace rays {
 
@@ -11,6 +12,7 @@ struct HitRecord {
     Vec3 normal;
     Vec3 wo;
     int materialID;
+    PrimitiveIndex index;
 
     __device__ bool isFront() const {
         return wo.z() >= 0.f;
