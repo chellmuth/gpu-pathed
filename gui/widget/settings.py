@@ -43,9 +43,6 @@ class SettingsWidget(QGroupBox):
         )
         layout.addWidget(self.maxDepth)
 
-        self.lightSlider = LightSlider(self.model, self)
-        layout.addWidget(self.lightSlider)
-
         self.setLayout(layout)
         self.update()
 
@@ -158,27 +155,3 @@ class NextEventEstimationWidget(QWidget):
         self.nee.setChecked(state)
 
 
-class LightSlider(QWidget):
-    def __init__(self, model, parent=None):
-        super().__init__(parent)
-
-        self.model = model
-
-        layout = QHBoxLayout()
-
-        self.text = QLabel("Light Position: ", self)
-        self.slider = QSlider(Qt.Horizontal, self)
-        self.slider.setMinimum(-100)
-        self.slider.setMaximum(100)
-        self.slider.setValue(int(self.model.getLightPosition() * 100))
-
-        self.slider.valueChanged.connect(self.handleChanged)
-
-        layout.addWidget(self.text)
-        layout.addWidget(self.slider)
-        layout.addStretch()
-
-        self.setLayout(layout)
-
-    def handleChanged(self, value):
-        self.model.setLightPosition(value / 100.)
