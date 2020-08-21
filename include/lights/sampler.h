@@ -129,6 +129,10 @@ __device__ inline float pdfEnvironmentLight(
     const EnvironmentLight &environmentLight,
     int lightIndexSize
 ) {
+    if (environmentLight.getType() == EnvironmentLightType::None) {
+        return 0.f;
+    }
+
     const float lightPDF = environmentLight.pdf(wi);
     const float choicePDF = 1.f / (lightIndexSize + 1);
 
